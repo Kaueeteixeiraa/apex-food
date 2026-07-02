@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Estoque | Apex Food{% endblock %}
+{% block content %}
+<header class="page-header">
+    <div><p class="eyebrow">Insumos</p><h1>Estoque simples</h1></div>
+</header>
+
+<section class="content-grid">
+    <article class="panel">
+        <h2>Novo item</h2>
+        <form method="post" class="form-grid">
+            <label>Nome do item<input name="name" required></label>
+            <label>Quantidade<input name="quantity" type="number" step="0.01" required></label>
+            <label>Unidade<input name="unit" value="un"></label>
+            <label>Estoque mínimo<input name="min_stock" type="number" step="0.01" value="0"></label>
+            <button class="btn primary" type="submit">Adicionar item</button>
+        </form>
+    </article>
+    <article class="panel wide">
+        <div class="panel-heading"><h2>Itens cadastrados</h2><span class="pill">{{ items|length }}</span></div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Item</th><th>Quantidade</th><th>Mínimo</th><th>Status</th></tr></thead>
+                <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }} {{ item.unit }}</td>
+                    <td>{{ item.min_stock }} {{ item.unit }}</td>
+                    <td>
+                        {% if item.quantity <= item.min_stock %}
+                        <span class="status danger">Baixo</span>
+                        {% else %}
+                        <span class="status positive">OK</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">Nenhum item de estoque.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}

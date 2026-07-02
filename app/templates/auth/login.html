@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Login | Apex Food{% endblock %}
+{% block content %}
+<section class="auth-card login-card">
+    <div class="brand auth-brand">
+        <span class="brand-mark">AF</span>
+        <span>
+            <strong>Apex Food</strong>
+            <small>SaaS para restaurantes inteligentes</small>
+        </span>
+    </div>
+    <h1>Entrar no painel</h1>
+    <p class="muted">Controle pedidos, caixa, mesas e cozinha em uma operação só.</p>
+    <form method="post" class="form-grid">
+        <label>
+            E-mail
+            <input name="email" type="email" value="admin@apexfood.local" required>
+        </label>
+        <label>
+            Senha
+            <input name="password" type="password" value="123456" required>
+        </label>
+        <button class="btn primary" type="submit">Entrar</button>
+    </form>
+    <p class="auth-link">Ainda não tem empresa? <a href="{{ url_for('auth.register') }}">Cadastrar empresa</a></p>
+</section>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Clientes | Apex Food{% endblock %}
+{% block content %}
+<header class="page-header">
+    <div><p class="eyebrow">Relacionamento</p><h1>Clientes</h1></div>
+</header>
+
+<section class="content-grid">
+    <article class="panel">
+        <h2>Novo cliente</h2>
+        <form method="post" class="form-grid">
+            <label>Nome<input name="name" required></label>
+            <label>Telefone<input name="phone"></label>
+            <label>E-mail<input name="email" type="email"></label>
+            <label>Endereço<textarea name="address" rows="3"></textarea></label>
+            <button class="btn primary" type="submit">Cadastrar cliente</button>
+        </form>
+    </article>
+    <article class="panel wide">
+        <div class="panel-heading"><h2>Base de clientes</h2><span class="pill">{{ clients|length }}</span></div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Pedidos</th><th>Total</th></tr></thead>
+                <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>{{ client.name }}</td>
+                    <td>{{ client.phone }}</td>
+                    <td>{{ client.email }}</td>
+                    <td>{{ client.order_count }}</td>
+                    <td>R$ {{ "%.2f"|format(client.total_spent) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Nenhum cliente cadastrado.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}

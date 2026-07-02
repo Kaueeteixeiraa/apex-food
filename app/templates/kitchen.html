@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Cozinha / KDS | Apex Food{% endblock %}
+{% block content %}
+<header class="page-header">
+    <div><p class="eyebrow">Produção</p><h1>Cozinha / KDS simples</h1></div>
+    <span class="pill info">{{ orders|length }} pedidos ativos</span>
+</header>
+
+<section class="kds-grid">
+    {% for order in orders %}
+    <article class="kds-card">
+        <div class="order-top">
+            <strong>Pedido #{{ order.id }}</strong>
+            <span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span>
+        </div>
+        <p>{{ order.table_name or order.fulfillment_type }} · {{ order.customer_name }}</p>
+        <div class="kds-items">{{ order.items_summary or "Sem itens" }}</div>
+        <small>Entrada: {{ order.created_at }}</small>
+        <form method="post" action="{{ url_for('kitchen.mark_ready', order_id=order.id) }}">
+            <button class="btn primary" type="submit">Marcar como pronto</button>
+        </form>
+    </article>
+    {% else %}
+    <p class="empty">Nenhum pedido aguardando preparo.</p>
+    {% endfor %}
+</section>
+{% endblock %}

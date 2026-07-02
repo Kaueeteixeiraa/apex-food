@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Apex Food{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% if not g.user %}auth-body{% endif %}">
+    {% if g.user %}
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="{{ url_for('dashboard.index') }}">
+                <span class="brand-mark">AF</span>
+                <span>
+                    <strong>Apex Food</strong>
+                    <small>{{ session.get("company_name", "Restaurante") }}</small>
+                </span>
+            </a>
+            <nav class="nav-menu">
+                <a class="{{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">Dashboard</a>
+                <a class="{{ 'active' if request.blueprint == 'orders' }}" href="{{ url_for('orders.index') }}">Pedidos</a>
+                <a class="{{ 'active' if request.blueprint == 'pos' }}" href="{{ url_for('pos.index') }}">Caixa / PDV</a>
+                <a class="{{ 'active' if request.blueprint == 'floor' }}" href="{{ url_for('floor.index') }}">Visão do Salão</a>
+                <a class="{{ 'active' if request.blueprint == 'products' }}" href="{{ url_for('products.index') }}">Cardápio</a>
+                <a class="{{ 'active' if request.blueprint == 'clients' }}" href="{{ url_for('clients.index') }}">Clientes</a>
+                <a class="{{ 'active' if request.blueprint == 'inventory' }}" href="{{ url_for('inventory.index') }}">Estoque</a>
+                <a class="{{ 'active' if request.blueprint == 'employees' }}" href="{{ url_for('employees.index') }}">Funcionários</a>
+                <a class="{{ 'active' if request.blueprint == 'kitchen' }}" href="{{ url_for('kitchen.index') }}">Cozinha / KDS</a>
+            </nav>
+            <div class="sidebar-footer">
+                <span>{{ session.get("user_name") }}</span>
+                <a href="{{ url_for('auth.logout') }}">Sair</a>
+            </div>
+        </aside>
+        <main class="main-content">
+            {% include "_flash.html" %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+    <main class="auth-main">
+        {% include "_flash.html" %}
+        {{ self.content() }}
+    </main>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

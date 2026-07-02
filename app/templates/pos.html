@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Caixa / PDV | Apex Food{% endblock %}
+{% block content %}
+<header class="page-header">
+    <div><p class="eyebrow">Financeiro</p><h1>Caixa / PDV</h1></div>
+    <span class="status {{ 'positive' if register and register.status == 'Aberto' else 'danger' }}">
+        Caixa {{ register.status if register else "Fechado" }}
+    </span>
+</header>
+
+<section class="content-grid">
+    <article class="panel">
+        <h2>Controle do caixa</h2>
+        {% if register and register.status == "Aberto" %}
+        <p class="muted">Aberto desde {{ register.opened_at }} com R$ {{ "%.2f"|format(register.opening_amount) }}.</p>
+        <form method="post" action="{{ url_for('pos.close_register') }}">
+            <button class="btn danger" type="submit">Fechar caixa</button>
+        </form>
+        {% else %}
+        <form method="post" action="{{ url_for('pos.open_register') }}" class="form-grid">
+            <label>Valor inicial<input name="opening_amount" type="number" step="0.01" value="0"></label>
+            <button class="btn primary" type="submit">Abrir caixa</button>
+        </form>
+        {% endif %}
+    </article>
+
+    <article class="panel">
+        <h2>Finalizar venda</h2>
+        <form method="post" action="{{ url_for('pos.finish_sale') }}" class="form-grid pos-form">
+            <label>Pedido aberto
+                <select name="order_id">
+                    <option value="">Venda rápida por produto</option>
+                    {% for order in orders %}
+                    <option value="{{ order.id }}" data-total="{{ order.total }}">#{{ order.id }} - {{ order.customer_name }} - R$ {{ "%.2f"|format(order.total) }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Produto
+                <select name="product_id">
+                    {% for product in products %}
+                    <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.name }} - R$ {{ "%.2f"|format(product.price) }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Quantidade<input name="quantity" type="number" min="1" value="1"></label>
+            <label>Desconto<input name="discount" type="number" step="0.01" value="0"></label>
+            <label>Taxa de serviço<input name="service_fee" type="number" step="0.01" value="0"></label>
+            <label>Pagamento
+                <select name="payment_method">
+                    {% for method in payment_methods %}
+                    <option>{{ method }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <div class="checkout-total">Total estimado <strong data-pos-total>R$ 0,00</strong></div>
+            <button class="btn primary" type="submit">Finalizar venda</button>
+        </form>
+    </article>
+
+    <article class="panel wide">
+        <div class="panel-heading"><h2>Últimas vendas</h2><span class="pill">{{ sales|length }}</span></div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Venda</th><th>Cliente</th><th>Pagamento</th><th>Status</th><th>Total</th></tr></thead>
+                <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td>#{{ sale.id }}</td>
+                    <td>{{ sale.customer_name or "Venda rápida" }}</td>
+                    <td>{{ sale.payment_method }}</td>
+                    <td><span class="status positive">{{ sale.status }}</span></td>
+                    <td>R$ {{ "%.2f"|format(sale.total) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Nenhuma venda registrada.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Apex Food{% endblock %}
+{% block content %}
+<header class="page-header">
+    <div>
+        <p class="eyebrow">Operação de hoje</p>
+        <h1>Dashboard Principal</h1>
+    </div>
+    <a class="btn primary" href="{{ url_for('orders.index') }}">Novo pedido</a>
+</header>
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Vendas do dia</span><strong>R$ {{ "%.2f"|format(summary.sales_today) }}</strong></article>
+    <article class="metric-card"><span>Pedidos</span><strong>{{ summary.orders_today }}</strong></article>
+    <article class="metric-card"><span>Ticket médio</span><strong>R$ {{ "%.2f"|format(summary.avg_ticket) }}</strong></article>
+    <article class="metric-card"><span>Mesas ocupadas</span><strong>{{ summary.occupied_tables }}</strong></article>
+    <article class="metric-card alert-soft"><span>Em preparo</span><strong>{{ summary.preparing_orders }}</strong></article>
+</section>
+
+<section class="content-grid">
+    <article class="panel wide">
+        <div class="panel-heading">
+            <h2>Vendas dos últimos dias</h2>
+            <span class="pill info">7 dias</span>
+        </div>
+        <div id="salesChart" class="bar-chart" data-chart='{{ chart_json|safe }}'></div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-heading">
+            <h2>Alertas</h2>
+            <span class="pill danger">{{ low_stock|length }}</span>
+        </div>
+        {% if low_stock %}
+            <div class="stack-list">
+                {% for item in low_stock %}
+                <div class="list-row">
+                    <strong>{{ item.name }}</strong>
+                    <span>{{ item.quantity }} {{ item.unit }} / mínimo {{ item.min_stock }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty">Sem alertas críticos no estoque.</p>
+        {% endif %}
+    </article>
+
+    <article class="panel wide">
+        <div class="panel-heading">
+            <h2>Pedidos recentes</h2>
+            <a href="{{ url_for('orders.index') }}">Ver todos</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Pedido</th><th>Cliente</th><th>Origem</th><th>Status</th><th>Total</th></tr></thead>
+                <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.customer_name }}</td>
+                    <td>{{ order.table_name or order.fulfillment_type }}</td>
+                    <td><span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span></td>
+                    <td>R$ {{ "%.2f"|format(order.total) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Nenhum pedido ainda.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}

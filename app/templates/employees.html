@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Funcionários | Apex Food{% endblock %}
+{% block content %}
+<header class="page-header">
+    <div><p class="eyebrow">Equipe</p><h1>Funcionários</h1></div>
+</header>
+
+<section class="content-grid">
+    <article class="panel">
+        <h2>Novo funcionário</h2>
+        <form method="post" class="form-grid">
+            <label>Nome<input name="name" required></label>
+            <label>Cargo<input name="role" required></label>
+            <label>E-mail<input name="email" type="email"></label>
+            <label>Telefone<input name="phone"></label>
+            <label>Permissão
+                <select name="permission">
+                    {% for permission in permissions %}
+                    <option>{{ permission }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button class="btn primary" type="submit">Cadastrar funcionário</button>
+        </form>
+    </article>
+    <article class="panel wide">
+        <div class="panel-heading"><h2>Equipe cadastrada</h2><span class="pill">{{ employees|length }}</span></div>
+        <div class="card-grid">
+            {% for employee in employees %}
+            <div class="mini-card">
+                <h3>{{ employee.name }}</h3>
+                <p>{{ employee.role }}</p>
+                <span class="pill info">{{ employee.permission }}</span>
+                <small>{{ employee.email }} · {{ employee.phone }}</small>
+            </div>
+            {% else %}
+            <p class="empty">Nenhum funcionário cadastrado.</p>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}
