@@ -1,73 +1,167 @@
 {% extends "base.html" %}
 {% block title %}Dashboard | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
-    <div>
-        <p class="eyebrow">Operação de hoje</p>
-        <h1>Dashboard Principal</h1>
-    </div>
-    <a class="btn primary" href="{{ url_for('orders.index') }}">Novo pedido</a>
-</header>
-
-<section class="metric-grid">
-    <article class="metric-card"><span>Vendas do dia</span><strong>R$ {{ "%.2f"|format(summary.sales_today) }}</strong></article>
-    <article class="metric-card"><span>Pedidos</span><strong>{{ summary.orders_today }}</strong></article>
-    <article class="metric-card"><span>Ticket médio</span><strong>R$ {{ "%.2f"|format(summary.avg_ticket) }}</strong></article>
-    <article class="metric-card"><span>Mesas ocupadas</span><strong>{{ summary.occupied_tables }}</strong></article>
-    <article class="metric-card alert-soft"><span>Em preparo</span><strong>{{ summary.preparing_orders }}</strong></article>
-</section>
-
-<section class="dashboard-grid">
-    <article class="panel wide recent-panel">
-        <div class="panel-heading">
-            <h2>Vendas dos últimos dias</h2>
-            <span class="pill info">7 dias</span>
+<section class="premium-dashboard">
+    <header class="dashboard-hero">
+        <div>
+            <p class="eyebrow">Dashboard</p>
+            <h1>Olá, João Admin! 👋</h1>
+            <p>Bem-vindo ao seu painel de controle.</p>
         </div>
-        <div id="salesChart" class="bar-chart" data-chart='{{ chart_json|safe }}'></div>
-    </article>
-
-    <article class="panel">
-        <div class="panel-heading">
-            <h2>Alertas</h2>
-            <span class="pill danger">{{ low_stock|length }}</span>
+        <div class="dashboard-actions">
+            <label class="restaurant-switcher">
+                Restaurante
+                <select>
+                    <option>{{ company.trade_name if company else "Apex Food" }}</option>
+                </select>
+            </label>
+            <button class="notification-button" type="button" aria-label="Notificações">
+                <span></span>
+            </button>
+            <div class="date-chip">{{ current_date }}</div>
         </div>
-        {% if low_stock %}
-            <div class="stack-list">
-                {% for item in low_stock %}
-                <div class="list-row">
-                    <strong>{{ item.name }}</strong>
-                    <span>{{ item.quantity }} {{ item.unit }} / mínimo {{ item.min_stock }}</span>
+    </header>
+
+    <section class="dashboard-metrics">
+        <article class="premium-metric metric-purple">
+            <span class="metric-icon">R$</span>
+            <div>
+                <small>Vendas de hoje</small>
+                <strong>R$ {{ "%.2f"|format(summary.sales_today) }}</strong>
+                <em>+12,4% vs ontem</em>
+            </div>
+        </article>
+        <article class="premium-metric metric-blue">
+            <span class="metric-icon">#</span>
+            <div>
+                <small>Pedidos de hoje</small>
+                <strong>{{ summary.orders_today }}</strong>
+                <em>+8 pedidos vs ontem</em>
+            </div>
+        </article>
+        <article class="premium-metric metric-green">
+            <span class="metric-icon">TM</span>
+            <div>
+                <small>Ticket médio</small>
+                <strong>R$ {{ "%.2f"|format(summary.avg_ticket) }}</strong>
+                <em>+5,1% vs ontem</em>
+            </div>
+        </article>
+        <article class="premium-metric metric-orange">
+            <span class="metric-icon">M</span>
+            <div>
+                <small>Mesas ocupadas</small>
+                <strong>{{ summary.occupied_tables }} / {{ summary.total_tables }}</strong>
+                <em>Salao em movimento</em>
+            </div>
+        </article>
+        <article class="premium-metric metric-red">
+            <span class="metric-icon">K</span>
+            <div>
+                <small>Pedidos em preparo</small>
+                <strong>{{ summary.preparing_orders }}</strong>
+                <em>Monitorar cozinha</em>
+            </div>
+        </article>
+    </section>
+
+    <section class="dashboard-premium-grid">
+        <article class="panel dashboard-card sales-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Vendas dos últimos 7 dias</h2>
+                    <p class="panel-subtitle">Linha principal em roxo neon</p>
+                </div>
+                <span class="pill info">7 dias</span>
+            </div>
+            <div id="salesLineChart" class="line-chart" data-chart='{{ chart_json|safe }}'></div>
+        </article>
+
+        <article class="panel dashboard-card status-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Pedidos por status</h2>
+                    <p class="panel-subtitle">Fluxo operacional</p>
+                </div>
+            </div>
+            <div id="statusChart" class="status-chart" data-chart='{{ status_chart_json|safe }}'></div>
+        </article>
+
+        <article class="panel dashboard-card orders-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Pedidos recentes</h2>
+                    <p class="panel-subtitle">Atualização em tempo real do salão</p>
+                </div>
+                <a class="pill active" href="{{ url_for('orders.index') }}">Ver todos</a>
+            </div>
+            <div class="table-wrap premium-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Mesa / Cliente</th>
+                            <th>Itens</th>
+                            <th>Status</th>
+                            <th>Horário</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td><strong>#{{ order.id }}</strong></td>
+                        <td>
+                            <strong>{{ order.table_name or order.fulfillment_type }}</strong>
+                            <span>{{ order.customer_name }}</span>
+                        </td>
+                        <td>{{ order.items_summary or "Sem itens" }}</td>
+                        <td><span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span></td>
+                        <td>{{ order.order_time or "--:--" }}</td>
+                        <td>R$ {{ "%.2f"|format(order.total) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6">Nenhum pedido recente.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel dashboard-card alerts-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Alertas</h2>
+                    <p class="panel-subtitle">Pontos que pedem atenção</p>
+                </div>
+                <span class="pill danger">{{ dashboard_alerts|length }}</span>
+            </div>
+            <div class="dashboard-alert-list">
+                {% for alert in dashboard_alerts %}
+                <div class="dashboard-alert alert-{{ alert.kind }}">
+                    <span>{{ alert.icon }}</span>
+                    <div>
+                        <strong>{{ alert.title }}</strong>
+                        <small>{{ alert.description }}</small>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
-        {% else %}
-            <p class="empty">Sem alertas críticos no estoque.</p>
-        {% endif %}
-    </article>
+            <a class="btn neutral alert-button" href="{{ url_for('inventory.index') }}">Ver todos os alertas</a>
+        </article>
 
-    <article class="panel wide">
-        <div class="panel-heading">
-            <h2>Pedidos recentes</h2>
-            <a href="{{ url_for('orders.index') }}">Ver todos</a>
-        </div>
-        <div class="table-wrap">
-            <table>
-                <thead><tr><th>Pedido</th><th>Cliente</th><th>Origem</th><th>Status</th><th>Total</th></tr></thead>
-                <tbody>
-                {% for order in recent_orders %}
-                <tr>
-                    <td>#{{ order.id }}</td>
-                    <td>{{ order.customer_name }}</td>
-                    <td>{{ order.table_name or order.fulfillment_type }}</td>
-                    <td><span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span></td>
-                    <td>R$ {{ "%.2f"|format(order.total) }}</td>
-                </tr>
-                {% else %}
-                <tr><td colspan="5">Nenhum pedido ainda.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </article>
+        <article class="panel dashboard-card payment-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Formas de pagamento</h2>
+                    <p class="panel-subtitle">Total do dia: R$ {{ "%.2f"|format(payment_total) }}</p>
+                </div>
+            </div>
+            <div id="paymentChart" class="payment-chart" data-chart='{{ payment_chart_json|safe }}'>
+                <div class="payment-donut" data-payment-donut></div>
+                <div class="payment-legend" data-payment-legend></div>
+            </div>
+        </article>
+    </section>
 </section>
 {% endblock %}

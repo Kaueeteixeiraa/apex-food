@@ -21,15 +21,21 @@
                 <a class="{{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">Dashboard</a>
                 <a class="{{ 'active' if request.blueprint == 'orders' }}" href="{{ url_for('orders.index') }}">Pedidos</a>
                 <a class="{{ 'active' if request.blueprint == 'pos' }}" href="{{ url_for('pos.index') }}">Caixa / PDV</a>
-                <a class="{{ 'active' if request.blueprint == 'floor' }}" href="{{ url_for('floor.index') }}">Visão do Salão</a>
+                <a class="{{ 'active' if request.blueprint == 'floor' }}" href="{{ url_for('floor.index') }}">Mesas</a>
                 <a class="{{ 'active' if request.blueprint == 'products' }}" href="{{ url_for('products.index') }}">Cardápio</a>
                 <a class="{{ 'active' if request.blueprint == 'clients' }}" href="{{ url_for('clients.index') }}">Clientes</a>
                 <a class="{{ 'active' if request.blueprint == 'inventory' }}" href="{{ url_for('inventory.index') }}">Estoque</a>
                 <a class="{{ 'active' if request.blueprint == 'employees' }}" href="{{ url_for('employees.index') }}">Funcionários</a>
-                <a class="{{ 'active' if request.blueprint == 'kitchen' }}" href="{{ url_for('kitchen.index') }}">Cozinha / KDS</a>
+                <a href="#">Relatórios</a>
+                <a class="{{ 'active' if request.blueprint == 'kitchen' }}" href="{{ url_for('kitchen.index') }}">Cozinha (KDS)</a>
+                <a href="#">Configurações</a>
             </nav>
             <div class="sidebar-footer">
-                <span>{{ session.get("user_name") }}</span>
+                <span class="sidebar-avatar">JA</span>
+                <span class="sidebar-user">
+                    <strong>João Admin</strong>
+                    <small>Administrador</small>
+                </span>
                 <a href="{{ url_for('auth.logout') }}">Sair</a>
             </div>
         </aside>

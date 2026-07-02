@@ -91,6 +91,99 @@
         }).join("");
     }
 
+    // Dashboard premium charts: SVG line, status bars and payment donut.
+    const salesLineChart = document.querySelector("#salesLineChart");
+    if (salesLineChart) {
+        const data = JSON.parse(salesLineChart.dataset.chart || "[]");
+        const width = 640;
+        const height = 210;
+        const padX = 34;
+        const padY = 28;
+        const max = Math.max(...data.map((item) => Number(item.total)), 1);
+        const step = data.length > 1 ? (width - padX * 2) / (data.length - 1) : 0;
+        const points = data.map((item, index) => {
+            const x = padX + index * step;
+            const y = height - padY - (Number(item.total) / max) * (height - padY * 2);
+            return { ...item, x, y };
+        });
+        const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+        const area = `${padX},${height - padY} ${line} ${width - padX},${height - padY}`;
+
+        salesLineChart.innerHTML = `
+            <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Vendas dos ultimos 7 dias">
+                <defs>
+                    <linearGradient id="salesLine" x1="0" x2="1" y1="0" y2="0">
+                        <stop offset="0%" stop-color="#7C3AED" />
+                        <stop offset="52%" stop-color="#A855F7" />
+                        <stop offset="100%" stop-color="#F59E0B" />
+                    </linearGradient>
+                    <linearGradient id="salesArea" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="rgba(124,58,237,.34)" />
+                        <stop offset="100%" stop-color="rgba(124,58,237,0)" />
+                    </linearGradient>
+                </defs>
+                ${[0, 1, 2, 3].map((row) => {
+                    const y = padY + row * ((height - padY * 2) / 3);
+                    return `<line class="chart-grid-line" x1="${padX}" x2="${width - padX}" y1="${y}" y2="${y}" />`;
+                }).join("")}
+                <polygon class="line-chart-area" points="${area}" />
+                <polyline class="line-chart-path" points="${line}" />
+                ${points.map((point) => `
+                    <g>
+                        <circle class="line-chart-dot" cx="${point.x}" cy="${point.y}" r="4.5" />
+                        <text class="line-chart-label" x="${point.x}" y="${height - 6}" text-anchor="middle">${point.label}</text>
+                    </g>
+                `).join("")}
+            </svg>
+        `;
+    }
+
+    const statusChart = document.querySelector("#statusChart");
+    if (statusChart) {
+        const data = JSON.parse(statusChart.dataset.chart || "[]");
+        const max = Math.max(...data.map((item) => Number(item.value)), 1);
+        statusChart.innerHTML = data.map((item) => {
+            const width = Math.max((Number(item.value) / max) * 100, item.value > 0 ? 10 : 4);
+            return `
+                <div class="status-chart-row">
+                    <div class="status-chart-top">
+                        <span>${item.label}</span>
+                        <strong>${item.value}</strong>
+                    </div>
+                    <div class="status-chart-track">
+                        <i style="width:${width}%; background:${item.color}"></i>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    const paymentChart = document.querySelector("#paymentChart");
+    if (paymentChart) {
+        const data = JSON.parse(paymentChart.dataset.chart || "[]");
+        const total = data.reduce((sum, item) => sum + Number(item.value || 0), 0);
+        const donut = paymentChart.querySelector("[data-payment-donut]");
+        const legend = paymentChart.querySelector("[data-payment-legend]");
+        let cursor = 0;
+        const segments = data.map((item) => {
+            const percent = total > 0 ? (Number(item.value || 0) / total) * 100 : 0;
+            const start = cursor;
+            cursor += percent;
+            return `${item.color} ${start}% ${cursor}%`;
+        });
+        donut.style.background = total > 0
+            ? `conic-gradient(${segments.join(", ")})`
+            : "conic-gradient(rgba(255,255,255,.08) 0 100%)";
+        donut.innerHTML = `<span>${money.format(total)}</span><small>Total</small>`;
+        legend.innerHTML = data.map((item) => `
+            <div class="payment-legend-item">
+                <i style="background:${item.color}"></i>
+                <span>${item.label}</span>
+                <strong>${money.format(item.value || 0)}</strong>
+            </div>
+        `).join("");
+    }
+
     const posForm = document.querySelector(".pos-form");
     if (posForm) {
         const totalTarget = posForm.querySelector("[data-pos-total]");
