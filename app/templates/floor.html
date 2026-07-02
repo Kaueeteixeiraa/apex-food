@@ -3,7 +3,10 @@
 {% block content %}
 <header class="page-header">
     <div><p class="eyebrow">Mapa operacional</p><h1>Visão do Salão</h1></div>
-    <button class="btn ghost" type="button" data-toggle-grid>Alternar grid</button>
+    <div class="filter-row">
+        <span class="pill info">{{ tables|length }} mesas</span>
+        <button class="btn neutral" type="button" data-toggle-grid>Alternar grid</button>
+    </div>
 </header>
 
 <section class="floor-layout">
@@ -12,7 +15,7 @@
         <div class="area-tabs" data-area-tabs></div>
         <form method="post" action="{{ url_for('floor.create_area') }}" class="compact-form">
             <input name="name" placeholder="Nova área" required>
-            <button class="btn ghost" type="submit">Criar</button>
+            <button class="btn neutral" type="submit">Criar</button>
         </form>
 
         <h2>Criar mesa</h2>
@@ -68,9 +71,9 @@
             <label>Total da conta<input name="total" type="number" step="0.01"></label>
             <div class="table-orders" data-table-orders></div>
             <button class="btn primary" type="submit">Salvar alterações</button>
-            <button class="btn ghost" type="button" data-quick-status="Pedido em preparo">Adicionar pedido</button>
-            <button class="btn ghost" type="submit">Transferir mesa</button>
-            <button class="btn ghost" type="button" data-quick-status="Conta solicitada">Solicitar conta</button>
+            <button class="btn warning" type="button" data-quick-status="Pedido em preparo">Adicionar pedido</button>
+            <button class="btn neutral" type="submit">Transferir mesa</button>
+            <button class="btn neutral" type="button" data-quick-status="Conta solicitada">Solicitar conta</button>
             <button class="btn danger" type="button" data-close-table>Fechar conta</button>
         </form>
     </aside>

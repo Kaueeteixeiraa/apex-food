@@ -37,7 +37,7 @@
                     <span>{{ product.prep_time }} min</span>
                 </div>
                 <form method="post" action="{{ url_for('products.toggle', product_id=product.id) }}">
-                    <button class="btn ghost" type="submit">{{ "Disponível" if product.available else "Indisponível" }}</button>
+                    <button class="btn {{ 'positive' if product.available else 'warning' }}" type="submit">{{ "Disponível" if product.available else "Indisponível" }}</button>
                 </form>
             </div>
             {% else %}

@@ -9,19 +9,30 @@
             <small>SaaS para restaurantes inteligentes</small>
         </span>
     </div>
-    <h1>Entrar no painel</h1>
-    <p class="muted">Controle pedidos, caixa, mesas e cozinha em uma operação só.</p>
-    <form method="post" class="form-grid">
-        <label>
+    <div class="auth-copy">
+        <p class="eyebrow">Operacao conectada</p>
+        <h1>Entre no painel do restaurante</h1>
+        <p class="muted">Pedidos, salao, caixa e cozinha em uma experiencia escura, rapida e bonita.</p>
+    </div>
+    <form method="post" class="form-grid" data-login-form>
+        <label class="input-icon" data-icon="@">
             E-mail
             <input name="email" type="email" value="admin@apexfood.local" required>
         </label>
-        <label>
+        <label class="input-icon" data-icon="*">
             Senha
             <input name="password" type="password" value="123456" required>
         </label>
-        <button class="btn primary" type="submit">Entrar</button>
+        <button class="btn primary" type="submit" data-login-button>Entrar no Apex Food</button>
     </form>
-    <p class="auth-link">Ainda não tem empresa? <a href="{{ url_for('auth.register') }}">Cadastrar empresa</a></p>
+    <p class="auth-link">Ainda nao tem empresa? <a href="{{ url_for('auth.register') }}">Cadastrar empresa</a></p>
 </section>
+
+<div class="auth-loader" data-auth-loader>
+    <div class="loader-card">
+        <span class="brand-mark">AF</span>
+        <div class="loader-ring"></div>
+        <strong>Entrando no Apex Food...</strong>
+    </div>
+</div>
 {% endblock %}
