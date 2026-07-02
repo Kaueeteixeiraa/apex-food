@@ -206,4 +206,219 @@
         });
         updateTotal();
     }
+
+    const posScreen = document.querySelector("[data-pos-screen]");
+    if (posScreen) {
+        const products = [...document.querySelectorAll("[data-product-card]")].map((card) => ({
+            id: Number(card.dataset.addProduct),
+            name: card.dataset.name,
+            category: card.dataset.category,
+            price: Number(card.dataset.price || 0),
+            prep: Number(card.dataset.prep || 0),
+            available: card.dataset.available === "1",
+            description: card.dataset.description || "",
+            initials: card.dataset.name.slice(0, 2).toUpperCase(),
+        }));
+        const cart = new Map();
+        const cartList = document.querySelector("[data-cart-list]");
+        const cartJson = document.querySelector("[data-cart-json]");
+        const cartCount = document.querySelector("[data-cart-count]");
+        const subtotalTarget = document.querySelector("[data-subtotal]");
+        const totalTarget = document.querySelector("[data-total]");
+        const changeTarget = document.querySelector("[data-change]");
+        const paymentInput = document.querySelector("[data-payment-input]");
+        const selectedPayment = document.querySelector("[data-selected-payment]");
+        const tableInput = document.querySelector("[data-table-input]");
+        const productCount = document.querySelector("[data-product-count]");
+        const search = document.querySelector("[data-pos-search]");
+        const success = document.querySelector("[data-pos-success]");
+        let activeCategory = "Todos";
+
+        const escapeHtml = (value) => String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        const getMoneyInput = (name) => Number(document.querySelector(`[name="${name}"]`)?.value || 0);
+        const syncClock = () => {
+            const now = new Date();
+            const date = new Intl.DateTimeFormat("pt-BR").format(now);
+            const time = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(now);
+            const dateTarget = document.querySelector("[data-pos-date]");
+            const timeTarget = document.querySelector("[data-pos-time]");
+            if (dateTarget) dateTarget.textContent = date;
+            if (timeTarget) timeTarget.textContent = time;
+        };
+
+        const productById = (id) => products.find((product) => product.id === Number(id));
+        const cartArray = () => [...cart.values()].map((item) => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            note: item.note || "",
+        }));
+        const totals = () => {
+            const subtotal = [...cart.values()].reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const discount = getMoneyInput("discount");
+            const serviceFee = getMoneyInput("service_fee");
+            const deliveryFee = getMoneyInput("delivery_fee");
+            const received = getMoneyInput("received_amount");
+            const total = Math.max(subtotal - discount + serviceFee + deliveryFee, 0);
+            return { subtotal, total, received, change: Math.max(received - total, 0) };
+        };
+
+        const renderCart = () => {
+            const items = cartArray();
+            if (!items.length) {
+                cartList.innerHTML = `
+                    <div class="pos-cart-empty">
+                        <strong>Nenhum produto adicionado</strong>
+                        <span>Toque em um produto para iniciar a venda.</span>
+                    </div>
+                `;
+            } else {
+                cartList.innerHTML = [...cart.values()].map((item) => `
+                    <article class="pos-cart-item" data-cart-item="${item.id}">
+                        <span class="cart-thumb">${escapeHtml(item.initials)}</span>
+                        <div class="cart-main">
+                            <strong>${escapeHtml(item.name)}</strong>
+                            <input data-note="${item.id}" placeholder="Observação" value="${escapeHtml(item.note || "")}">
+                        </div>
+                        <div class="cart-qty">
+                            <button type="button" data-dec="${item.id}">-</button>
+                            <span>${item.quantity}</span>
+                            <button type="button" data-inc="${item.id}">+</button>
+                        </div>
+                        <strong>${money.format(item.price * item.quantity)}</strong>
+                        <button class="cart-remove" type="button" data-remove="${item.id}">×</button>
+                    </article>
+                `).join("");
+            }
+
+            const computed = totals();
+            subtotalTarget.textContent = money.format(computed.subtotal);
+            totalTarget.textContent = money.format(computed.total);
+            changeTarget.textContent = money.format(computed.change);
+            cartJson.value = JSON.stringify(items);
+            cartCount.textContent = `${items.reduce((sum, item) => sum + item.quantity, 0)} itens`;
+        };
+
+        const addProduct = (id) => {
+            const product = productById(id);
+            if (!product || !product.available) return;
+            const current = cart.get(product.id);
+            cart.set(product.id, {
+                ...product,
+                quantity: current ? current.quantity + 1 : 1,
+                note: current?.note || "",
+            });
+            const card = document.querySelector(`[data-add-product="${product.id}"]`);
+            card?.classList.add("added");
+            setTimeout(() => card?.classList.remove("added"), 280);
+            renderCart();
+        };
+
+        const filterProducts = () => {
+            const term = (search?.value || "").trim().toLowerCase();
+            let visible = 0;
+            document.querySelectorAll("[data-product-card]").forEach((card) => {
+                const matchesCategory = activeCategory === "Todos" || card.dataset.category === activeCategory;
+                const haystack = `${card.dataset.name} ${card.dataset.category} ${card.dataset.price}`.toLowerCase();
+                const matchesSearch = !term || haystack.includes(term);
+                const show = matchesCategory && matchesSearch;
+                card.hidden = !show;
+                if (show) visible += 1;
+            });
+            if (productCount) productCount.textContent = visible;
+        };
+
+        document.addEventListener("click", (event) => {
+            const add = event.target.closest("[data-add-product]");
+            if (add) addProduct(add.dataset.addProduct);
+
+            const inc = event.target.closest("[data-inc]");
+            if (inc) {
+                const item = cart.get(Number(inc.dataset.inc));
+                if (item) item.quantity += 1;
+                renderCart();
+            }
+
+            const dec = event.target.closest("[data-dec]");
+            if (dec) {
+                const id = Number(dec.dataset.dec);
+                const item = cart.get(id);
+                if (item && item.quantity > 1) item.quantity -= 1;
+                else cart.delete(id);
+                renderCart();
+            }
+
+            const remove = event.target.closest("[data-remove]");
+            if (remove) {
+                cart.delete(Number(remove.dataset.remove));
+                renderCart();
+            }
+
+            const category = event.target.closest("[data-category]");
+            if (category) {
+                activeCategory = category.dataset.category;
+                document.querySelectorAll("[data-category]").forEach((chip) => chip.classList.toggle("active", chip === category));
+                filterProducts();
+            }
+
+            const payment = event.target.closest("[data-payment]");
+            if (payment) {
+                const method = payment.dataset.payment;
+                document.querySelectorAll("[data-payment]").forEach((button) => button.classList.toggle("active", button === payment));
+                document.querySelectorAll("[data-payment-detail]").forEach((detail) => detail.classList.toggle("active", detail.dataset.paymentDetail === method));
+                paymentInput.value = method;
+                selectedPayment.textContent = method;
+            }
+
+            const table = event.target.closest("[data-table-id]");
+            if (table) {
+                document.querySelectorAll("[data-table-id]").forEach((button) => button.classList.toggle("selected", button === table));
+                tableInput.value = table.dataset.tableId;
+                document.querySelector('[name="fulfillment_type"]').value = "Mesa";
+            }
+
+            if (event.target.closest("[data-clear-cart]") || event.target.closest("[data-cancel-order]")) {
+                cart.clear();
+                renderCart();
+            }
+            if (event.target.closest("[data-clear-search]")) {
+                search.value = "";
+                filterProducts();
+            }
+            if (event.target.closest("[data-confirm-payment]")) {
+                event.target.closest("[data-confirm-payment]").textContent = "Confirmado";
+            }
+        });
+
+        document.addEventListener("input", (event) => {
+            if (event.target.matches("[data-money-input]")) renderCart();
+            if (event.target.matches("[data-pos-search]")) filterProducts();
+            if (event.target.matches("[data-note]")) {
+                const item = cart.get(Number(event.target.dataset.note));
+                if (item) item.note = event.target.value;
+                cartJson.value = JSON.stringify(cartArray());
+            }
+        });
+
+        document.querySelector("[data-pos-checkout]")?.addEventListener("submit", (event) => {
+            if (!cart.size) {
+                event.preventDefault();
+                cartList.classList.add("shake");
+                setTimeout(() => cartList.classList.remove("shake"), 320);
+                return;
+            }
+            success.classList.add("show");
+            setTimeout(() => success.classList.remove("show"), 1800);
+        });
+
+        syncClock();
+        setInterval(syncClock, 30000);
+        filterProducts();
+        renderCart();
+    }
 })();

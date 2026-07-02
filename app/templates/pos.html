@@ -1,82 +1,276 @@
 {% extends "base.html" %}
 {% block title %}Caixa / PDV | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
-    <div><p class="eyebrow">Financeiro</p><h1>Caixa / PDV</h1></div>
-    <span class="status {{ 'positive' if register and register.status == 'Aberto' else 'danger' }}">
-        Caixa {{ register.status if register else "Fechado" }}
-    </span>
-</header>
-
-<section class="content-grid pos-grid">
-    <article class="panel">
-        <h2>Controle do caixa</h2>
-        {% if register and register.status == "Aberto" %}
-        <p class="muted">Aberto desde {{ register.opened_at }} com R$ {{ "%.2f"|format(register.opening_amount) }}.</p>
-        <form method="post" action="{{ url_for('pos.close_register') }}">
-            <button class="btn danger" type="submit">Fechar caixa</button>
-        </form>
-        {% else %}
-        <form method="post" action="{{ url_for('pos.open_register') }}" class="form-grid">
-            <label>Valor inicial<input name="opening_amount" type="number" step="0.01" value="0"></label>
-            <button class="btn primary" type="submit">Abrir caixa</button>
-        </form>
-        {% endif %}
-    </article>
-
-    <article class="panel">
-        <h2>Finalizar venda</h2>
-        <form method="post" action="{{ url_for('pos.finish_sale') }}" class="form-grid pos-form">
-            <label>Pedido aberto
-                <select name="order_id">
-                    <option value="">Venda rápida por produto</option>
-                    {% for order in orders %}
-                    <option value="{{ order.id }}" data-total="{{ order.total }}">#{{ order.id }} - {{ order.customer_name }} - R$ {{ "%.2f"|format(order.total) }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <label>Produto
-                <select name="product_id">
-                    {% for product in products %}
-                    <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.name }} - R$ {{ "%.2f"|format(product.price) }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <label>Quantidade<input name="quantity" type="number" min="1" value="1"></label>
-            <label>Desconto<input name="discount" type="number" step="0.01" value="0"></label>
-            <label>Taxa de serviço<input name="service_fee" type="number" step="0.01" value="0"></label>
-            <label>Pagamento
-                <select name="payment_method">
-                    {% for method in payment_methods %}
-                    <option>{{ method }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <div class="checkout-total">Total estimado <strong data-pos-total>R$ 0,00</strong></div>
-            <button class="btn primary" type="submit">Finalizar venda</button>
-        </form>
-    </article>
-
-    <article class="panel wide">
-        <div class="panel-heading"><h2>Últimas vendas</h2><span class="pill">{{ sales|length }}</span></div>
-        <div class="table-wrap">
-            <table>
-                <thead><tr><th>Venda</th><th>Cliente</th><th>Pagamento</th><th>Status</th><th>Total</th></tr></thead>
-                <tbody>
-                {% for sale in sales %}
-                <tr>
-                    <td>#{{ sale.id }}</td>
-                    <td>{{ sale.customer_name or "Venda rápida" }}</td>
-                    <td>{{ sale.payment_method }}</td>
-                    <td><span class="status positive">{{ sale.status }}</span></td>
-                    <td>R$ {{ "%.2f"|format(sale.total) }}</td>
-                </tr>
-                {% else %}
-                <tr><td colspan="5">Nenhuma venda registrada.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
+<section class="pos-screen" data-pos-screen>
+    <header class="pos-topbar">
+        <div class="pos-top-card">
+            <span>Abertos</span>
+            <strong>{{ stats.open_orders }}</strong>
         </div>
-    </article>
+        <div class="pos-top-card">
+            <span>Mesas</span>
+            <strong>{{ stats.occupied_tables }}</strong>
+        </div>
+        <div class="pos-top-card">
+            <span>Cozinha</span>
+            <strong>{{ stats.kitchen_orders }}</strong>
+        </div>
+        <div class="pos-top-card {{ 'is-open' if register and register.status == 'Aberto' else 'is-closed' }}">
+            <span>Caixa</span>
+            <strong>{{ register.status if register else "Fechado" }}</strong>
+        </div>
+        <div class="pos-top-card">
+            <span>Operador</span>
+            <strong>João Admin</strong>
+        </div>
+        <div class="pos-top-card">
+            <span>Data</span>
+            <strong data-pos-date>--/--/----</strong>
+        </div>
+        <div class="pos-top-card">
+            <span>Hora</span>
+            <strong data-pos-time>--:--</strong>
+        </div>
+        <button class="pos-notification" type="button" aria-label="Notificações"></button>
+    </header>
+
+    <section class="pos-workspace">
+        <main class="pos-catalog panel">
+            <div class="pos-catalog-header">
+                <div>
+                    <p class="eyebrow">Venda rápida</p>
+                    <h1>Caixa / PDV</h1>
+                </div>
+                {% if register and register.status == "Aberto" %}
+                <form method="post" action="{{ url_for('pos.close_register') }}">
+                    <button class="btn danger" type="submit">Fechar caixa</button>
+                </form>
+                {% else %}
+                <form method="post" action="{{ url_for('pos.open_register') }}" class="pos-open-form">
+                    <input name="opening_amount" type="number" step="0.01" value="0" aria-label="Valor inicial">
+                    <button class="btn positive" type="submit">Abrir caixa</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="pos-searchbar">
+                <input type="search" data-pos-search placeholder="Pesquisar produto, categoria ou preço">
+                <button class="btn neutral" type="button" data-clear-search>Limpar</button>
+            </div>
+
+            <div class="pos-category-chips" data-pos-categories>
+                {% for category in categories %}
+                <button class="pos-chip {{ 'active' if loop.first }}" type="button" data-category="{{ category }}">{{ category }}</button>
+                {% endfor %}
+            </div>
+
+            <div class="pos-product-sections">
+                <section class="pos-strip">
+                    <div class="pos-section-title">
+                        <h2>Favoritos</h2>
+                        <span class="pill info">toque para adicionar</span>
+                    </div>
+                    <div class="pos-mini-products">
+                        {% for product in products if product.id in favorite_ids %}
+                        <button class="pos-mini-product" type="button" data-add-product="{{ product.id }}">
+                            <span>{{ product.name[:2].upper() }}</span>
+                            <strong>{{ product.name }}</strong>
+                            <small>R$ {{ "%.2f"|format(product.price) }}</small>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="pos-strip">
+                    <div class="pos-section-title">
+                        <h2>Mais vendidos</h2>
+                        <span class="pill active">alta saída</span>
+                    </div>
+                    <div class="pos-mini-products">
+                        {% for product in products if product.id in best_seller_ids %}
+                        <button class="pos-mini-product hot" type="button" data-add-product="{{ product.id }}">
+                            <span>{{ product.name[:2].upper() }}</span>
+                            <strong>{{ product.name }}</strong>
+                            <small>R$ {{ "%.2f"|format(product.price) }}</small>
+                        </button>
+                        {% else %}
+                        {% for product in products[:3] %}
+                        <button class="pos-mini-product hot" type="button" data-add-product="{{ product.id }}">
+                            <span>{{ product.name[:2].upper() }}</span>
+                            <strong>{{ product.name }}</strong>
+                            <small>R$ {{ "%.2f"|format(product.price) }}</small>
+                        </button>
+                        {% endfor %}
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="pos-products-wrap">
+                    <div class="pos-section-title">
+                        <h2>Produtos</h2>
+                        <span class="pill" data-product-count>{{ products|length }}</span>
+                    </div>
+                    <div class="pos-products-grid" data-products-grid>
+                        {% for product in products %}
+                        <button
+                            class="pos-product-card {{ 'unavailable' if not product.available }}"
+                            type="button"
+                            data-product-card
+                            data-add-product="{{ product.id }}"
+                            data-name="{{ product.name }}"
+                            data-category="{{ product.category }}"
+                            data-price="{{ product.price }}"
+                            data-prep="{{ product.prep_time }}"
+                            data-available="{{ product.available }}"
+                            data-description="{{ product.description or '' }}"
+                        >
+                            <span class="product-image">
+                                {% if product.image_url %}
+                                <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                                {% else %}
+                                <i>{{ product.name[:2].upper() }}</i>
+                                {% endif %}
+                            </span>
+                            <span class="product-info">
+                                <strong>{{ product.name }}</strong>
+                                <small>{{ product.prep_time }} min · {{ product.category }}</small>
+                            </span>
+                            <span class="product-bottom">
+                                <em>R$ {{ "%.2f"|format(product.price) }}</em>
+                                <b>{{ "Disponível" if product.available else "Indisponível" }}</b>
+                                <i>+</i>
+                            </span>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <aside class="pos-order panel">
+            <div class="pos-order-header">
+                <div>
+                    <p class="eyebrow">Pedido atual</p>
+                    <h2>Comanda rápida</h2>
+                </div>
+                <span class="pill info" data-cart-count>0 itens</span>
+            </div>
+
+            <div class="pos-customer-row">
+                <input name="customer_name" form="posCheckoutForm" placeholder="Cliente / ocupantes" value="Venda PDV">
+                <select name="fulfillment_type" form="posCheckoutForm">
+                    <option value="Balcao">Balcão</option>
+                    <option value="Mesa">Mesa</option>
+                    <option value="Entrega">Entrega</option>
+                </select>
+            </div>
+
+            <div class="pos-cart-list" data-cart-list>
+                <div class="pos-cart-empty">
+                    <strong>Nenhum produto adicionado</strong>
+                    <span>Toque em um produto para iniciar a venda.</span>
+                </div>
+            </div>
+
+            <div class="pos-finance">
+                <div><span>Subtotal</span><strong data-subtotal>R$ 0,00</strong></div>
+                <label>Desconto<input name="discount" form="posCheckoutForm" type="number" step="0.01" value="0" data-money-input></label>
+                <label>Taxa de serviço<input name="service_fee" form="posCheckoutForm" type="number" step="0.01" value="0" data-money-input></label>
+                <label>Entrega<input name="delivery_fee" form="posCheckoutForm" type="number" step="0.01" value="0" data-money-input></label>
+                <label>Cupom<input name="coupon" form="posCheckoutForm" placeholder="Opcional"></label>
+                <label>Valor recebido<input name="received_amount" form="posCheckoutForm" type="number" step="0.01" value="0" data-money-input></label>
+                <div><span>Troco</span><strong data-change>R$ 0,00</strong></div>
+                <div class="pos-total"><span>Total</span><strong data-total>R$ 0,00</strong></div>
+            </div>
+        </aside>
+
+        <section class="pos-payment panel">
+            <div class="pos-section-title">
+                <h2>Pagamento</h2>
+                <span class="pill active" data-selected-payment>Pix</span>
+            </div>
+            <div class="payment-methods" data-payment-methods>
+                <button class="payment-method" type="button" data-payment="Dinheiro"><span>DI</span>Dinheiro</button>
+                <button class="payment-method" type="button" data-payment="Cartao Credito"><span>CC</span>Crédito</button>
+                <button class="payment-method" type="button" data-payment="Cartao Debito"><span>CD</span>Débito</button>
+                <button class="payment-method active" type="button" data-payment="Pix"><span>PX</span>Pix</button>
+                <button class="payment-method" type="button" data-payment="Voucher"><span>VO</span>Voucher</button>
+                <button class="payment-method" type="button" data-payment="Outros"><span>+</span>Outros</button>
+            </div>
+
+            <div class="payment-detail active" data-payment-detail="Pix">
+                <div class="pix-box">QR</div>
+                <input readonly value="00020101021226850014BR.GOV.BCB.PIX...APEXFOOD">
+                <button class="btn positive" type="button" data-confirm-payment>Confirmar Pix</button>
+            </div>
+            <div class="payment-detail" data-payment-detail="Dinheiro">
+                <p>Informe o valor recebido no resumo financeiro para calcular o troco automaticamente.</p>
+            </div>
+            <div class="payment-detail" data-payment-detail="Cartao Credito">
+                <select><option>Operadora</option><option>Cielo</option><option>Stone</option><option>Rede</option></select>
+                <select><option>1x</option><option>2x</option><option>3x</option></select>
+                <button class="btn positive" type="button" data-confirm-payment>Confirmar cartão</button>
+            </div>
+            <div class="payment-detail" data-payment-detail="Cartao Debito">
+                <select><option>Operadora</option><option>Cielo</option><option>Stone</option><option>Rede</option></select>
+                <button class="btn positive" type="button" data-confirm-payment>Confirmar débito</button>
+            </div>
+            <div class="payment-detail" data-payment-detail="Voucher">
+                <input placeholder="Código do voucher">
+                <button class="btn positive" type="button" data-confirm-payment>Aplicar voucher</button>
+            </div>
+            <div class="payment-detail" data-payment-detail="Outros">
+                <input placeholder="Descrição da forma de pagamento">
+            </div>
+        </section>
+
+        <section class="pos-bottom panel">
+            <div class="pos-tables">
+                <div class="pos-section-title">
+                    <h2>Mesas</h2>
+                    <span class="pill">{{ tables|length }}</span>
+                </div>
+                <div class="pos-table-strip" data-table-strip>
+                    {% for table in tables %}
+                    <button class="pos-table status-bg-{{ table.status|lower|replace(' ', '-') }}" type="button" data-table-id="{{ table.id }}" data-table-name="{{ table.name }}" data-table-status="{{ table.status }}">
+                        <strong>{{ table.name }}</strong>
+                        <small>{{ table.seats }} lugares</small>
+                        <span>{{ table.status }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="pos-commands">
+                <div class="pos-section-title">
+                    <h2>Comandas</h2>
+                    <span class="pill info">módulo rápido</span>
+                </div>
+                <div class="command-actions">
+                    <button class="btn neutral" type="button">Criar</button>
+                    <button class="btn neutral" type="button">Abrir</button>
+                    <button class="btn neutral" type="button">Transferir</button>
+                    <button class="btn neutral" type="button">Histórico</button>
+                    <button class="btn neutral" type="button">Fechar</button>
+                </div>
+            </div>
+
+            <form id="posCheckoutForm" class="pos-quick-actions" method="post" action="{{ url_for('pos.finish_sale') }}" data-pos-checkout>
+                <input type="hidden" name="cart_items" data-cart-json>
+                <input type="hidden" name="payment_method" value="Pix" data-payment-input>
+                <input type="hidden" name="table_id" data-table-input>
+                <button class="btn danger" type="button" data-cancel-order>Cancelar pedido</button>
+                <button class="btn neutral" type="button" data-clear-cart>Limpar pedido</button>
+                <button class="btn neutral" type="button">Salvar orçamento</button>
+                <button class="btn warning" type="button">Enviar para cozinha</button>
+                <button class="btn primary finish-sale" type="submit">Finalizar venda</button>
+            </form>
+        </section>
+    </section>
+
+    <div class="pos-success" data-pos-success>
+        <span>✓</span>
+        <strong>Venda realizada com sucesso</strong>
+    </div>
 </section>
 {% endblock %}
