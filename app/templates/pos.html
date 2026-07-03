@@ -40,7 +40,7 @@
             </div>
 
             <div class="pos-category-chips" data-pos-categories>
-                {% set category_icons = {"Todos": "TD", "Pizzas": "PZ", "Hamburgueres": "BG", "Bebidas": "BD", "Porcoes": "PR", "Sobremesas": "SB", "Combos": "CB", "Massas": "MS", "Bebidas alcoolicas": "BA"} %}
+                {% set category_icons = {"Todos": "▦", "Pizzas": "🍕", "Hamburgueres": "🍔", "Bebidas": "🥤", "Porcoes": "🍟", "Sobremesas": "🍰", "Combos": "🍱", "Massas": "🍝", "Bebidas alcoolicas": "🍹"} %}
                 {% for category in categories %}
                 <button class="pos-chip {{ 'active' if loop.first }}" type="button" data-category-filter="{{ category }}"><span>{{ category_icons.get(category, category[:2].upper()) }}</span>{{ category }}</button>
                 {% endfor %}
@@ -67,11 +67,13 @@
                             data-description="{{ product.description or '' }}"
                             data-image="{{ product.image_url }}"
                         >
+                            <span class="product-fav">♡</span>
                             <span class="product-image">
                                 <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
                             </span>
                             <span class="product-info">
                                 <strong>{{ product.name }}</strong>
+                                <small class="product-rating">★★★★★ <b>({{ 44 + loop.index * 13 }})</b></small>
                             </span>
                             <span class="product-bottom">
                                 <em>R$ {{ "%.2f"|format(product.price) }}</em>
@@ -193,7 +195,7 @@
                 <input type="hidden" name="payment_method" value="Pix" data-payment-input>
                 <input type="hidden" name="table_id" data-table-input>
                 <details class="pos-more-actions">
-                    <summary class="btn neutral">Mais ações</summary>
+                    <summary class="btn neutral"><span>•••</span>Mais ações</summary>
                     <div class="pos-more-menu">
                         <button class="btn danger" type="button" data-cancel-order>Cancelar pedido</button>
                         <button class="btn neutral" type="button" data-clear-cart>Limpar pedido</button>
@@ -203,8 +205,8 @@
                         <button class="btn neutral" type="button">Histórico</button>
                     </div>
                 </details>
-                <button class="btn warning" type="button">Enviar para cozinha</button>
-                <button class="btn primary finish-sale" type="submit">Finalizar venda</button>
+                <button class="btn warning" type="button"><span>⌂</span>Enviar para cozinha</button>
+                <button class="btn primary finish-sale" type="submit"><span>🛒</span>Finalizar venda <b>F5</b></button>
             </form>
         </section>
     </section>
