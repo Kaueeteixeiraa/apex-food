@@ -226,6 +226,8 @@
         const subtotalTarget = document.querySelector("[data-subtotal]");
         const totalTarget = document.querySelector("[data-total]");
         const changeTarget = document.querySelector("[data-change]");
+        const paymentDueTarget = document.querySelector("[data-payment-due]");
+        const paymentChangeTarget = document.querySelector("[data-payment-change]");
         const paymentInput = document.querySelector("[data-payment-input]");
         const selectedPayment = document.querySelector("[data-selected-payment]");
         const tableInput = document.querySelector("[data-table-input]");
@@ -303,6 +305,8 @@
             subtotalTarget.textContent = money.format(computed.subtotal);
             totalTarget.textContent = money.format(computed.total);
             changeTarget.textContent = money.format(computed.change);
+            if (paymentDueTarget) paymentDueTarget.textContent = money.format(computed.total);
+            if (paymentChangeTarget) paymentChangeTarget.textContent = money.format(computed.change);
             cartJson.value = JSON.stringify(items);
             cartCount.textContent = `${items.reduce((sum, item) => sum + item.quantity, 0)} itens`;
         };
@@ -375,7 +379,7 @@
                 document.querySelectorAll("[data-payment]").forEach((button) => button.classList.toggle("active", button === payment));
                 document.querySelectorAll("[data-payment-detail]").forEach((detail) => detail.classList.toggle("active", detail.dataset.paymentDetail === method));
                 paymentInput.value = method;
-                selectedPayment.textContent = method;
+                selectedPayment.textContent = payment.dataset.paymentLabel || method;
             }
 
             const table = event.target.closest("[data-table-id]");
