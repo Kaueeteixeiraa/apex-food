@@ -27,6 +27,9 @@
         <div class="card-grid">
             {% for product in products %}
             <div class="product-card">
+                <div class="product-photo">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+                </div>
                 <div>
                     <span class="pill info">{{ product.category }}</span>
                     <h3>{{ product.name }}</h3>

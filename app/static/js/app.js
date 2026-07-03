@@ -217,7 +217,7 @@
             prep: Number(card.dataset.prep || 0),
             available: card.dataset.available === "1",
             description: card.dataset.description || "",
-            initials: card.dataset.name.slice(0, 2).toUpperCase(),
+            image: card.dataset.image || "",
         }));
         const cart = new Map();
         const cartList = document.querySelector("[data-cart-list]");
@@ -280,7 +280,7 @@
             } else {
                 cartList.innerHTML = [...cart.values()].map((item) => `
                     <article class="pos-cart-item" data-cart-item="${item.id}">
-                        <span class="cart-thumb">${escapeHtml(item.initials)}</span>
+                        <span class="cart-thumb"><img src="${escapeHtml(item.image)}" alt=""></span>
                         <div class="cart-main">
                             <strong>${escapeHtml(item.name)}</strong>
                             <input data-note="${item.id}" placeholder="Observação" value="${escapeHtml(item.note || "")}">

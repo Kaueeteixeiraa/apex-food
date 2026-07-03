@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from ..database import execute, query_all, query_one
-from ..models import PRODUCT_CATEGORIES
+from ..models import PRODUCT_CATEGORIES, products_with_demo_images
 from .auth import company_id, login_required
 
 bp = Blueprint("products", __name__, url_prefix="/products")
@@ -33,9 +33,11 @@ def index():
         flash("Produto cadastrado.", "success")
         return redirect(url_for("products.index"))
 
-    products = query_all(
-        "SELECT * FROM products WHERE company_id = ? ORDER BY category, name",
-        (cid,),
+    products = products_with_demo_images(
+        query_all(
+            "SELECT * FROM products WHERE company_id = ? ORDER BY category, name",
+            (cid,),
+        )
     )
     return render_template("products.html", products=products, categories=PRODUCT_CATEGORIES)
 

@@ -3,7 +3,7 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from ..database import get_db, query_all, query_one
-from ..models import PAYMENT_METHODS
+from ..models import PAYMENT_METHODS, products_with_demo_images
 from .auth import company_id, login_required
 
 bp = Blueprint("pos", __name__, url_prefix="/pos")
@@ -26,14 +26,16 @@ def index():
         """,
         (cid,),
     )
-    products = query_all(
-        """
-        SELECT id, name, category, description, price, available, image_url, prep_time
-        FROM products
-        WHERE company_id = ?
-        ORDER BY available DESC, category, name
-        """,
-        (cid,),
+    products = products_with_demo_images(
+        query_all(
+            """
+            SELECT id, name, category, description, price, available, image_url, prep_time
+            FROM products
+            WHERE company_id = ?
+            ORDER BY available DESC, category, name
+            """,
+            (cid,),
+        )
     )
     categories = ["Todos"]
     for product in products:
