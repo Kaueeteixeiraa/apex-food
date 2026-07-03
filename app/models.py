@@ -1,6 +1,6 @@
 SEGMENTS = ["Restaurante", "Pizzaria", "Lanchonete", "Cafeteria", "Bar", "Fast Food", "Outros"]
 
-PRODUCT_CATEGORIES = ["Pizzas", "Hamburgueres", "Bebidas", "Porcoes", "Sobremesas", "Combos"]
+PRODUCT_CATEGORIES = ["Pizzas", "Hamburgueres", "Bebidas", "Porcoes", "Sobremesas", "Combos", "Massas", "Saladas", "Cafeteria", "Adicionais"]
 
 PRODUCT_IMAGE_FALLBACKS = {
     "Pizzas": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=80",

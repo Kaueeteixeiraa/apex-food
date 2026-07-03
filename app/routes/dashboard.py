@@ -149,7 +149,7 @@ def index():
     status_map = {row["status"]: row["count"] for row in status_rows}
     status_chart = [
         {"label": "Novo", "value": int(status_map.get("Novo", 0)), "color": "#3B82F6"},
-        {"label": "Em preparo", "value": int(status_map.get("Em preparo", 0)), "color": "#F59E0B"},
+        {"label": "Em preparo", "value": int(status_map.get("Em preparo", 0)), "color": "#22D3EE"},
         {"label": "Pronto", "value": int(status_map.get("Pronto", 0)), "color": "#22C55E"},
         {"label": "Entregue", "value": int(status_map.get("Entregue", 0)), "color": "#38BDF8"},
         {"label": "Cancelado", "value": int(status_map.get("Cancelado", 0)), "color": "#EF4444"},
@@ -168,8 +168,8 @@ def index():
     payment_chart = [
         {"label": "Dinheiro", "value": payment_map.get("Dinheiro", 0), "color": "#22C55E"},
         {"label": "Cartao", "value": payment_map.get("Cartao", 0), "color": "#3B82F6"},
-        {"label": "Pix", "value": payment_map.get("Pix", 0), "color": "#7C3AED"},
-        {"label": "Outros", "value": payment_map.get("Outros", 0), "color": "#F59E0B"},
+        {"label": "Pix", "value": payment_map.get("Pix", 0), "color": "#0EA5FF"},
+        {"label": "Outros", "value": payment_map.get("Outros", 0), "color": "#67E8F9"},
     ]
     payment_total = sum(item["value"] for item in payment_chart)
 

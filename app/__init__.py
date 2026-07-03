@@ -27,6 +27,7 @@ def create_app(test_config=None):
     from .routes.inventory import bp as inventory_bp
     from .routes.employees import bp as employees_bp
     from .routes.kitchen import bp as kitchen_bp
+    from .routes.pages import bp as pages_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -38,6 +39,7 @@ def create_app(test_config=None):
     app.register_blueprint(inventory_bp)
     app.register_blueprint(employees_bp)
     app.register_blueprint(kitchen_bp)
+    app.register_blueprint(pages_bp)
 
     @app.route("/")
     def index():

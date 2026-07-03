@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | Apex Food{% endblock %}
+{% block content %}
+<section class="suite-page suite-{{ screen }}">
+    <header class="page-header">
+        <div>
+            <p class="eyebrow">Apex Food 2.0</p>
+            <h1>
+                {% if screen == "menu" %}Card&aacute;pio
+                {% elif screen == "reports" %}Relat&oacute;rios
+                {% elif screen == "settings" %}Configura&ccedil;&otilde;es
+                {% else %}{{ title }}{% endif %}
+            </h1>
+        </div>
+        <div class="filter-row">
+            {% if screen == "reports" %}
+            <input type="date" aria-label="Data inicial">
+            <input type="date" aria-label="Data final">
+            <button class="btn neutral" type="button">Exportar em breve</button>
+            {% elif screen == "menu" %}
+            <a class="btn primary" href="{{ url_for('products.index') }}">Novo produto</a>
+            {% elif screen == "settings" %}
+            <button class="btn primary" type="button">Salvar alteracoes</button>
+            {% else %}
+            <span class="pill active">Operacional</span>
+            {% endif %}
+        </div>
+    </header>
+
+    {% if screen == "menu" %}
+    <section class="suite-grid suite-products">
+        {% for product in products %}
+        <article class="product-card suite-product">
+            <div class="product-photo"><img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy"></div>
+            <div>
+                <span class="pill info">{{ product.category }}</span>
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.description or "Produto pronto para venda no PDV." }}</p>
+            </div>
+            <div class="product-footer">
+                <strong>R$ {{ "%.2f"|format(product.price) }}</strong>
+                <span class="status {{ 'positive' if product.available else 'danger' }}">{{ "Ativo" if product.available else "Pausado" }}</span>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+    {% elif screen == "categories" %}
+    <section class="suite-grid suite-categories">
+        {% for category in categories %}
+        <article class="panel suite-card">
+            <div class="suite-icon">{{ category.name[:2].upper() }}</div>
+            <h2>{{ category.name }}</h2>
+            <p>{{ category.products }} produtos cadastrados</p>
+            <div class="suite-card-row"><span>Disponiveis</span><strong>{{ category.available }}</strong></div>
+            <div class="suite-card-row"><span>Ticket medio</span><strong>R$ {{ "%.2f"|format(category.avg_price) }}</strong></div>
+        </article>
+        {% endfor %}
+    </section>
+
+    {% elif screen == "delivery" %}
+    <section class="suite-metrics">
+        <article class="metric-card"><span>Entregas ativas</span><strong>{{ metrics.active }}</strong><small>Em producao ou rota</small></article>
+        <article class="metric-card"><span>Entregues</span><strong>{{ metrics.done }}</strong><small>Historico geral</small></article>
+        <article class="metric-card"><span>Faturamento delivery</span><strong>R$ {{ "%.2f"|format(metrics.revenue) }}</strong><small>Pedidos de entrega</small></article>
+        <article class="metric-card"><span>Tempo medio</span><strong>{{ metrics.time }} min</strong><small>Mock pronto para integracao</small></article>
+    </section>
+    <section class="delivery-board">
+        {% for status in ["Novo", "Em preparo", "Pronto", "Entregue"] %}
+        <article class="panel delivery-lane">
+            <div class="panel-heading"><h2>{{ status }}</h2><span class="pill">{{ orders|selectattr("status", "equalto", status)|list|length }}</span></div>
+            <div class="stack-list">
+                {% for order in orders if order.status == status %}
+                <div class="list-row">
+                    <div><strong>#{{ order.id }} {{ order.customer_name }}</strong><small> {{ order.created_at }}</small></div>
+                    <strong>R$ {{ "%.2f"|format(order.total) }}</strong>
+                </div>
+                {% else %}
+                <p class="empty small">Sem pedidos.</p>
+                {% endfor %}
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+    {% elif screen == "finance" %}
+    <section class="suite-metrics">
+        <article class="metric-card"><span>Hoje</span><strong>R$ {{ "%.2f"|format(summary.today) }}</strong><small>Receita do dia</small></article>
+        <article class="metric-card"><span>Mes</span><strong>R$ {{ "%.2f"|format(summary.month) }}</strong><small>Acumulado mensal</small></article>
+        <article class="metric-card"><span>Ticket medio</span><strong>R$ {{ "%.2f"|format(summary.ticket) }}</strong><small>Vendas finalizadas</small></article>
+        <article class="metric-card"><span>Lucro previsto</span><strong>R$ {{ "%.2f"|format(summary.month * 0.62) }}</strong><small>Mock financeiro</small></article>
+    </section>
+    <section class="suite-columns">
+        <article class="panel">
+            <div class="panel-heading"><h2>Fluxo de caixa</h2><span class="pill info">7 dias</span></div>
+            <div class="report-bars">
+                {% for item in chart %}
+                <div><span style="height:{{ item.height }}%"></span><small>{{ item.label }}</small></div>
+                {% endfor %}
+            </div>
+        </article>
+        <article class="panel">
+            <h2>Formas de pagamento</h2>
+            {% for row in payments %}
+            <div class="list-row"><span>{{ row.payment_method }} <small>{{ row.count }} venda(s)</small></span><strong>R$ {{ "%.2f"|format(row.total) }}</strong></div>
+            {% else %}<p class="empty">Sem vendas.</p>{% endfor %}
+        </article>
+        <article class="panel wide">
+            <h2>Ultimas vendas</h2>
+            <div class="table-wrap"><table><thead><tr><th>Venda</th><th>Pagamento</th><th>Status</th><th>Total</th></tr></thead><tbody>
+                {% for sale in sales %}<tr><td>#{{ sale.id }}</td><td>{{ sale.payment_method }}</td><td><span class="status positive">{{ sale.status }}</span></td><td>R$ {{ "%.2f"|format(sale.total) }}</td></tr>
+                {% else %}<tr><td colspan="4">Sem vendas.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </article>
+    </section>
+
+    {% elif screen == "reports" %}
+    <section class="suite-metrics">
+        <article class="metric-card"><span>Faturamento</span><strong>R$ {{ "%.2f"|format(summary.month) }}</strong><small>Periodo atual</small></article>
+        <article class="metric-card"><span>Pedidos ativos</span><strong>{{ summary.orders }}</strong><small>Operacao aberta</small></article>
+        <article class="metric-card"><span>Ticket medio</span><strong>R$ {{ "%.2f"|format(summary.ticket) }}</strong><small>Base historica</small></article>
+        <article class="metric-card"><span>Exportacao</span><strong>Pronta</strong><small>Estrutura preparada</small></article>
+    </section>
+    <section class="suite-columns reports-grid">
+        <article class="panel wide">
+            <div class="panel-heading"><h2>Relatorio de vendas</h2><span class="pill info">7 dias</span></div>
+            <div class="report-bars">
+                {% for item in chart %}<div><span style="height:{{ item.height }}%"></span><small>{{ item.label }}</small></div>{% endfor %}
+            </div>
+        </article>
+        <article class="panel">
+            <h2>Produtos mais vendidos</h2>
+            {% for product in top_products %}<div class="list-row"><span>{{ product.name }} <small>{{ product.category }}</small></span><strong>{{ product.sold }}</strong></div>{% else %}<p class="empty">Sem dados.</p>{% endfor %}
+        </article>
+        <article class="panel">
+            <h2>Estoque critico</h2>
+            {% for item in low_stock %}<div class="list-row"><span>{{ item.name }}</span><strong>{{ item.quantity }} {{ item.unit }}</strong></div>{% else %}<p class="empty">Estoque em dia.</p>{% endfor %}
+        </article>
+        <article class="panel">
+            <h2>Clientes</h2>
+            {% for client in clients %}<div class="list-row"><span>{{ client.name }}</span><strong>R$ {{ "%.2f"|format(client.total) }}</strong></div>{% else %}<p class="empty">Sem clientes vinculados.</p>{% endfor %}
+        </article>
+    </section>
+
+    {% elif screen == "settings" %}
+    <section class="settings-layout">
+        <article class="panel">
+            <h2>{{ company.trade_name if company else "Apex Food" }}</h2>
+            <form class="form-grid">
+                <label>Nome fantasia<input value="{{ company.trade_name if company else '' }}"></label>
+                <label>E-mail<input value="{{ company.email if company else '' }}"></label>
+                <label>Telefone<input value="{{ company.phone if company else '' }}"></label>
+                <label>Cidade<input value="{{ company.city if company else '' }}"></label>
+            </form>
+        </article>
+        <div class="suite-grid settings-grid">
+            {% for title, text in groups %}
+            <article class="panel suite-card">
+                <div class="suite-icon">{{ title[:2].upper() }}</div>
+                <h2>{{ title }}</h2>
+                <p>{{ text }}</p>
+                <button class="btn neutral" type="button">Configurar</button>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</section>
+{% endblock %}

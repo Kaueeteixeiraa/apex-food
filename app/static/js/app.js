@@ -113,13 +113,13 @@
             <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Vendas dos ultimos 7 dias">
                 <defs>
                     <linearGradient id="salesLine" x1="0" x2="1" y1="0" y2="0">
-                        <stop offset="0%" stop-color="#7C3AED" />
-                        <stop offset="52%" stop-color="#A855F7" />
-                        <stop offset="100%" stop-color="#F59E0B" />
+                        <stop offset="0%" stop-color="#006EFF" />
+                        <stop offset="52%" stop-color="#0EA5FF" />
+                        <stop offset="100%" stop-color="#67E8F9" />
                     </linearGradient>
                     <linearGradient id="salesArea" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="rgba(124,58,237,.34)" />
-                        <stop offset="100%" stop-color="rgba(124,58,237,0)" />
+                        <stop offset="0%" stop-color="rgba(14,165,255,.34)" />
+                        <stop offset="100%" stop-color="rgba(14,165,255,0)" />
                     </linearGradient>
                 </defs>
                 ${[0, 1, 2, 3].map((row) => {
