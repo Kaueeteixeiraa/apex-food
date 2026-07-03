@@ -14,9 +14,19 @@
         </div>
         <div class="filter-row">
             {% if screen == "reports" %}
-            <input type="date" aria-label="Data inicial">
-            <input type="date" aria-label="Data final">
-            <button class="btn neutral" type="button">Exportar em breve</button>
+            <form class="reports-filter-row" method="get">
+                <select name="period" aria-label="Periodo">
+                    <option value="today" {% if period.key == "today" %}selected{% endif %}>Hoje</option>
+                    <option value="7" {% if period.key == "7" %}selected{% endif %}>7 dias</option>
+                    <option value="30" {% if period.key == "30" %}selected{% endif %}>30 dias</option>
+                    <option value="90" {% if period.key == "90" %}selected{% endif %}>90 dias</option>
+                    <option value="custom" {% if period.key == "custom" %}selected{% endif %}>Personalizado</option>
+                </select>
+                <input type="date" name="start" value="{{ period.start }}" aria-label="Data inicial">
+                <input type="date" name="end" value="{{ period.end }}" aria-label="Data final">
+                <button class="btn primary" type="submit">Filtrar</button>
+                <button class="btn neutral" type="button">Exportar em breve</button>
+            </form>
             {% elif screen == "menu" %}
             <a class="btn primary" href="{{ url_for('products.index') }}">Novo produto</a>
             {% elif screen == "settings" %}
@@ -83,63 +93,55 @@
         {% endfor %}
     </section>
 
-    {% elif screen == "finance" %}
-    <section class="suite-metrics">
-        <article class="metric-card"><span>Hoje</span><strong>R$ {{ "%.2f"|format(summary.today) }}</strong><small>Receita do dia</small></article>
-        <article class="metric-card"><span>Mes</span><strong>R$ {{ "%.2f"|format(summary.month) }}</strong><small>Acumulado mensal</small></article>
-        <article class="metric-card"><span>Ticket medio</span><strong>R$ {{ "%.2f"|format(summary.ticket) }}</strong><small>Vendas finalizadas</small></article>
-        <article class="metric-card"><span>Lucro previsto</span><strong>R$ {{ "%.2f"|format(summary.month * 0.62) }}</strong><small>Mock financeiro</small></article>
-    </section>
-    <section class="suite-columns">
-        <article class="panel">
-            <div class="panel-heading"><h2>Fluxo de caixa</h2><span class="pill info">7 dias</span></div>
-            <div class="report-bars">
-                {% for item in chart %}
-                <div><span style="height:{{ item.height }}%"></span><small>{{ item.label }}</small></div>
-                {% endfor %}
-            </div>
-        </article>
-        <article class="panel">
-            <h2>Formas de pagamento</h2>
-            {% for row in payments %}
-            <div class="list-row"><span>{{ row.payment_method }} <small>{{ row.count }} venda(s)</small></span><strong>R$ {{ "%.2f"|format(row.total) }}</strong></div>
-            {% else %}<p class="empty">Sem vendas.</p>{% endfor %}
-        </article>
-        <article class="panel wide">
-            <h2>Ultimas vendas</h2>
-            <div class="table-wrap"><table><thead><tr><th>Venda</th><th>Pagamento</th><th>Status</th><th>Total</th></tr></thead><tbody>
-                {% for sale in sales %}<tr><td>#{{ sale.id }}</td><td>{{ sale.payment_method }}</td><td><span class="status positive">{{ sale.status }}</span></td><td>R$ {{ "%.2f"|format(sale.total) }}</td></tr>
-                {% else %}<tr><td colspan="4">Sem vendas.</td></tr>{% endfor %}
-            </tbody></table></div>
-        </article>
-    </section>
-
     {% elif screen == "reports" %}
-    <section class="suite-metrics">
-        <article class="metric-card"><span>Faturamento</span><strong>R$ {{ "%.2f"|format(summary.month) }}</strong><small>Periodo atual</small></article>
-        <article class="metric-card"><span>Pedidos ativos</span><strong>{{ summary.orders }}</strong><small>Operacao aberta</small></article>
-        <article class="metric-card"><span>Ticket medio</span><strong>R$ {{ "%.2f"|format(summary.ticket) }}</strong><small>Base historica</small></article>
-        <article class="metric-card"><span>Exportacao</span><strong>Pronta</strong><small>Estrutura preparada</small></article>
-    </section>
-    <section class="suite-columns reports-grid">
-        <article class="panel wide">
-            <div class="panel-heading"><h2>Relatorio de vendas</h2><span class="pill info">7 dias</span></div>
-            <div class="report-bars">
-                {% for item in chart %}<div><span style="height:{{ item.height }}%"></span><small>{{ item.label }}</small></div>{% endfor %}
+    <section class="reports-modern">
+        <article class="panel reports-hero">
+            <div>
+                <span class="eyebrow">Analytics Apex</span>
+                <h2>Vis&atilde;o do per&iacute;odo</h2>
+                <p>{{ period.label }} de {{ period.start }} at&eacute; {{ period.end }}</p>
             </div>
+            <span class="pill info">{{ summary.sales }} venda(s)</span>
         </article>
-        <article class="panel">
-            <h2>Produtos mais vendidos</h2>
-            {% for product in top_products %}<div class="list-row"><span>{{ product.name }} <small>{{ product.category }}</small></span><strong>{{ product.sold }}</strong></div>{% else %}<p class="empty">Sem dados.</p>{% endfor %}
-        </article>
-        <article class="panel">
-            <h2>Estoque critico</h2>
-            {% for item in low_stock %}<div class="list-row"><span>{{ item.name }}</span><strong>{{ item.quantity }} {{ item.unit }}</strong></div>{% else %}<p class="empty">Estoque em dia.</p>{% endfor %}
-        </article>
-        <article class="panel">
-            <h2>Clientes</h2>
-            {% for client in clients %}<div class="list-row"><span>{{ client.name }}</span><strong>R$ {{ "%.2f"|format(client.total) }}</strong></div>{% else %}<p class="empty">Sem clientes vinculados.</p>{% endfor %}
-        </article>
+
+        <section class="reports-kpis">
+            <article class="metric-card"><span>Vendas</span><strong>R$ {{ "%.2f"|format(summary.revenue) }}</strong><small>Receita filtrada</small></article>
+            <article class="metric-card"><span>Pedidos</span><strong>{{ summary.orders }}</strong><small>No periodo</small></article>
+            <article class="metric-card"><span>Ticket medio</span><strong>R$ {{ "%.2f"|format(summary.ticket) }}</strong><small>Por venda</small></article>
+            <article class="metric-card"><span>Clientes</span><strong>{{ summary.customers }}</strong><small>Atendidos</small></article>
+        </section>
+
+        <section class="reports-layout">
+            <article class="panel report-chart-card">
+                <div class="panel-heading"><h2>Vendas por periodo</h2><span class="pill info">{{ period.label }}</span></div>
+                <div class="report-bars report-bars-premium">
+                    {% for item in chart %}
+                    <div><span style="height:{{ item.height }}%"></span><small>{{ item.label }}</small></div>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="panel reports-list-card">
+                <h2>Produtos mais vendidos</h2>
+                {% for product in top_products %}
+                <div class="list-row"><span>{{ product.name }} <small>{{ product.category }}</small></span><strong>{{ product.sold }}</strong></div>
+                {% else %}<p class="empty">Sem dados.</p>{% endfor %}
+            </article>
+
+            <article class="panel reports-list-card">
+                <h2>Clientes em destaque</h2>
+                {% for client in clients %}
+                <div class="list-row"><span>{{ client.name }} <small>{{ client.orders }} pedido(s)</small></span><strong>R$ {{ "%.2f"|format(client.total) }}</strong></div>
+                {% else %}<p class="empty">Sem clientes no periodo.</p>{% endfor %}
+            </article>
+
+            <article class="panel reports-list-card">
+                <h2>Canais de venda</h2>
+                {% for channel in channels %}
+                <div class="list-row"><span>{{ channel.name }}</span><strong>{{ channel.orders }}</strong></div>
+                {% else %}<p class="empty">Sem canais no periodo.</p>{% endfor %}
+            </article>
+        </section>
     </section>
 
     {% elif screen == "settings" %}

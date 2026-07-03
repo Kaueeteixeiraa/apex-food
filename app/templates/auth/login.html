@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Login | Apex Food{% endblock %}
 {% block content %}
-<section class="auth-card login-card">
-    <div class="brand auth-brand">
-        <span class="brand-mark">AF</span>
-        <span>
+<section class="auth-card auth-simple-card">
+    <div class="auth-simple-head">
+        <span class="brand-mark">A</span>
+        <div>
             <strong>Apex Food</strong>
-            <small>SaaS para restaurantes inteligentes</small>
-        </span>
+            <small>Gestao premium para restaurantes</small>
+        </div>
     </div>
-    <div class="auth-copy">
-        <p class="eyebrow">Operacao conectada</p>
-        <h1>Entre no painel do restaurante</h1>
-        <p class="muted">Pedidos, salao, caixa e cozinha em uma experiencia escura, rapida e bonita.</p>
+    <div class="auth-simple-copy">
+        <p class="eyebrow">Bem-vindo</p>
+        <h1>Entrar no painel</h1>
+        <p>Controle PDV, pedidos, cozinha e relatorios em uma tela rapida e moderna.</p>
     </div>
     <form method="post" class="form-grid" data-login-form>
         <label class="input-icon" data-icon="@">
@@ -23,16 +23,21 @@
             Senha
             <input name="password" type="password" value="123456" required>
         </label>
-        <button class="btn primary" type="submit" data-login-button>Entrar no Apex Food</button>
+        <button class="btn primary auth-submit" type="submit" data-login-button>Entrar agora</button>
     </form>
-    <p class="auth-link">Ainda nao tem empresa? <a href="{{ url_for('auth.register') }}">Cadastrar empresa</a></p>
+    <div class="auth-demo-line">
+        <span>Demo</span>
+        <strong>admin@apexfood.local</strong>
+        <strong>123456</strong>
+    </div>
+    <p class="auth-link">Ainda nao tem empresa? <a href="{{ url_for('auth.register') }}">Criar cadastro</a></p>
 </section>
 
 <div class="auth-loader" data-auth-loader>
     <div class="loader-card">
-        <span class="brand-mark">AF</span>
+        <span class="brand-mark">A</span>
         <div class="loader-ring"></div>
-        <strong>Entrando no Apex Food...</strong>
+        <strong>Preparando seu painel...</strong>
     </div>
 </div>
 {% endblock %}

@@ -1,5 +1,25 @@
 (function () {
     const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+    const navIcons = {
+        dashboard: '<rect x="3" y="3" width="7" height="8" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="15" width="7" height="6" rx="2"/>',
+        pos: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/>',
+        orders: '<path d="M8 4h8l2 3v13H6V7z"/><path d="M9 11h6M9 15h6"/>',
+        kitchen: '<path d="M6 3v8M3 3v8M9 3v8M3 11h6M6 11v10"/><path d="M16 3v18M16 3c3 2 4 5 2 8"/>',
+        menu: '<path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H20v17H7.5A3.5 3.5 0 0 0 4 22z"/><path d="M8 7h8M8 11h8"/>',
+        products: '<path d="M21 8l-9-5-9 5 9 5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>',
+        categories: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+        clients: '<path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.8M19 3.4a4 4 0 0 1 0 7.2"/>',
+        tables: '<circle cx="12" cy="10" r="5"/><path d="M12 15v6M8 21h8"/>',
+        delivery: '<path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+        inventory: '<path d="M4 7l8-4 8 4-8 4z"/><path d="M4 7v10l8 4 8-4V7M12 11v10"/>',
+        reports: '<path d="M4 19V5"/><path d="M8 17v-6M13 17V7M18 17v-9"/><path d="M3 19h18"/>',
+        employees: '<rect x="4" y="4" width="16" height="18" rx="3"/><circle cx="12" cy="10" r="3"/><path d="M8 17a4 4 0 0 1 8 0"/>',
+        settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2 3-.2-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-5v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.2.1-2-3 .1-.1A1.7 1.7 0 0 0 5 15a1.7 1.7 0 0 0-1.5-1H3v-4h.5A1.7 1.7 0 0 0 5 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1 2-3 .2.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h5v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.2-.1 2 3-.1.1A1.7 1.7 0 0 0 19 9a1.7 1.7 0 0 0 1.5 1h.5v4h-.5A1.7 1.7 0 0 0 19.4 15z"/>',
+    };
+
+    document.querySelectorAll("[data-nav-icon]").forEach((icon) => {
+        icon.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${navIcons[icon.dataset.navIcon] || navIcons.dashboard}</svg>`;
+    });
 
     document.querySelectorAll(".flash").forEach((flash) => {
         setTimeout(() => flash.classList.add("fade-out"), 4200);
@@ -24,7 +44,7 @@
             loginButton.classList.add("loading");
             loginButton.textContent = "Validando acesso";
             loader?.classList.add("show");
-            setTimeout(() => loginForm.submit(), 720);
+            setTimeout(() => loginForm.submit(), 1050);
         });
     }
 
