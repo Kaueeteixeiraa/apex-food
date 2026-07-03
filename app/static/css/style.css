@@ -1521,7 +1521,7 @@ tbody tr:hover {
     grid-area: payment;
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: auto 52px minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     gap: 0.46rem;
     padding: 0.66rem;
     border-color: rgba(124, 58, 237, 0.28);
@@ -2018,7 +2018,7 @@ tbody tr:hover {
 
 .pos-finance .pos-total {
     grid-column: 1 / -1;
-    min-height: 52px;
+    min-height: 48px;
     border-color: rgba(124, 58, 237, 0.32);
     background:
         radial-gradient(circle at 100% 0%, rgba(124, 58, 237, 0.2), transparent 42%),
@@ -2034,7 +2034,7 @@ tbody tr:hover {
 .payment-methods {
     display: grid;
     grid-column: 1 / -1;
-    grid-row: 2;
+    grid-row: 1;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 0.38rem;
     min-height: 0;
@@ -2090,25 +2090,34 @@ tbody tr:hover {
 
 .payment-panel {
     grid-column: 1 / -1;
-    grid-row: 3;
+    grid-row: 2;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 218px;
-    gap: 0.5rem;
+    grid-template-rows: 48px 42px 54px;
+    gap: 0.34rem;
     min-height: 0;
 }
 
 .payment-detail {
+    grid-row: 2;
     display: none;
     align-content: start;
-    gap: 0.42rem;
+    gap: 0.34rem;
     min-height: 0;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .payment-detail.active {
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-columns: 42px minmax(0, 1fr) 112px;
+    align-items: center;
     animation: paymentSwap 0.22s ease both;
+}
+
+.payment-detail[data-payment-detail="Cartao Credito"].active,
+.payment-detail[data-payment-detail="Cartao Debito"].active,
+.payment-detail[data-payment-detail="Voucher"].active,
+.payment-detail[data-payment-detail="Outros"].active {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .payment-detail p {
@@ -2153,7 +2162,7 @@ tbody tr:hover {
 }
 
 .payment-detail .btn {
-    grid-column: 1 / -1;
+    grid-column: auto;
     min-height: 30px;
     padding: 0.36rem 0.52rem;
     font-size: 0.72rem;
@@ -2161,6 +2170,7 @@ tbody tr:hover {
 
 .payment-values {
     display: grid;
+    grid-row: 3;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.34rem;
 }
