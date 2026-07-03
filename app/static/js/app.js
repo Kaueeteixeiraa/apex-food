@@ -232,6 +232,9 @@
         const productCount = document.querySelector("[data-product-count]");
         const search = document.querySelector("[data-pos-search]");
         const success = document.querySelector("[data-pos-success]");
+        const favoritesPanel = document.querySelector("[data-favorites-panel]");
+        const tableModal = document.querySelector("[data-table-modal]");
+        const selectedTable = document.querySelector("[data-selected-table]");
         let activeCategory = "Todos";
 
         const escapeHtml = (value) => String(value || "")
@@ -359,10 +362,10 @@
                 renderCart();
             }
 
-            const category = event.target.closest("[data-category]");
+            const category = event.target.closest("[data-category-filter]");
             if (category) {
-                activeCategory = category.dataset.category;
-                document.querySelectorAll("[data-category]").forEach((chip) => chip.classList.toggle("active", chip === category));
+                activeCategory = category.dataset.categoryFilter;
+                document.querySelectorAll("[data-category-filter]").forEach((chip) => chip.classList.toggle("active", chip === category));
                 filterProducts();
             }
 
@@ -380,7 +383,14 @@
                 document.querySelectorAll("[data-table-id]").forEach((button) => button.classList.toggle("selected", button === table));
                 tableInput.value = table.dataset.tableId;
                 document.querySelector('[name="fulfillment_type"]').value = "Mesa";
+                selectedTable.textContent = table.dataset.tableName;
+                tableModal.hidden = true;
             }
+
+            if (event.target.closest("[data-favorites-toggle]")) favoritesPanel.hidden = false;
+            if (event.target.closest("[data-table-modal-open]")) tableModal.hidden = false;
+            if (event.target.closest("[data-close-panel]")) event.target.closest(".pos-modal").hidden = true;
+            if (event.target.classList.contains("pos-modal")) event.target.hidden = true;
 
             if (event.target.closest("[data-clear-cart]") || event.target.closest("[data-cancel-order]")) {
                 cart.clear();

@@ -3,30 +3,13 @@
 {% block content %}
 <section class="pos-screen" data-pos-screen>
     <header class="pos-topbar">
-        <div class="pos-top-card">
-            <span>Abertos</span>
-            <strong>{{ stats.open_orders }}</strong>
-        </div>
-        <div class="pos-top-card">
-            <span>Mesas</span>
-            <strong>{{ stats.occupied_tables }}</strong>
-        </div>
-        <div class="pos-top-card">
-            <span>Cozinha</span>
-            <strong>{{ stats.kitchen_orders }}</strong>
-        </div>
-        <div class="pos-top-card {{ 'is-open' if register and register.status == 'Aberto' else 'is-closed' }}">
-            <span>Caixa</span>
-            <strong>{{ register.status if register else "Fechado" }}</strong>
-        </div>
-        <div class="pos-top-card">
+        <div class="pos-top-card pos-operator">
             <span>Operador</span>
             <strong>João Admin</strong>
         </div>
-        <div class="pos-top-card">
-            <span>Data</span>
-            <strong data-pos-date>--/--/----</strong>
-        </div>
+        <label class="pos-top-search">
+            <input type="search" data-pos-search placeholder="Pesquisar produto">
+        </label>
         <div class="pos-top-card">
             <span>Hora</span>
             <strong data-pos-time>--:--</strong>
@@ -41,6 +24,8 @@
                     <p class="eyebrow">Venda rápida</p>
                     <h1>Caixa / PDV</h1>
                 </div>
+                <div class="pos-catalog-actions">
+                    <button class="btn neutral" type="button" data-favorites-toggle>Favoritos</button>
                 {% if register and register.status == "Aberto" %}
                 <form method="post" action="{{ url_for('pos.close_register') }}">
                     <button class="btn danger" type="submit">Fechar caixa</button>
@@ -51,60 +36,17 @@
                     <button class="btn positive" type="submit">Abrir caixa</button>
                 </form>
                 {% endif %}
-            </div>
-
-            <div class="pos-searchbar">
-                <input type="search" data-pos-search placeholder="Pesquisar produto, categoria ou preço">
-                <button class="btn neutral" type="button" data-clear-search>Limpar</button>
+                </div>
             </div>
 
             <div class="pos-category-chips" data-pos-categories>
+                {% set category_icons = {"Todos": "TD", "Pizzas": "PZ", "Hamburgueres": "BG", "Bebidas": "BD", "Porcoes": "PR", "Sobremesas": "SB", "Combos": "CB", "Massas": "MS", "Bebidas alcoolicas": "BA"} %}
                 {% for category in categories %}
-                <button class="pos-chip {{ 'active' if loop.first }}" type="button" data-category="{{ category }}">{{ category }}</button>
+                <button class="pos-chip {{ 'active' if loop.first }}" type="button" data-category-filter="{{ category }}"><span>{{ category_icons.get(category, category[:2].upper()) }}</span>{{ category }}</button>
                 {% endfor %}
             </div>
 
             <div class="pos-product-sections">
-                <section class="pos-strip">
-                    <div class="pos-section-title">
-                        <h2>Favoritos</h2>
-                        <span class="pill info">toque para adicionar</span>
-                    </div>
-                    <div class="pos-mini-products">
-                        {% for product in products if product.id in favorite_ids %}
-                        <button class="pos-mini-product" type="button" data-add-product="{{ product.id }}">
-                            <span><img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy"></span>
-                            <strong>{{ product.name }}</strong>
-                            <small>R$ {{ "%.2f"|format(product.price) }}</small>
-                        </button>
-                        {% endfor %}
-                    </div>
-                </section>
-
-                <section class="pos-strip">
-                    <div class="pos-section-title">
-                        <h2>Mais vendidos</h2>
-                        <span class="pill active">alta saída</span>
-                    </div>
-                    <div class="pos-mini-products">
-                        {% for product in products if product.id in best_seller_ids %}
-                        <button class="pos-mini-product hot" type="button" data-add-product="{{ product.id }}">
-                            <span><img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy"></span>
-                            <strong>{{ product.name }}</strong>
-                            <small>R$ {{ "%.2f"|format(product.price) }}</small>
-                        </button>
-                        {% else %}
-                        {% for product in products[:3] %}
-                        <button class="pos-mini-product hot" type="button" data-add-product="{{ product.id }}">
-                            <span><img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy"></span>
-                            <strong>{{ product.name }}</strong>
-                            <small>R$ {{ "%.2f"|format(product.price) }}</small>
-                        </button>
-                        {% endfor %}
-                        {% endfor %}
-                    </div>
-                </section>
-
                 <section class="pos-products-wrap">
                     <div class="pos-section-title">
                         <h2>Produtos</h2>
@@ -130,11 +72,10 @@
                             </span>
                             <span class="product-info">
                                 <strong>{{ product.name }}</strong>
-                                <small>{{ product.prep_time }} min · {{ product.category }}</small>
                             </span>
                             <span class="product-bottom">
                                 <em>R$ {{ "%.2f"|format(product.price) }}</em>
-                                <b>{{ "Disponível" if product.available else "Indisponível" }}</b>
+                                <small>{{ product.prep_time }} min</small>
                                 <i>+</i>
                             </span>
                         </button>
@@ -160,6 +101,10 @@
                     <option value="Mesa">Mesa</option>
                     <option value="Entrega">Entrega</option>
                 </select>
+            </div>
+            <div class="pos-order-meta">
+                <button class="btn neutral" type="button" data-table-modal-open>Selecionar mesa</button>
+                <span data-selected-table>Balcão</span>
             </div>
 
             <div class="pos-cart-list" data-cart-list>
@@ -222,48 +167,76 @@
         </section>
 
         <section class="pos-bottom panel">
-            <div class="pos-tables">
-                <div class="pos-section-title">
-                    <h2>Mesas</h2>
-                    <span class="pill">{{ tables|length }}</span>
-                </div>
-                <div class="pos-table-strip" data-table-strip>
-                    {% for table in tables %}
-                    <button class="pos-table status-bg-{{ table.status|lower|replace(' ', '-') }}" type="button" data-table-id="{{ table.id }}" data-table-name="{{ table.name }}" data-table-status="{{ table.status }}">
-                        <strong>{{ table.name }}</strong>
-                        <small>{{ table.seats }} lugares</small>
-                        <span>{{ table.status }}</span>
-                    </button>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="pos-commands">
-                <div class="pos-section-title">
-                    <h2>Comandas</h2>
-                    <span class="pill info">módulo rápido</span>
-                </div>
-                <div class="command-actions">
-                    <button class="btn neutral" type="button">Criar</button>
-                    <button class="btn neutral" type="button">Abrir</button>
-                    <button class="btn neutral" type="button">Transferir</button>
-                    <button class="btn neutral" type="button">Histórico</button>
-                    <button class="btn neutral" type="button">Fechar</button>
-                </div>
-            </div>
-
             <form id="posCheckoutForm" class="pos-quick-actions" method="post" action="{{ url_for('pos.finish_sale') }}" data-pos-checkout>
                 <input type="hidden" name="cart_items" data-cart-json>
                 <input type="hidden" name="payment_method" value="Pix" data-payment-input>
                 <input type="hidden" name="table_id" data-table-input>
-                <button class="btn danger" type="button" data-cancel-order>Cancelar pedido</button>
-                <button class="btn neutral" type="button" data-clear-cart>Limpar pedido</button>
-                <button class="btn neutral" type="button">Salvar orçamento</button>
+                <details class="pos-more-actions">
+                    <summary class="btn neutral">Mais ações</summary>
+                    <div class="pos-more-menu">
+                        <button class="btn danger" type="button" data-cancel-order>Cancelar pedido</button>
+                        <button class="btn neutral" type="button" data-clear-cart>Limpar pedido</button>
+                        <button class="btn neutral" type="button">Salvar orçamento</button>
+                        <button class="btn neutral" type="button">Transferir</button>
+                        <button class="btn neutral" type="button">Comandas</button>
+                        <button class="btn neutral" type="button">Histórico</button>
+                    </div>
+                </details>
                 <button class="btn warning" type="button">Enviar para cozinha</button>
                 <button class="btn primary finish-sale" type="submit">Finalizar venda</button>
             </form>
         </section>
     </section>
+
+    <div class="pos-modal" data-favorites-panel hidden>
+        <div class="pos-modal-card">
+            <div class="pos-modal-head">
+                <div>
+                    <p class="eyebrow">Atalhos</p>
+                    <h2>Favoritos e mais vendidos</h2>
+                </div>
+                <button class="pos-modal-close" type="button" data-close-panel aria-label="Fechar">×</button>
+            </div>
+            <div class="pos-mini-products pos-modal-products">
+                {% for product in products if product.id in favorite_ids or product.id in best_seller_ids %}
+                <button class="pos-mini-product {{ 'hot' if product.id in best_seller_ids }}" type="button" data-add-product="{{ product.id }}">
+                    <span><img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy"></span>
+                    <strong>{{ product.name }}</strong>
+                    <small>R$ {{ "%.2f"|format(product.price) }}</small>
+                </button>
+                {% else %}
+                {% for product in products[:4] %}
+                <button class="pos-mini-product" type="button" data-add-product="{{ product.id }}">
+                    <span><img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy"></span>
+                    <strong>{{ product.name }}</strong>
+                    <small>R$ {{ "%.2f"|format(product.price) }}</small>
+                </button>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="pos-modal" data-table-modal hidden>
+        <div class="pos-modal-card pos-table-modal">
+            <div class="pos-modal-head">
+                <div>
+                    <p class="eyebrow">Mapa de mesas</p>
+                    <h2>Selecionar mesa</h2>
+                </div>
+                <button class="pos-modal-close" type="button" data-close-panel aria-label="Fechar">×</button>
+            </div>
+            <div class="pos-table-grid">
+                {% for table in tables %}
+                <button class="pos-table status-bg-{{ table.status|lower|replace(' ', '-') }}" type="button" data-table-id="{{ table.id }}" data-table-name="{{ table.name }}" data-table-status="{{ table.status }}">
+                    <strong>{{ table.name }}</strong>
+                    <small>{{ table.seats }} lugares</small>
+                    <span>{{ table.status }}</span>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
     <div class="pos-success" data-pos-success>
         <span>✓</span>
