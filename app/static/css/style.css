@@ -1480,7 +1480,7 @@ tbody tr:hover {
 .pos-workspace {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 490px;
-    grid-template-rows: minmax(0, 1fr) 206px;
+    grid-template-rows: minmax(0, 1fr) 248px;
     grid-template-areas:
         "catalog order"
         "bottom payment";
@@ -1522,8 +1522,8 @@ tbody tr:hover {
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
-    gap: 0.46rem;
-    padding: 0.66rem;
+    gap: 0.45rem;
+    padding: 0.68rem;
     border-color: rgba(124, 58, 237, 0.28);
     background:
         radial-gradient(circle at 100% 0%, rgba(124, 58, 237, 0.18), transparent 38%),
@@ -1535,6 +1535,15 @@ tbody tr:hover {
 .pos-payment .pos-section-title {
     grid-column: 1 / -1;
     margin-bottom: 0;
+}
+
+.pos-payment .eyebrow {
+    font-size: 0.64rem;
+}
+
+.pos-payment .pos-section-title h2 {
+    font-size: 1rem;
+    line-height: 1;
 }
 
 .pos-bottom {
@@ -2036,7 +2045,7 @@ tbody tr:hover {
     grid-column: 1 / -1;
     grid-row: 1;
     grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 0.38rem;
+    gap: 0.36rem;
     min-height: 0;
 }
 
@@ -2044,15 +2053,15 @@ tbody tr:hover {
     display: grid;
     justify-items: center;
     align-content: center;
-    gap: 0.2rem;
-    min-height: 52px;
+    gap: 0.12rem;
+    min-height: 48px;
     border: 1px solid var(--line);
     border-radius: 13px;
-    padding: 0.34rem;
+    padding: 0.28rem 0.22rem;
     color: var(--soft);
     background: rgba(255, 255, 255, 0.05);
     cursor: pointer;
-    font-size: 0.66rem;
+    font-size: 0.62rem;
     font-weight: 850;
     transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
@@ -2060,9 +2069,9 @@ tbody tr:hover {
 .payment-method span {
     display: grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 9px;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
     background: rgba(124, 58, 237, 0.18);
     font-size: 0.9rem;
 }
@@ -2092,12 +2101,14 @@ tbody tr:hover {
     grid-column: 1 / -1;
     grid-row: 2;
     display: grid;
-    grid-template-rows: 48px 42px 54px;
-    gap: 0.34rem;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 48px minmax(0, 1fr) 50px;
+    gap: 0.38rem;
     min-height: 0;
 }
 
 .payment-detail {
+    grid-column: 1 / -1;
     grid-row: 2;
     display: none;
     align-content: start;
@@ -2113,18 +2124,25 @@ tbody tr:hover {
     animation: paymentSwap 0.22s ease both;
 }
 
-.payment-detail[data-payment-detail="Cartao Credito"].active,
-.payment-detail[data-payment-detail="Cartao Debito"].active,
-.payment-detail[data-payment-detail="Voucher"].active,
+.payment-detail[data-payment-detail="Dinheiro"].active,
 .payment-detail[data-payment-detail="Outros"].active {
+    grid-template-columns: 1fr;
+}
+
+.payment-detail[data-payment-detail="Cartao Credito"].active {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.payment-detail[data-payment-detail="Cartao Debito"].active,
+.payment-detail[data-payment-detail="Voucher"].active {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .payment-detail p {
     grid-column: 1 / -1;
     margin: 0;
     color: var(--muted);
-    font-size: 0.82rem;
+    font-size: 0.76rem;
 }
 
 .pix-box {
@@ -2148,14 +2166,13 @@ tbody tr:hover {
 
 .payment-copy strong {
     display: block;
-    margin-bottom: 0.24rem;
+    margin-bottom: 0.18rem;
     color: var(--soft);
     font-size: 0.72rem;
 }
 
 .payment-detail input,
-.payment-detail select,
-.payment-values input {
+.payment-detail select {
     min-height: 30px;
     padding: 0.32rem 0.46rem;
     font-size: 0.72rem;
@@ -2170,25 +2187,28 @@ tbody tr:hover {
 
 .payment-values {
     display: grid;
+    grid-column: 1 / -1;
     grid-row: 3;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.34rem;
+    gap: 0.36rem;
+    min-height: 0;
 }
 
 .payment-values label,
 .payment-values div {
     display: grid;
-    gap: 0.18rem;
+    gap: 0.2rem;
     min-width: 0;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 0.42rem;
+    padding: 0.36rem 0.48rem;
     background: rgba(255, 255, 255, 0.045);
+    align-content: center;
 }
 
 .payment-values span {
     color: var(--muted);
-    font-size: 0.6rem;
+    font-size: 0.62rem;
     font-weight: 850;
     text-transform: uppercase;
 }
@@ -2196,13 +2216,14 @@ tbody tr:hover {
 .payment-values strong,
 .payment-values input {
     color: var(--text);
-    font-size: 0.92rem;
+    font-size: 0.98rem;
     font-weight: 950;
 }
 
 .payment-values input {
     border: 0;
     padding: 0;
+    min-height: auto;
     background: transparent;
 }
 
@@ -2691,7 +2712,7 @@ tbody tr:hover {
     grid-row: 1;
 }
 
-.payment-panel {
+.dashboard-premium-grid > .payment-panel {
     grid-column: 3;
     grid-row: 1;
 }
