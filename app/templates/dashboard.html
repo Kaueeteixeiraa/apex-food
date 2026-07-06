@@ -5,7 +5,7 @@
     <header class="dashboard-hero">
         <div>
             <p class="eyebrow">Dashboard</p>
-            <h1>Olá, João Admin! 👋</h1>
+            <h1>Ol&aacute;, Admin Apex</h1>
             <p>Bem-vindo ao seu painel de controle.</p>
         </div>
         <div class="dashboard-actions">
@@ -15,7 +15,7 @@
                     <option>{{ company.trade_name if company else "Apex Food" }}</option>
                 </select>
             </label>
-            <button class="notification-button" type="button" aria-label="Notificações">
+            <button class="notification-button" type="button" aria-label="Notifica&ccedil;&otilde;es">
                 <span></span>
             </button>
             <div class="date-chip">{{ current_date }}</div>
@@ -42,7 +42,7 @@
         <article class="premium-metric metric-green">
             <span class="metric-icon">TM</span>
             <div>
-                <small>Ticket médio</small>
+                <small>Ticket m&eacute;dio</small>
                 <strong>R$ {{ "%.2f"|format(summary.avg_ticket) }}</strong>
                 <em>+5,1% vs ontem</em>
             </div>
@@ -52,7 +52,7 @@
             <div>
                 <small>Mesas ocupadas</small>
                 <strong>{{ summary.occupied_tables }} / {{ summary.total_tables }}</strong>
-                <em>Salao em movimento</em>
+                <em>Sal&atilde;o em movimento</em>
             </div>
         </article>
         <article class="premium-metric metric-red">
@@ -69,7 +69,7 @@
         <article class="panel dashboard-card sales-panel">
             <div class="panel-heading">
                 <div>
-                    <h2>Vendas dos últimos 7 dias</h2>
+                    <h2>Vendas dos &uacute;ltimos 7 dias</h2>
                     <p class="panel-subtitle">Linha principal em azul neon</p>
                 </div>
                 <span class="pill info">7 dias</span>
@@ -91,7 +91,7 @@
             <div class="panel-heading">
                 <div>
                     <h2>Pedidos recentes</h2>
-                    <p class="panel-subtitle">Atualização em tempo real do salão</p>
+                    <p class="panel-subtitle">Atualiza&ccedil;&atilde;o em tempo real do sal&atilde;o</p>
                 </div>
                 <a class="pill active" href="{{ url_for('orders.index') }}">Ver todos</a>
             </div>
@@ -103,7 +103,7 @@
                             <th>Mesa / Cliente</th>
                             <th>Itens</th>
                             <th>Status</th>
-                            <th>Horário</th>
+                            <th>Hor&aacute;rio</th>
                             <th>Total</th>
                         </tr>
                     </thead>
@@ -132,7 +132,7 @@
             <div class="panel-heading">
                 <div>
                     <h2>Alertas</h2>
-                    <p class="panel-subtitle">Pontos que pedem atenção</p>
+                    <p class="panel-subtitle">Pontos que pedem aten&ccedil;&atilde;o</p>
                 </div>
                 <span class="pill danger">{{ dashboard_alerts|length }}</span>
             </div>

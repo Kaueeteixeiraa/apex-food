@@ -30,7 +30,26 @@ def init_db():
     db = get_db()
     schema_path = Path(current_app.root_path) / "schema.sql"
     db.executescript(schema_path.read_text(encoding="utf-8"))
+    ensure_product_columns(db)
     db.commit()
+
+
+def ensure_product_columns(db):
+    existing = {row["name"] for row in db.execute("PRAGMA table_info(products)").fetchall()}
+    columns = {
+        "product_class": "TEXT NOT NULL DEFAULT 'Produto'",
+        "product_group": "TEXT",
+        "unit_value": "REAL NOT NULL DEFAULT 0",
+        "cost_price": "REAL NOT NULL DEFAULT 0",
+        "stock_quantity": "REAL NOT NULL DEFAULT 0",
+        "min_stock": "REAL NOT NULL DEFAULT 0",
+        "unit": "TEXT NOT NULL DEFAULT 'un'",
+        "sku": "TEXT",
+        "barcode": "TEXT",
+    }
+    for name, definition in columns.items():
+        if name not in existing:
+            db.execute(f"ALTER TABLE products ADD COLUMN {name} {definition}")
 
 
 def query_one(sql, params=()):
@@ -90,17 +109,17 @@ def seed_demo_data():
     )
 
     products = [
-        ("Pizza Apex Pepperoni", "Pizzas", "Massa fina, pepperoni, mozzarella e molho especial.", 59.9, 1, 25),
-        ("Burger Neon Smash", "Hamburgueres", "Blend 160g, cheddar, cebola crispy e molho da casa.", 34.9, 1, 15),
-        ("Combo Fast Lunch", "Combos", "Burger, fritas e bebida.", 49.9, 1, 18),
-        ("Suco Tropical", "Bebidas", "Suco natural gelado.", 12.0, 1, 5),
-        ("Brownie Vulcano", "Sobremesas", "Brownie quente com calda.", 18.5, 1, 8),
+        ("Pizza Apex Pepperoni", "Pizzas", "Venda", "Pizzas premium", "Massa fina, pepperoni, mozzarella e molho especial.", 59.9, 59.9, 24.0, 18, 5, "un", "PIZ-001", "", 1, 25),
+        ("Burger Neon Smash", "Hamburgueres", "Venda", "Smash", "Blend 160g, cheddar, cebola crispy e molho da casa.", 34.9, 34.9, 13.5, 24, 8, "un", "BUR-001", "", 1, 15),
+        ("Combo Fast Lunch", "Combos", "Venda", "Combos", "Burger, fritas e bebida.", 49.9, 49.9, 21.0, 15, 4, "un", "COM-001", "", 1, 18),
+        ("Suco Tropical", "Bebidas", "Venda", "Bebidas naturais", "Suco natural gelado.", 12.0, 12.0, 4.0, 30, 10, "un", "BEB-001", "", 1, 5),
+        ("Brownie Vulcano", "Sobremesas", "Venda", "Doces", "Brownie quente com calda.", 18.5, 18.5, 6.5, 20, 6, "un", "SOB-001", "", 1, 8),
     ]
     db.executemany(
         """
         INSERT INTO products
-        (company_id, name, category, description, price, available, prep_time)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        (company_id, name, category, product_class, product_group, description, price, unit_value, cost_price, stock_quantity, min_stock, unit, sku, barcode, available, prep_time)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         [(company_id, *product) for product in products],
     )

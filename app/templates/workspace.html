@@ -15,6 +15,11 @@
         <div class="filter-row">
             {% if screen == "reports" %}
             <form class="reports-filter-row" method="get">
+                <select name="report" aria-label="Tipo de relatorio">
+                    {% for key, label in report_types %}
+                    <option value="{{ key }}" {% if report.key == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
                 <select name="period" aria-label="Periodo">
                     <option value="today" {% if period.key == "today" %}selected{% endif %}>Hoje</option>
                     <option value="7" {% if period.key == "7" %}selected{% endif %}>7 dias</option>
@@ -38,21 +43,50 @@
     </header>
 
     {% if screen == "menu" %}
-    <section class="suite-grid suite-products">
-        {% for product in products %}
-        <article class="product-card suite-product">
-            <div class="product-photo"><img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy"></div>
-            <div>
-                <span class="pill info">{{ product.category }}</span>
-                <h3>{{ product.name }}</h3>
-                <p>{{ product.description or "Produto pronto para venda no PDV." }}</p>
+    <section class="menu-premium">
+        <aside class="panel menu-side">
+            <h2>Card&aacute;pio Apex</h2>
+            <form class="menu-search" method="get">
+                <input name="q" value="{{ search }}" placeholder="Buscar item...">
+                <button class="btn primary" type="submit">Buscar</button>
+            </form>
+            <div class="menu-category-list">
+                {% for category in categories %}
+                <a class="menu-category {{ 'active' if selected_category == category.name }}" href="{{ url_for('pages.menu', category=category.name if category.name != 'Todos' else None, q=search) }}">
+                    <span>{{ category.name }}</span><strong>{{ category.count }}</strong>
+                </a>
+                {% endfor %}
             </div>
-            <div class="product-footer">
-                <strong>R$ {{ "%.2f"|format(product.price) }}</strong>
-                <span class="status {{ 'positive' if product.available else 'danger' }}">{{ "Ativo" if product.available else "Pausado" }}</span>
+            <div class="menu-side-stats">
+                <span><strong>{{ stats.active }}</strong><small>Ativos</small></span>
+                <span><strong>R$ {{ "%.2f"|format(stats.avg) }}</strong><small>Pre&ccedil;o m&eacute;dio</small></span>
             </div>
-        </article>
-        {% endfor %}
+        </aside>
+
+        <section class="panel menu-showcase">
+            <div class="panel-heading">
+                <div><h2>{{ selected_category }}</h2><p class="panel-subtitle">{{ products|length }} item(ns) no card&aacute;pio</p></div>
+                <a class="btn primary" href="{{ url_for('products.index') }}">Gerenciar produtos</a>
+            </div>
+            <div class="menu-product-grid">
+                {% for product in products %}
+                <article class="product-card menu-product-card">
+                    <div class="product-photo"><img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy"><span class="status {{ 'positive' if product.available else 'danger' }}">{{ "Ativo" if product.available else "Pausado" }}</span></div>
+                    <div class="menu-product-body">
+                        <span class="pill info">{{ product.category }}</span>
+                        <h3>{{ product.name }}</h3>
+                        <p>{{ product.description or "Produto pronto para venda no PDV." }}</p>
+                    </div>
+                    <div class="product-footer">
+                        <strong>R$ {{ "%.2f"|format(product.price) }}</strong>
+                        <span>{{ product.prep_time }} min</span>
+                    </div>
+                </article>
+                {% else %}
+                <p class="empty">Nenhum produto encontrado.</p>
+                {% endfor %}
+            </div>
+        </section>
     </section>
 
     {% elif screen == "categories" %}
@@ -63,7 +97,7 @@
             <h2>{{ category.name }}</h2>
             <p>{{ category.products }} produtos cadastrados</p>
             <div class="suite-card-row"><span>Disponiveis</span><strong>{{ category.available }}</strong></div>
-            <div class="suite-card-row"><span>Ticket medio</span><strong>R$ {{ "%.2f"|format(category.avg_price) }}</strong></div>
+            <div class="suite-card-row"><span>Ticket m&eacute;dio</span><strong>R$ {{ "%.2f"|format(category.avg_price) }}</strong></div>
         </article>
         {% endfor %}
     </section>
@@ -107,13 +141,13 @@
         <section class="reports-kpis">
             <article class="metric-card"><span>Vendas</span><strong>R$ {{ "%.2f"|format(summary.revenue) }}</strong><small>Receita filtrada</small></article>
             <article class="metric-card"><span>Pedidos</span><strong>{{ summary.orders }}</strong><small>No periodo</small></article>
-            <article class="metric-card"><span>Ticket medio</span><strong>R$ {{ "%.2f"|format(summary.ticket) }}</strong><small>Por venda</small></article>
+            <article class="metric-card"><span>Ticket m&eacute;dio</span><strong>R$ {{ "%.2f"|format(summary.ticket) }}</strong><small>Por venda</small></article>
             <article class="metric-card"><span>Clientes</span><strong>{{ summary.customers }}</strong><small>Atendidos</small></article>
         </section>
 
-        <section class="reports-layout">
+        <section class="reports-layout reports-builder">
             <article class="panel report-chart-card">
-                <div class="panel-heading"><h2>Vendas por periodo</h2><span class="pill info">{{ period.label }}</span></div>
+                <div class="panel-heading"><h2>{{ report.label }} no per&iacute;odo</h2><span class="pill info">{{ period.label }}</span></div>
                 <div class="report-bars report-bars-premium">
                     {% for item in chart %}
                     <div><span style="height:{{ item.height }}%"></span><small>{{ item.label }}</small></div>
@@ -121,26 +155,14 @@
                 </div>
             </article>
 
-            <article class="panel reports-list-card">
-                <h2>Produtos mais vendidos</h2>
-                {% for product in top_products %}
-                <div class="list-row"><span>{{ product.name }} <small>{{ product.category }}</small></span><strong>{{ product.sold }}</strong></div>
-                {% else %}<p class="empty">Sem dados.</p>{% endfor %}
+            {% for section in report_sections %}
+            <article class="panel reports-list-card report-section-card report-{{ section.key }}">
+                <div class="panel-heading"><h2>{{ section.title }}</h2><span class="pill">{{ section.total }}</span></div>
+                {% for row in section.rows %}
+                <div class="list-row"><span>{{ row.label }}{% if row.meta %}<small>{{ row.meta }}</small>{% endif %}</span><strong>{{ row.value }}</strong></div>
+                {% else %}<p class="empty">Sem dados para este filtro.</p>{% endfor %}
             </article>
-
-            <article class="panel reports-list-card">
-                <h2>Clientes em destaque</h2>
-                {% for client in clients %}
-                <div class="list-row"><span>{{ client.name }} <small>{{ client.orders }} pedido(s)</small></span><strong>R$ {{ "%.2f"|format(client.total) }}</strong></div>
-                {% else %}<p class="empty">Sem clientes no periodo.</p>{% endfor %}
-            </article>
-
-            <article class="panel reports-list-card">
-                <h2>Canais de venda</h2>
-                {% for channel in channels %}
-                <div class="list-row"><span>{{ channel.name }}</span><strong>{{ channel.orders }}</strong></div>
-                {% else %}<p class="empty">Sem canais no periodo.</p>{% endfor %}
-            </article>
+            {% endfor %}
         </section>
     </section>
 
@@ -156,6 +178,25 @@
             </form>
         </article>
         <div class="suite-grid settings-grid">
+            <article class="panel suite-card preference-panel">
+                <div class="suite-icon">UI</div>
+                <h2>Apar&ecirc;ncia e movimento</h2>
+                <p>Prefer&ecirc;ncias salvas neste dispositivo para ajustar leitura e desempenho.</p>
+                <div class="preference-row">
+                    <span><strong>Modo claro</strong><small data-ui-pref-status="theme">Escuro</small></span>
+                    <div class="preference-actions">
+                        <button class="btn neutral" type="button" data-ui-pref="theme" data-value="light">Ativar</button>
+                        <button class="btn neutral" type="button" data-ui-pref="theme" data-value="dark">Desativar</button>
+                    </div>
+                </div>
+                <div class="preference-row">
+                    <span><strong>Sem anima&ccedil;&atilde;o</strong><small data-ui-pref-status="motion">Desativado</small></span>
+                    <div class="preference-actions">
+                        <button class="btn neutral" type="button" data-ui-pref="motion" data-value="off">Ativar</button>
+                        <button class="btn neutral" type="button" data-ui-pref="motion" data-value="on">Desativar</button>
+                    </div>
+                </div>
+            </article>
             {% for title, text in groups %}
             <article class="panel suite-card">
                 <div class="suite-icon">{{ title[:2].upper() }}</div>

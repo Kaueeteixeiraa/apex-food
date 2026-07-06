@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Estoque | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
-    <div><p class="eyebrow">Insumos</p><h1>Estoque simples</h1></div>
+<header class="page-header ops-hero" data-icon="ET">
+    <div><p class="eyebrow">Insumos</p><h1>Estoque</h1></div>
+    <div class="filter-row"><span class="pill info">{{ items|length }} itens</span></div>
 </header>
 
-<section class="content-grid">
+<section class="content-grid ops-grid">
     <article class="panel">
         <h2>Novo item</h2>
         <form method="post" class="form-grid">
             <label>Nome do item<input name="name" required></label>
             <label>Quantidade<input name="quantity" type="number" step="0.01" required></label>
             <label>Unidade<input name="unit" value="un"></label>
-            <label>Estoque mínimo<input name="min_stock" type="number" step="0.01" value="0"></label>
+            <label>Estoque m&iacute;nimo<input name="min_stock" type="number" step="0.01" value="0"></label>
             <button class="btn primary" type="submit">Adicionar item</button>
         </form>
     </article>
@@ -20,7 +21,7 @@
         <div class="panel-heading"><h2>Itens cadastrados</h2><span class="pill">{{ items|length }}</span></div>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Item</th><th>Quantidade</th><th>Mínimo</th><th>Status</th></tr></thead>
+                <thead><tr><th>Item</th><th>Quantidade</th><th>M&iacute;nimo</th><th>Status</th></tr></thead>
                 <tbody>
                 {% for item in items %}
                 <tr>

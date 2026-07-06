@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Cozinha / KDS | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
-    <div><p class="eyebrow">Produção</p><h1>Cozinha / KDS simples</h1></div>
+<header class="page-header ops-hero" data-icon="KDS">
+    <div><p class="eyebrow">Produ&ccedil;&atilde;o</p><h1>Cozinha / KDS</h1></div>
     <span class="pill info">{{ orders|length }} pedidos ativos</span>
 </header>
 
-<section class="kds-grid">
+<section class="kds-grid ops-kds-grid">
     {% for order in orders %}
     <article class="kds-card">
         <div class="order-top">

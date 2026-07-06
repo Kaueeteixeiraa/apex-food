@@ -4,6 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Apex Food{% endblock %}</title>
+    <script>
+        (function () {
+            try {
+                var prefs = JSON.parse(localStorage.getItem("apexUiPrefs") || "{}");
+                document.documentElement.classList.toggle("theme-light", prefs.theme === "light");
+                document.documentElement.classList.toggle("motion-off", prefs.motion === "off");
+            } catch (error) {}
+        })();
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 {% set is_auth_page = request.blueprint == "auth" %}
@@ -23,7 +32,6 @@
                 <a class="{{ 'active' if request.blueprint == 'pos' }}" href="{{ url_for('pos.index') }}"><span class="nav-icon" data-nav-icon="pos"></span>Caixa / PDV</a>
                 <a class="{{ 'active' if request.blueprint == 'orders' }}" href="{{ url_for('orders.index') }}"><span class="nav-icon" data-nav-icon="orders"></span>Pedidos</a>
                 <a class="{{ 'active' if request.blueprint == 'kitchen' }}" href="{{ url_for('kitchen.index') }}"><span class="nav-icon" data-nav-icon="kitchen"></span>Cozinha</a>
-                <a class="{{ 'active' if request.endpoint == 'pages.menu' }}" href="{{ url_for('pages.menu') }}"><span class="nav-icon" data-nav-icon="menu"></span>Card&aacute;pio</a>
                 <a class="{{ 'active' if request.blueprint == 'products' }}" href="{{ url_for('products.index') }}"><span class="nav-icon" data-nav-icon="products"></span>Produtos</a>
                 <a class="{{ 'active' if request.endpoint == 'pages.categories' }}" href="{{ url_for('pages.categories') }}"><span class="nav-icon" data-nav-icon="categories"></span>Categorias</a>
                 <a class="{{ 'active' if request.blueprint == 'clients' }}" href="{{ url_for('clients.index') }}"><span class="nav-icon" data-nav-icon="clients"></span>Clientes</a>

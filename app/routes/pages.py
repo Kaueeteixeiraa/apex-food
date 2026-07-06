@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, redirect, render_template, request, url_for
 
 from ..database import query_all, query_one
 from ..models import PRODUCT_CATEGORIES, products_with_demo_images
@@ -154,12 +154,64 @@ def _report_channels(cid, period):
     )
 
 
+def _rows_to_report(rows, label, value, meta=None, money=False):
+    return [
+        {
+            "label": row[label],
+            "meta": row[meta] if meta else "",
+            "value": f"R$ {float(row[value]):.2f}" if money else row[value],
+        }
+        for row in rows
+    ]
+
+
+def _report_sections(cid, period, selected):
+    where, dates = _period_where("created_at", period)
+    sections = []
+
+    def wants(key):
+        return selected == "all" or selected == key
+
+    if wants("sales"):
+        rows = query_all(
+            f"SELECT payment_method name, COUNT(*) count, COALESCE(SUM(total),0) total FROM sales WHERE company_id=? AND {where} GROUP BY payment_method ORDER BY total DESC LIMIT 5",
+            (cid, *dates),
+        )
+        sections.append({"key": "sales", "title": "Vendas e pagamentos", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "count", True)})
+    if wants("orders"):
+        rows = query_all(
+            f"SELECT status name, COUNT(*) count, COALESCE(SUM(total),0) total FROM orders WHERE company_id=? AND {where} GROUP BY status ORDER BY count DESC LIMIT 6",
+            (cid, *dates),
+        )
+        sections.append({"key": "orders", "title": "Pedidos por status", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "count", True)})
+    if wants("products"):
+        rows = _top_products_period(cid, period, 6)
+        sections.append({"key": "products", "title": "Produtos vendidos", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "sold", True)})
+    if wants("customers"):
+        rows = _report_customers(cid, period)
+        sections.append({"key": "customers", "title": "Clientes", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "orders", True)})
+    if wants("delivery"):
+        rows = query_all(
+            f"SELECT fulfillment_type name, COUNT(*) count, COALESCE(SUM(total),0) total FROM orders WHERE company_id=? AND {where} GROUP BY fulfillment_type ORDER BY count DESC",
+            (cid, *dates),
+        )
+        sections.append({"key": "delivery", "title": "Canais de atendimento", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "count", True)})
+    if wants("inventory"):
+        rows = query_all(
+            "SELECT name, quantity, unit, min_stock FROM inventory_items WHERE company_id=? ORDER BY CASE WHEN quantity<=min_stock THEN 0 ELSE 1 END, quantity LIMIT 6",
+            (cid,),
+        )
+        sections.append({"key": "inventory", "title": "Estoque", "total": len(rows), "rows": [{"label": row["name"], "meta": f"min. {row['min_stock']} {row['unit']}", "value": f"{row['quantity']} {row['unit']}"} for row in rows]})
+    if wants("tables"):
+        rows = query_all("SELECT status name, COUNT(*) count FROM tables WHERE company_id=? GROUP BY status ORDER BY count DESC", (cid,))
+        sections.append({"key": "tables", "title": "Mesas", "total": len(rows), "rows": _rows_to_report(rows, "name", "count")})
+    return sections[:6] if selected == "all" else sections
+
+
 @bp.get("/menu")
 @login_required
 def menu():
-    cid = company_id()
-    products = products_with_demo_images(query_all("SELECT * FROM products WHERE company_id=? ORDER BY category,name", (cid,)))
-    return render_template("workspace.html", screen="menu", title="Cardapio", products=products)
+    return redirect(url_for("products.index"))
 
 
 @bp.get("/categories")
@@ -211,11 +263,27 @@ def delivery():
 def reports():
     cid = company_id()
     period = _period_context()
+    report_types = [
+        ("all", "Geral"),
+        ("sales", "Vendas"),
+        ("orders", "Pedidos"),
+        ("products", "Produtos"),
+        ("customers", "Clientes"),
+        ("delivery", "Atendimento"),
+        ("inventory", "Estoque"),
+        ("tables", "Mesas"),
+    ]
+    selected_report = request.args.get("report", "all")
+    if selected_report not in {key for key, _ in report_types}:
+        selected_report = "all"
     return render_template(
         "workspace.html",
         screen="reports",
         title="Relatorios",
         period=period,
+        report={"key": selected_report, "label": dict(report_types)[selected_report]},
+        report_types=report_types,
+        report_sections=_report_sections(cid, period, selected_report),
         summary=_report_summary(cid, period),
         chart=_sales_chart(cid, period),
         top_products=_top_products_period(cid, period),

@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Clientes | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
+<header class="page-header ops-hero" data-icon="CL">
     <div><p class="eyebrow">Relacionamento</p><h1>Clientes</h1></div>
+    <div class="filter-row"><span class="pill info">{{ clients|length }} clientes</span></div>
 </header>
 
-<section class="content-grid">
+<section class="content-grid ops-grid">
     <article class="panel">
         <h2>Novo cliente</h2>
         <form method="post" class="form-grid">
             <label>Nome<input name="name" required></label>
             <label>Telefone<input name="phone"></label>
             <label>E-mail<input name="email" type="email"></label>
-            <label>Endereço<textarea name="address" rows="3"></textarea></label>
+            <label>Endere&ccedil;o<textarea name="address" rows="3"></textarea></label>
             <button class="btn primary" type="submit">Cadastrar cliente</button>
         </form>
     </article>

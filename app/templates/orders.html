@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Pedidos | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
+<header class="page-header ops-hero" data-icon="PD">
     <div><p class="eyebrow">Atendimento</p><h1>Pedidos</h1></div>
+    <div class="filter-row"><span class="pill info">{{ orders|length }} pedidos</span><a class="btn neutral" href="{{ url_for('pos.index') }}">Abrir PDV</a></div>
 </header>
 
-<section class="content-grid">
+<section class="content-grid ops-grid">
     <article class="panel">
         <h2>Criar pedido</h2>
         <form method="post" class="form-grid">
@@ -14,7 +15,7 @@
                 <select name="fulfillment_type">
                     <option>Mesa</option>
                     <option>Entrega</option>
-                    <option>Balcao</option>
+                    <option>Balc&atilde;o</option>
                 </select>
             </label>
             <label>Mesa
@@ -33,7 +34,7 @@
                 </select>
             </label>
             <label>Quantidade<input name="quantity" type="number" min="1" value="1"></label>
-            <label>Observações<textarea name="notes" rows="3"></textarea></label>
+            <label>Observa&ccedil;&otilde;es<textarea name="notes" rows="3"></textarea></label>
             <button class="btn primary" type="submit">Criar pedido</button>
         </form>
     </article>

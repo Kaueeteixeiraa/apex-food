@@ -1,28 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Funcionários | Apex Food{% endblock %}
+{% block title %}Funcion&aacute;rios | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
-    <div><p class="eyebrow">Equipe</p><h1>Funcionários</h1></div>
+<header class="page-header ops-hero" data-icon="EQ">
+    <div><p class="eyebrow">Equipe</p><h1>Funcion&aacute;rios</h1></div>
+    <div class="filter-row"><span class="pill info">{{ employees|length }} pessoas</span></div>
 </header>
 
-<section class="content-grid">
+<section class="content-grid ops-grid">
     <article class="panel">
-        <h2>Novo funcionário</h2>
+        <h2>Novo funcion&aacute;rio</h2>
         <form method="post" class="form-grid">
             <label>Nome<input name="name" required></label>
             <label>Cargo<input name="role" required></label>
             <label>E-mail<input name="email" type="email"></label>
             <label>Telefone<input name="phone"></label>
-            <label>Permissão
+            <label>Permiss&atilde;o
                 <select name="permission">
                     {% for permission in permissions %}
                     <option>{{ permission }}</option>
                     {% endfor %}
                 </select>
             </label>
-            <button class="btn primary" type="submit">Cadastrar funcionário</button>
+            <button class="btn primary" type="submit">Cadastrar funcion&aacute;rio</button>
         </form>
     </article>
+
     <article class="panel wide">
         <div class="panel-heading"><h2>Equipe cadastrada</h2><span class="pill">{{ employees|length }}</span></div>
         <div class="card-grid">
@@ -31,10 +33,10 @@
                 <h3>{{ employee.name }}</h3>
                 <p>{{ employee.role }}</p>
                 <span class="pill info">{{ employee.permission }}</span>
-                <small>{{ employee.email }} · {{ employee.phone }}</small>
+                <small>{{ employee.email }} &middot; {{ employee.phone }}</small>
             </div>
             {% else %}
-            <p class="empty">Nenhum funcionário cadastrado.</p>
+            <p class="empty">Nenhum funcion&aacute;rio cadastrado.</p>
             {% endfor %}
         </div>
     </article>

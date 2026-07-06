@@ -19,7 +19,7 @@ def index():
             (form.get("product_id"), cid),
         )
         if not product:
-            flash("Selecione um produto válido.", "error")
+            flash("Selecione um produto valido.", "error")
             return redirect(url_for("orders.index"))
 
         quantity = max(int(form.get("quantity") or 1), 1)
@@ -34,7 +34,7 @@ def index():
             """,
             (
                 cid,
-                form.get("customer_name", "").strip() or "Cliente balcão",
+                form.get("customer_name", "").strip() or "Cliente balcao",
                 form.get("fulfillment_type", "Mesa"),
                 table_id,
                 "Novo",

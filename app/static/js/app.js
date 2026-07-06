@@ -1,5 +1,17 @@
 (function () {
     const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+    const prefsKey = "apexUiPrefs";
+    const readPrefs = () => {
+        try {
+            return JSON.parse(localStorage.getItem(prefsKey) || "{}");
+        } catch (error) {
+            return {};
+        }
+    };
+    const applyPrefs = (prefs = readPrefs()) => {
+        document.documentElement.classList.toggle("theme-light", prefs.theme === "light");
+        document.documentElement.classList.toggle("motion-off", prefs.motion === "off");
+    };
     const navIcons = {
         dashboard: '<rect x="3" y="3" width="7" height="8" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="15" width="7" height="6" rx="2"/>',
         pos: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/>',
@@ -20,6 +32,33 @@
     document.querySelectorAll("[data-nav-icon]").forEach((icon) => {
         icon.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${navIcons[icon.dataset.navIcon] || navIcons.dashboard}</svg>`;
     });
+
+    applyPrefs();
+
+    const prefButtons = [...document.querySelectorAll("[data-ui-pref]")];
+    if (prefButtons.length) {
+        const renderPrefs = () => {
+            const prefs = readPrefs();
+            prefButtons.forEach((button) => {
+                const active = (button.dataset.uiPref === "theme" && (prefs.theme || "dark") === button.dataset.value)
+                    || (button.dataset.uiPref === "motion" && (prefs.motion || "on") === button.dataset.value);
+                button.classList.toggle("active", active);
+            });
+            document.querySelector('[data-ui-pref-status="theme"]').textContent = prefs.theme === "light" ? "Claro" : "Escuro";
+            document.querySelector('[data-ui-pref-status="motion"]').textContent = prefs.motion === "off" ? "Ativado" : "Desativado";
+        };
+
+        prefButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const prefs = { theme: "dark", motion: "on", ...readPrefs() };
+                prefs[button.dataset.uiPref] = button.dataset.value;
+                localStorage.setItem(prefsKey, JSON.stringify(prefs));
+                applyPrefs(prefs);
+                renderPrefs();
+            });
+        });
+        renderPrefs();
+    }
 
     document.querySelectorAll(".flash").forEach((flash) => {
         setTimeout(() => flash.classList.add("fade-out"), 4200);

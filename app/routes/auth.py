@@ -58,7 +58,7 @@ def login():
         )
 
         if user is None or not check_password_hash(user["password_hash"], password):
-            flash("E-mail ou senha inválidos.", "error")
+            flash("E-mail ou senha invalidos.", "error")
         else:
             session.clear()
             session["user_id"] = user["id"]
@@ -93,7 +93,7 @@ def register():
 
         missing = [field for field in required if not form.get(field, "").strip()]
         if missing:
-            flash("Preencha todos os campos obrigatórios.", "error")
+            flash("Preencha todos os campos obrigatorios.", "error")
             return render_template("auth/register.html", segments=SEGMENTS)
 
         db = get_db()
@@ -134,7 +134,7 @@ def register():
             db.commit()
         except sqlite3.IntegrityError:
             db.rollback()
-            flash("Já existe uma empresa ou usuário com esse e-mail.", "error")
+            flash("Ja existe uma empresa ou usuario com esse e-mail.", "error")
             return render_template("auth/register.html", segments=SEGMENTS)
 
         flash("Empresa cadastrada. Entre com o e-mail do administrador.", "success")
@@ -146,5 +146,5 @@ def register():
 @bp.get("/logout")
 def logout():
     session.clear()
-    flash("Sessão encerrada.", "success")
+    flash("Sessao encerrada.", "success")
     return redirect(url_for("auth.login"))
