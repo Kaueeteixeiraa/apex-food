@@ -1,12 +1,25 @@
+import csv
+from io import StringIO
 from datetime import datetime, timedelta
 
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, Response, redirect, render_template, request, url_for
 
-from ..database import query_all, query_one
-from ..models import PRODUCT_CATEGORIES, products_with_demo_images
+from ..database import execute, query_all, query_one
+from ..models import ORDER_STATUSES, PRODUCT_CATEGORIES, products_with_demo_images
 from .auth import company_id, login_required
 
 bp = Blueprint("pages", __name__)
+
+REPORT_TYPES = [
+    ("all", "Geral"),
+    ("sales", "Vendas"),
+    ("orders", "Pedidos"),
+    ("products", "Produtos"),
+    ("customers", "Clientes"),
+    ("delivery", "Atendimento"),
+    ("inventory", "Estoque"),
+    ("tables", "Mesas"),
+]
 
 
 def _value(sql, params):
@@ -87,7 +100,31 @@ def _report_summary(cid, period):
         f"SELECT COUNT(DISTINCT COALESCE(NULLIF(customer_name,''), 'Cliente ' || id)) customers FROM orders WHERE company_id=? AND {where}",
         (cid, *dates),
     )
-    return {"revenue": sales["revenue"], "sales": sales["sales"], "ticket": sales["ticket"], "orders": orders["orders"], "customers": customers["customers"]}
+    order_where, order_dates = _period_where("orders.created_at", period)
+    cost = query_one(
+        f"""
+        SELECT COALESCE(SUM(order_items.quantity * products.cost_price), 0) cost
+        FROM order_items
+        JOIN orders ON orders.id = order_items.order_id
+        LEFT JOIN products ON products.id = order_items.product_id
+        WHERE orders.company_id=? AND {order_where}
+        """,
+        (cid, *order_dates),
+    )
+    cash = query_one(
+        "SELECT status, opening_amount FROM cash_registers WHERE company_id=? ORDER BY id DESC LIMIT 1",
+        (cid,),
+    )
+    return {
+        "revenue": sales["revenue"],
+        "sales": sales["sales"],
+        "ticket": sales["ticket"],
+        "orders": orders["orders"],
+        "customers": customers["customers"],
+        "profit": float(sales["revenue"] or 0) - float(cost["cost"] or 0),
+        "cash_status": cash["status"] if cash else "Fechado",
+        "cash_opening": cash["opening_amount"] if cash else 0,
+    }
 
 
 def _top_products(cid, limit=6):
@@ -258,37 +295,79 @@ def delivery():
     return render_template("workspace.html", screen="delivery", title="Delivery", orders=orders, metrics=metrics)
 
 
+@bp.post("/delivery/<int:order_id>/status")
+@login_required
+def delivery_status(order_id):
+    cid = company_id()
+    status = request.form.get("status", "Recebido")
+    if status not in ORDER_STATUSES:
+        status = "Recebido"
+    execute(
+        "UPDATE orders SET status=? WHERE id=? AND company_id=? AND fulfillment_type='Entrega'",
+        (status, order_id, cid),
+    )
+    return redirect(url_for("pages.delivery"))
+
+
 @bp.get("/reports")
 @login_required
 def reports():
     cid = company_id()
     period = _period_context()
-    report_types = [
-        ("all", "Geral"),
-        ("sales", "Vendas"),
-        ("orders", "Pedidos"),
-        ("products", "Produtos"),
-        ("customers", "Clientes"),
-        ("delivery", "Atendimento"),
-        ("inventory", "Estoque"),
-        ("tables", "Mesas"),
-    ]
     selected_report = request.args.get("report", "all")
-    if selected_report not in {key for key, _ in report_types}:
+    if selected_report not in {key for key, _ in REPORT_TYPES}:
         selected_report = "all"
     return render_template(
         "workspace.html",
         screen="reports",
         title="Relatorios",
         period=period,
-        report={"key": selected_report, "label": dict(report_types)[selected_report]},
-        report_types=report_types,
+        report={"key": selected_report, "label": dict(REPORT_TYPES)[selected_report]},
+        report_types=REPORT_TYPES,
         report_sections=_report_sections(cid, period, selected_report),
         summary=_report_summary(cid, period),
         chart=_sales_chart(cid, period),
         top_products=_top_products_period(cid, period),
         clients=_report_customers(cid, period),
         channels=_report_channels(cid, period),
+    )
+
+
+@bp.get("/reports/export")
+@login_required
+def reports_export():
+    cid = company_id()
+    period = _period_context()
+    selected_report = request.args.get("report", "all")
+    if selected_report not in {key for key, _ in REPORT_TYPES}:
+        selected_report = "all"
+
+    summary = _report_summary(cid, period)
+    output = StringIO()
+    writer = csv.writer(output, delimiter=";")
+    writer.writerow(["Apex Food 2.0", dict(REPORT_TYPES)[selected_report]])
+    writer.writerow(["Periodo", period["start"], period["end"]])
+    writer.writerow([])
+    writer.writerow(["Receita", "Pedidos", "Ticket medio", "Lucro estimado", "Caixa"])
+    writer.writerow([
+        f"{summary['revenue']:.2f}",
+        summary["orders"],
+        f"{summary['ticket']:.2f}",
+        f"{summary['profit']:.2f}",
+        summary["cash_status"],
+    ])
+    for section in _report_sections(cid, period, selected_report):
+        writer.writerow([])
+        writer.writerow([section["title"]])
+        writer.writerow(["Item", "Detalhe", "Valor"])
+        for row in section["rows"]:
+            writer.writerow([row["label"], row["meta"], row["value"]])
+
+    filename = f"apex-relatorio-{period['start']}-{period['end']}.csv"
+    return Response(
+        "\ufeff" + output.getvalue(),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
 

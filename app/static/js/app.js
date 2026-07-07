@@ -294,6 +294,7 @@
         const search = document.querySelector("[data-pos-search]");
         const success = document.querySelector("[data-pos-success]");
         const favoritesPanel = document.querySelector("[data-favorites-panel]");
+        const productsDrawer = document.querySelector("[data-products-drawer]");
         const tableModal = document.querySelector("[data-table-modal]");
         const selectedTable = document.querySelector("[data-selected-table]");
         let activeCategory = "Todos";
@@ -347,7 +348,7 @@
                         <span class="cart-thumb"><img src="${escapeHtml(item.image)}" alt=""></span>
                         <div class="cart-main">
                             <strong>${escapeHtml(item.name)}</strong>
-                            <input data-note="${item.id}" placeholder="Observação" value="${escapeHtml(item.note || "")}">
+                            <input data-note="${item.id}" placeholder="Observa&ccedil;&atilde;o" value="${escapeHtml(item.note || "")}">
                         </div>
                         <div class="cart-qty">
                             <button type="button" data-dec="${item.id}">-</button>
@@ -355,7 +356,7 @@
                             <button type="button" data-inc="${item.id}">+</button>
                         </div>
                         <strong>${money.format(item.price * item.quantity)}</strong>
-                        <button class="cart-remove" type="button" data-remove="${item.id}">×</button>
+                        <button class="cart-remove" type="button" data-remove="${item.id}">&times;</button>
                     </article>
                 `).join("");
             }
@@ -401,7 +402,10 @@
 
         document.addEventListener("click", (event) => {
             const add = event.target.closest("[data-add-product]");
-            if (add) addProduct(add.dataset.addProduct);
+            if (add) {
+                addProduct(add.dataset.addProduct);
+                if (productsDrawer && add.closest("[data-products-drawer]")) productsDrawer.hidden = true;
+            }
 
             const inc = event.target.closest("[data-inc]");
             if (inc) {
@@ -450,7 +454,14 @@
                 tableModal.hidden = true;
             }
 
-            if (event.target.closest("[data-favorites-toggle]")) favoritesPanel.hidden = false;
+            if (event.target.closest("[data-products-open]") && productsDrawer) {
+                productsDrawer.hidden = false;
+                search?.focus();
+                filterProducts();
+            }
+            if (event.target.closest("[data-products-close]") && productsDrawer) productsDrawer.hidden = true;
+            if (event.target === productsDrawer) productsDrawer.hidden = true;
+            if (event.target.closest("[data-favorites-toggle]") && favoritesPanel) favoritesPanel.hidden = false;
             if (event.target.closest("[data-table-modal-open]")) tableModal.hidden = false;
             if (event.target.closest("[data-close-panel]")) event.target.closest(".pos-modal").hidden = true;
             if (event.target.classList.contains("pos-modal")) event.target.hidden = true;
@@ -487,6 +498,21 @@
             }
             success.classList.add("show");
             setTimeout(() => success.classList.remove("show"), 1800);
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "F5") {
+                event.preventDefault();
+                document.querySelector("[data-pos-checkout]")?.requestSubmit();
+            }
+            if (event.key === "Escape") {
+                cart.clear();
+                renderCart();
+            }
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f") {
+                event.preventDefault();
+                search?.focus();
+            }
         });
 
         syncClock();

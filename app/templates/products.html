@@ -1,85 +1,84 @@
 {% extends "base.html" %}
 {% block title %}Produtos | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header ops-hero products-hero" data-icon="PR">
-    <div><p class="eyebrow">Gest&atilde;o de produtos</p><h1>Produtos do PDV</h1></div>
-    <div class="filter-row">
-        <span class="pill info">{{ metrics.active }} ativos</span>
-        <span class="pill">{{ "%.0f"|format(metrics.stock) }} em estoque</span>
-        <span class="pill">R$ {{ "%.2f"|format(metrics.avg) }} m&eacute;dia</span>
-    </div>
-</header>
+<section class="products-manager">
+    <header class="products-manager-head">
+        <div><span>Gestao do PDV</span><h1>{{ form_title if mode == "form" else "Produtos" }}</h1></div>
+        <div class="products-metric"><strong>{{ metrics.total }}</strong><small>Total</small></div>
+        <div class="products-metric"><strong>{{ metrics.active }}</strong><small>Ativos</small></div>
+        <div class="products-metric"><strong>{{ "%.0f"|format(metrics.stock) }}</strong><small>Estoque</small></div>
+        {% if mode == "form" %}
+        <a class="manager-link neutral" href="{{ url_for('products.index') }}">Voltar</a>
+        {% else %}
+        <a class="manager-link" href="{{ url_for('products.new') }}">Cadastrar produto</a>
+        {% endif %}
+    </header>
 
-<section class="products-premium">
-    <aside class="panel product-editor">
-        <div class="panel-heading"><h2>Novo produto</h2><span class="pill info">PDV</span></div>
-        <form method="post" class="form-grid product-form">
-            <label>Nome<input name="name" required></label>
-            <label>Categoria<select name="category">{% for category in categories %}<option>{{ category }}</option>{% endfor %}</select></label>
-            <label>Classe<input name="product_class" value="Produto"></label>
-            <label>Grupo<input name="product_group" placeholder="Ex: Smash, Bebidas"></label>
-            <label>Pre&ccedil;o venda<input name="price" type="number" step="0.01" min="0" required></label>
-            <label>Valor unit&aacute;rio<input name="unit_value" type="number" step="0.01" min="0"></label>
-            <label>Custo<input name="cost_price" type="number" step="0.01" min="0"></label>
-            <label>Estoque<input name="stock_quantity" type="number" step="0.01" min="0" value="0"></label>
-            <label>Estoque m&iacute;nimo<input name="min_stock" type="number" step="0.01" min="0" value="0"></label>
-            <label>Unidade<input name="unit" value="un"></label>
-            <label>SKU<input name="sku" placeholder="COD-001"></label>
-            <label>C&oacute;digo barras<input name="barcode"></label>
-            <label>Preparo<input name="prep_time" type="number" min="1" value="10"></label>
-            <label>Imagem (URL)<input name="image_url" placeholder="https://..."></label>
-            <label class="span-2">Descri&ccedil;&atilde;o<textarea name="description" rows="2"></textarea></label>
-            <label class="inline-check"><input name="available" type="checkbox" checked> Dispon&iacute;vel</label>
-            <button class="btn primary" type="submit">Cadastrar produto</button>
+    {% if mode == "form" %}
+    <section class="products-manager-card product-form-card">
+        <form method="post" action="{{ form_action }}" class="product-dialog-form">
+            <label>Nome<input name="name" value="{{ (product.name or '') if product else '' }}" required></label>
+            <label>Categoria<select name="category">{% for category in categories %}<option value="{{ category }}" {% if product and product.category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}</select></label>
+            <label>Classe<input name="product_class" value="{{ (product.product_class or 'Produto') if product else 'Produto' }}"></label>
+            <label>Grupo<input name="product_group" value="{{ (product.product_group or '') if product else '' }}" placeholder="Ex: Smash"></label>
+            <label>Preco<input name="price" type="number" step="0.01" min="0" value="{{ product.price if product else '' }}" required></label>
+            <label>Valor unit.<input name="unit_value" type="number" step="0.01" value="{{ (product.unit_value or '') if product else '' }}"></label>
+            <label>Custo<input name="cost_price" type="number" step="0.01" min="0" value="{{ (product.cost_price or '') if product else '' }}"></label>
+            <label>Estoque<input name="stock_quantity" type="number" step="0.01" min="0" value="{{ product.stock_quantity if product else 0 }}"></label>
+            <label>Minimo<input name="min_stock" type="number" step="0.01" min="0" value="{{ product.min_stock if product else 0 }}"></label>
+            <label>Unidade<input name="unit" value="{{ product.unit if product else 'un' }}"></label>
+            <label>SKU<input name="sku" value="{{ (product.sku or '') if product else '' }}"></label>
+            <label>Codigo<input name="barcode" value="{{ (product.barcode or '') if product else '' }}"></label>
+            <label>Preparo<input name="prep_time" type="number" min="1" value="{{ product.prep_time if product else 10 }}"></label>
+            <label class="check"><input name="available" type="checkbox" {% if not product or product.available %}checked{% endif %}> Ativo no PDV</label>
+            <label class="span-2">Imagem URL<input name="image_url" value="{{ (product.image_url or '') if product else '' }}" placeholder="https://..."></label>
+            <label class="span-2">Descricao<textarea name="description" rows="3">{{ (product.description or "") if product else "" }}</textarea></label>
+            <label class="span-2">Adicionais<input name="addons" value="{{ (product.addons or '') if product else '' }}" placeholder="Bacon; queijo extra"></label>
+            <label class="span-2">Combo<input name="combo_items" value="{{ (product.combo_items or '') if product else '' }}"></label>
+            <button class="span-2" type="submit">Salvar produto</button>
         </form>
-    </aside>
+    </section>
+    {% else %}
+    <section class="products-manager-card">
+        <form class="products-manager-filter" method="get">
+            <input name="q" value="{{ search }}" placeholder="Localizar produto por nome, SKU, adicional...">
+            <select name="category">
+                <option>Todos</option>
+                {% for category in categories %}<option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
+            </select>
+            <select name="status">
+                {% for status in ["Todos", "Ativos", "Pausados"] %}<option value="{{ status }}" {% if selected_status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}
+            </select>
+            <button type="submit">Buscar</button>
+        </form>
 
-    <section class="panel product-browser">
-        <div class="panel-heading product-browser-head">
-            <div><h2>Produtos cadastrados</h2><p class="panel-subtitle">{{ products|length }} resultado(s)</p></div>
-            <form class="product-filter" method="get">
-                <input name="q" value="{{ search }}" placeholder="Buscar produto...">
-                <select name="category">
-                    <option>Todos</option>
-                    {% for category in categories %}<option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
-                </select>
-                <select name="status">
-                    {% for status in ["Todos", "Ativos", "Pausados"] %}<option value="{{ status }}" {% if selected_status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}
-                </select>
-                <button class="btn primary" type="submit">Filtrar</button>
-            </form>
-        </div>
-
-        <div class="product-summary-strip">
-            <span><strong>{{ metrics.total }}</strong><small>Total</small></span>
-            <span><strong>{{ metrics.active }}</strong><small>Ativos</small></span>
-            <span><strong>{{ "%.0f"|format(metrics.stock) }}</strong><small>Estoque</small></span>
-        </div>
-
-        <div class="products-board">
+        <div class="products-table">
             {% for product in products %}
-            <article class="product-card product-admin-card">
-                <div class="product-photo">
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
-                    <span class="status {{ 'positive' if product.available else 'danger' }}">{{ "Ativo" if product.available else "Pausado" }}</span>
+            <article class="product-row-card">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+                <div class="product-row-main">
+                    <span>{{ product.category }} &middot; {{ product.product_group or "Sem grupo" }}</span>
+                    <h2>{{ product.name }}</h2>
+                    <p>{{ product.description or "Produto pronto para venda no PDV." }}</p>
                 </div>
-                <div class="product-admin-body">
-                    <span class="pill info">{{ product.category }}</span>
-                    <h3>{{ product.name }}</h3>
-                    <p>{{ product.product_class }} &middot; {{ product.product_group or "Sem grupo" }}</p>
-                    <small>Estoque: {{ product.stock_quantity }} {{ product.unit }} &middot; Custo R$ {{ "%.2f"|format(product.cost_price) }}</small>
-                </div>
-                <div class="product-footer">
-                    <strong>R$ {{ "%.2f"|format(product.price) }}</strong>
+                <div class="product-row-data"><small>Venda</small><strong>R$ {{ "%.2f"|format(product.price) }}</strong></div>
+                <div class="product-row-data"><small>Estoque</small><strong>{{ product.stock_quantity }} {{ product.unit }}</strong></div>
+                <div class="product-row-data"><small>Status</small><strong>{{ "Ativo" if product.available else "Pausado" }}</strong></div>
+                <div class="product-row-actions">
+                    <a class="manager-link compact" href="{{ url_for('products.edit', product_id=product.id) }}">Editar</a>
                     <form method="post" action="{{ url_for('products.toggle', product_id=product.id) }}">
-                        <button class="btn {{ 'positive' if product.available else 'warning' }}" type="submit">{{ "Dispon&iacute;vel" if product.available else "Pausado" }}</button>
+                        <button type="submit">{{ "Pausar" if product.available else "Ativar" }}</button>
+                    </form>
+                    <form method="post" action="{{ url_for('products.delete', product_id=product.id) }}" onsubmit="return confirm('Excluir este produto?')">
+                        <button class="danger" type="submit">Excluir</button>
                     </form>
                 </div>
             </article>
             {% else %}
-            <p class="empty">Nenhum produto encontrado.</p>
+            <p class="products-empty">Nenhum produto encontrado.</p>
             {% endfor %}
         </div>
     </section>
+    {% endif %}
 </section>
 {% endblock %}

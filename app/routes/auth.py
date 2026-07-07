@@ -9,6 +9,19 @@ from ..models import SEGMENTS
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
+ROLE_HOME = {
+    "Administrador": "dashboard.index",
+    "Caixa": "pos.index",
+    "Cozinha": "kitchen.index",
+    "Entregador": "pages.delivery",
+}
+
+ROLE_ENDPOINTS = {
+    "Caixa": ("pos.", "orders."),
+    "Cozinha": ("kitchen.",),
+    "Entregador": ("orders.", "pages.delivery"),
+}
+
 
 @bp.before_app_request
 def load_logged_in_user():
@@ -26,6 +39,16 @@ def load_logged_in_user():
         """,
         (user_id,),
     )
+    if g.user is not None and not _can_access(request.endpoint or ""):
+        return redirect(url_for(ROLE_HOME.get(g.user["role"], "dashboard.index")))
+
+
+def _can_access(endpoint):
+    if endpoint == "static" or endpoint.startswith("auth."):
+        return True
+    if g.user is None or g.user["role"] == "Administrador":
+        return True
+    return any(endpoint.startswith(prefix) for prefix in ROLE_ENDPOINTS.get(g.user["role"], ()))
 
 
 def login_required(view):
@@ -65,8 +88,9 @@ def login():
             session["company_id"] = user["company_id"]
             session["user_name"] = user["name"]
             session["company_name"] = user["company_name"]
+            session["role"] = user["role"]
             flash("Bem-vindo ao Apex Food.", "success")
-            return redirect(url_for("dashboard.index"))
+            return redirect(url_for(ROLE_HOME.get(user["role"], "dashboard.index")))
 
     return render_template("auth/login.html")
 

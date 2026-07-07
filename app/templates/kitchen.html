@@ -1,24 +1,37 @@
 {% extends "base.html" %}
-{% block title %}Cozinha / KDS | Apex Food{% endblock %}
+{% block title %}Cozinha | Apex Food{% endblock %}
 {% block content %}
 <header class="page-header ops-hero" data-icon="KDS">
-    <div><p class="eyebrow">Produ&ccedil;&atilde;o</p><h1>Cozinha / KDS</h1></div>
+    <div><p class="eyebrow">Produ&ccedil;&atilde;o</p><h1>Cozinha</h1></div>
     <span class="pill info">{{ orders|length }} pedidos ativos</span>
 </header>
 
-<section class="kds-grid ops-kds-grid">
+<section class="kitchen-board">
     {% for order in orders %}
-    <article class="kds-card">
+    <article class="panel kitchen-ticket">
         <div class="order-top">
             <strong>Pedido #{{ order.id }}</strong>
             <span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span>
         </div>
-        <p>{{ order.table_name or order.fulfillment_type }} · {{ order.customer_name }}</p>
-        <div class="kds-items">{{ order.items_summary or "Sem itens" }}</div>
-        <small>Entrada: {{ order.created_at }}</small>
-        <form method="post" action="{{ url_for('kitchen.mark_ready', order_id=order.id) }}">
-            <button class="btn primary" type="submit">Marcar como pronto</button>
-        </form>
+        <div class="kitchen-meta">
+            <span>{{ order.table_name or order.fulfillment_type }}</span>
+            <span>{{ order.order_time or "--:--" }}</span>
+        </div>
+        <div class="kitchen-items">{{ order.items_summary or "Sem itens" }}</div>
+        {% if order.notes_summary %}
+        <p class="kitchen-notes"><strong>Obs:</strong> {{ order.notes_summary }}</p>
+        {% endif %}
+        <div class="kitchen-actions">
+            <button class="btn neutral" type="button" onclick="window.print()">Imprimir</button>
+            {% if order.status == "Recebido" %}
+            <form method="post" action="{{ url_for('kitchen.start_prepare', order_id=order.id) }}">
+                <button class="btn warning" type="submit">Iniciar preparo</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{{ url_for('kitchen.mark_ready', order_id=order.id) }}">
+                <button class="btn primary" type="submit">Marcar como pronto</button>
+            </form>
+        </div>
     </article>
     {% else %}
     <p class="empty">Nenhum pedido aguardando preparo.</p>

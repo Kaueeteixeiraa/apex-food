@@ -7,38 +7,68 @@ from .auth import company_id, login_required
 bp = Blueprint("products", __name__, url_prefix="/products")
 
 
+def _product_payload(form):
+    return (
+        form.get("name", "").strip(),
+        form.get("category", "Outros"),
+        form.get("product_class", "").strip() or "Produto",
+        form.get("product_group", "").strip(),
+        form.get("description", "").strip(),
+        float(form.get("price") or 0),
+        float(form.get("unit_value") or form.get("price") or 0),
+        float(form.get("cost_price") or 0),
+        float(form.get("stock_quantity") or 0),
+        float(form.get("min_stock") or 0),
+        form.get("unit", "un").strip() or "un",
+        form.get("sku", "").strip(),
+        form.get("barcode", "").strip(),
+        form.get("addons", "").strip(),
+        form.get("combo_items", "").strip(),
+        1 if form.get("available") else 0,
+        form.get("image_url", "").strip(),
+        int(form.get("prep_time") or 10),
+    )
+
+
+def _insert_product(cid, form):
+    execute(
+        """
+        INSERT INTO products
+        (company_id, name, category, product_class, product_group, description, price, unit_value, cost_price, stock_quantity, min_stock, unit, sku, barcode, addons, combo_items, available, image_url, prep_time)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (cid, *_product_payload(form)),
+    )
+
+
+def _update_product(product_id, cid, form):
+    execute(
+        """
+        UPDATE products
+        SET name=?, category=?, product_class=?, product_group=?, description=?, price=?, unit_value=?,
+            cost_price=?, stock_quantity=?, min_stock=?, unit=?, sku=?, barcode=?, addons=?,
+            combo_items=?, available=?, image_url=?, prep_time=?
+        WHERE id=? AND company_id=?
+        """,
+        (*_product_payload(form), product_id, cid),
+    )
+
+
+def _metrics(cid):
+    return {
+        "total": query_one("SELECT COUNT(*) value FROM products WHERE company_id=?", (cid,))["value"],
+        "active": query_one("SELECT COUNT(*) value FROM products WHERE company_id=? AND available=1", (cid,))["value"],
+        "avg": query_one("SELECT COALESCE(AVG(price),0) value FROM products WHERE company_id=?", (cid,))["value"],
+        "stock": query_one("SELECT COALESCE(SUM(stock_quantity),0) value FROM products WHERE company_id=?", (cid,))["value"],
+    }
+
+
 @bp.route("/", methods=("GET", "POST"))
 @login_required
 def index():
     cid = company_id()
     if request.method == "POST":
-        form = request.form
-        execute(
-            """
-            INSERT INTO products
-            (company_id, name, category, product_class, product_group, description, price, unit_value, cost_price, stock_quantity, min_stock, unit, sku, barcode, available, image_url, prep_time)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                cid,
-                form.get("name", "").strip(),
-                form.get("category", "Outros"),
-                form.get("product_class", "").strip() or "Produto",
-                form.get("product_group", "").strip(),
-                form.get("description", "").strip(),
-                float(form.get("price") or 0),
-                float(form.get("unit_value") or form.get("price") or 0),
-                float(form.get("cost_price") or 0),
-                float(form.get("stock_quantity") or 0),
-                float(form.get("min_stock") or 0),
-                form.get("unit", "un").strip() or "un",
-                form.get("sku", "").strip(),
-                form.get("barcode", "").strip(),
-                1 if form.get("available") else 0,
-                form.get("image_url", "").strip(),
-                int(form.get("prep_time") or 10),
-            ),
-        )
+        _insert_product(cid, request.form)
         flash("Produto cadastrado.", "success")
         return redirect(url_for("products.index"))
 
@@ -54,8 +84,8 @@ def index():
         clauses.append("available = ?")
         params.append(1 if selected_status == "Ativos" else 0)
     if search:
-        clauses.append("(name LIKE ? OR description LIKE ? OR product_group LIKE ? OR sku LIKE ? OR barcode LIKE ?)")
-        params.extend([f"%{search}%", f"%{search}%", f"%{search}%", f"%{search}%", f"%{search}%"])
+        clauses.append("(name LIKE ? OR description LIKE ? OR product_group LIKE ? OR sku LIKE ? OR barcode LIKE ? OR addons LIKE ? OR combo_items LIKE ?)")
+        params.extend([f"%{search}%"] * 7)
 
     products = products_with_demo_images(
         query_all(
@@ -63,20 +93,57 @@ def index():
             tuple(params),
         )
     )
-    metrics = {
-        "total": query_one("SELECT COUNT(*) value FROM products WHERE company_id=?", (cid,))["value"],
-        "active": query_one("SELECT COUNT(*) value FROM products WHERE company_id=? AND available=1", (cid,))["value"],
-        "avg": query_one("SELECT COALESCE(AVG(price),0) value FROM products WHERE company_id=?", (cid,))["value"],
-        "stock": query_one("SELECT COALESCE(SUM(stock_quantity),0) value FROM products WHERE company_id=?", (cid,))["value"],
-    }
     return render_template(
         "products.html",
+        mode="list",
         products=products,
         categories=PRODUCT_CATEGORIES,
         selected_category=selected_category,
         selected_status=selected_status,
         search=search,
-        metrics=metrics,
+        metrics=_metrics(cid),
+    )
+
+
+@bp.route("/new", methods=("GET", "POST"))
+@login_required
+def new():
+    cid = company_id()
+    if request.method == "POST":
+        _insert_product(cid, request.form)
+        flash("Produto cadastrado.", "success")
+        return redirect(url_for("products.index"))
+    return render_template(
+        "products.html",
+        mode="form",
+        product=None,
+        form_title="Cadastrar produto",
+        form_action=url_for("products.new"),
+        categories=PRODUCT_CATEGORIES,
+        metrics=_metrics(cid),
+    )
+
+
+@bp.route("/<int:product_id>/edit", methods=("GET", "POST"))
+@login_required
+def edit(product_id):
+    cid = company_id()
+    product = query_one("SELECT * FROM products WHERE id=? AND company_id=?", (product_id, cid))
+    if not product:
+        flash("Produto nao encontrado.", "error")
+        return redirect(url_for("products.index"))
+    if request.method == "POST":
+        _update_product(product_id, cid, request.form)
+        flash("Produto atualizado.", "success")
+        return redirect(url_for("products.index"))
+    return render_template(
+        "products.html",
+        mode="form",
+        product=dict(product),
+        form_title="Editar produto",
+        form_action=url_for("products.edit", product_id=product_id),
+        categories=PRODUCT_CATEGORIES,
+        metrics=_metrics(cid),
     )
 
 
@@ -91,4 +158,20 @@ def toggle(product_id):
             (0 if product["available"] else 1, product_id, cid),
         )
         flash("Disponibilidade atualizada.", "success")
+    return redirect(url_for("products.index"))
+
+
+@bp.post("/<int:product_id>/update")
+@login_required
+def update(product_id):
+    _update_product(product_id, company_id(), request.form)
+    flash("Produto atualizado.", "success")
+    return redirect(url_for("products.index"))
+
+
+@bp.post("/<int:product_id>/delete")
+@login_required
+def delete(product_id):
+    execute("DELETE FROM products WHERE id = ? AND company_id = ?", (product_id, company_id()))
+    flash("Produto excluido.", "success")
     return redirect(url_for("products.index"))

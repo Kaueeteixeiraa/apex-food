@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS products (
     unit TEXT NOT NULL DEFAULT 'un',
     sku TEXT,
     barcode TEXT,
+    addons TEXT,
+    combo_items TEXT,
     available INTEGER NOT NULL DEFAULT 1,
     image_url TEXT,
     prep_time INTEGER NOT NULL DEFAULT 10,
@@ -65,7 +67,7 @@ CREATE TABLE IF NOT EXISTS orders (
     customer_name TEXT,
     fulfillment_type TEXT NOT NULL DEFAULT 'Mesa',
     table_id INTEGER,
-    status TEXT NOT NULL DEFAULT 'Novo',
+    status TEXT NOT NULL DEFAULT 'Recebido',
     total REAL NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
@@ -119,7 +121,7 @@ CREATE TABLE IF NOT EXISTS employees (
     role TEXT NOT NULL,
     email TEXT,
     phone TEXT,
-    permission TEXT NOT NULL DEFAULT 'Garcom',
+    permission TEXT NOT NULL DEFAULT 'Caixa',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
 );
@@ -140,10 +142,26 @@ CREATE TABLE IF NOT EXISTS cash_registers (
     company_id INTEGER NOT NULL,
     status TEXT NOT NULL DEFAULT 'Fechado',
     opening_amount REAL NOT NULL DEFAULT 0,
+    closing_amount REAL NOT NULL DEFAULT 0,
+    expected_amount REAL NOT NULL DEFAULT 0,
+    difference_amount REAL NOT NULL DEFAULT 0,
+    closed_by TEXT,
     opened_at TEXT,
     closed_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS cash_movements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    register_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    amount REAL NOT NULL DEFAULT 0,
+    note TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
+    FOREIGN KEY (register_id) REFERENCES cash_registers (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS sales (

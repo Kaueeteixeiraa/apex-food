@@ -31,6 +31,10 @@ def init_db():
     schema_path = Path(current_app.root_path) / "schema.sql"
     db.executescript(schema_path.read_text(encoding="utf-8"))
     ensure_product_columns(db)
+    ensure_cash_columns(db)
+    ensure_cash_movements(db)
+    normalize_order_statuses(db)
+    ensure_demo_role_users(db)
     db.commit()
 
 
@@ -46,10 +50,66 @@ def ensure_product_columns(db):
         "unit": "TEXT NOT NULL DEFAULT 'un'",
         "sku": "TEXT",
         "barcode": "TEXT",
+        "addons": "TEXT",
+        "combo_items": "TEXT",
     }
     for name, definition in columns.items():
         if name not in existing:
             db.execute(f"ALTER TABLE products ADD COLUMN {name} {definition}")
+
+
+def ensure_cash_columns(db):
+    existing = {row["name"] for row in db.execute("PRAGMA table_info(cash_registers)").fetchall()}
+    columns = {
+        "closing_amount": "REAL NOT NULL DEFAULT 0",
+        "expected_amount": "REAL NOT NULL DEFAULT 0",
+        "difference_amount": "REAL NOT NULL DEFAULT 0",
+        "closed_by": "TEXT",
+    }
+    for name, definition in columns.items():
+        if name not in existing:
+            db.execute(f"ALTER TABLE cash_registers ADD COLUMN {name} {definition}")
+
+
+def ensure_cash_movements(db):
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS cash_movements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company_id INTEGER NOT NULL,
+            register_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            amount REAL NOT NULL DEFAULT 0,
+            note TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
+            FOREIGN KEY (register_id) REFERENCES cash_registers (id) ON DELETE CASCADE
+        )
+        """
+    )
+
+
+def normalize_order_statuses(db):
+    db.execute("UPDATE orders SET status = 'Recebido' WHERE status = 'Novo'")
+    db.execute("UPDATE orders SET status = 'Preparando' WHERE status = 'Em preparo'")
+
+
+def ensure_demo_role_users(db):
+    company = db.execute("SELECT id FROM companies WHERE email = ?", ("demo@apexfood.local",)).fetchone()
+    if not company:
+        return
+    users = [
+        ("Caixa Demo", "caixa@apexfood.local", "Caixa"),
+        ("Cozinha Demo", "cozinha@apexfood.local", "Cozinha"),
+        ("Entregador Demo", "entregador@apexfood.local", "Entregador"),
+    ]
+    for name, email, role in users:
+        exists = db.execute("SELECT id FROM users WHERE lower(email)=?", (email,)).fetchone()
+        if not exists:
+            db.execute(
+                "INSERT INTO users (company_id, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)",
+                (company["id"], name, email, generate_password_hash("123456"), role),
+            )
 
 
 def query_one(sql, params=()):
@@ -109,17 +169,17 @@ def seed_demo_data():
     )
 
     products = [
-        ("Pizza Apex Pepperoni", "Pizzas", "Venda", "Pizzas premium", "Massa fina, pepperoni, mozzarella e molho especial.", 59.9, 59.9, 24.0, 18, 5, "un", "PIZ-001", "", 1, 25),
-        ("Burger Neon Smash", "Hamburgueres", "Venda", "Smash", "Blend 160g, cheddar, cebola crispy e molho da casa.", 34.9, 34.9, 13.5, 24, 8, "un", "BUR-001", "", 1, 15),
-        ("Combo Fast Lunch", "Combos", "Venda", "Combos", "Burger, fritas e bebida.", 49.9, 49.9, 21.0, 15, 4, "un", "COM-001", "", 1, 18),
-        ("Suco Tropical", "Bebidas", "Venda", "Bebidas naturais", "Suco natural gelado.", 12.0, 12.0, 4.0, 30, 10, "un", "BEB-001", "", 1, 5),
-        ("Brownie Vulcano", "Sobremesas", "Venda", "Doces", "Brownie quente com calda.", 18.5, 18.5, 6.5, 20, 6, "un", "SOB-001", "", 1, 8),
+        ("Pizza Apex Pepperoni", "Pizzas", "Venda", "Pizzas premium", "Massa fina, pepperoni, mozzarella e molho especial.", 59.9, 59.9, 24.0, 18, 5, "un", "PIZ-001", "", "Borda recheada; queijo extra", "", 1, 25),
+        ("Burger Neon Smash", "Hamburgueres", "Venda", "Smash", "Blend 160g, cheddar, cebola crispy e molho da casa.", 34.9, 34.9, 13.5, 24, 8, "un", "BUR-001", "", "Bacon; cheddar extra", "", 1, 15),
+        ("Combo Fast Lunch", "Combos", "Venda", "Combos", "Burger, fritas e bebida.", 49.9, 49.9, 21.0, 15, 4, "un", "COM-001", "", "", "Burger Neon Smash + fritas + bebida", 1, 18),
+        ("Suco Tropical", "Bebidas", "Venda", "Bebidas naturais", "Suco natural gelado.", 12.0, 12.0, 4.0, 30, 10, "un", "BEB-001", "", "Sem acucar; gelo extra", "", 1, 5),
+        ("Brownie Vulcano", "Sobremesas", "Venda", "Doces", "Brownie quente com calda.", 18.5, 18.5, 6.5, 20, 6, "un", "SOB-001", "", "Sorvete; calda extra", "", 1, 8),
     ]
     db.executemany(
         """
         INSERT INTO products
-        (company_id, name, category, product_class, product_group, description, price, unit_value, cost_price, stock_quantity, min_stock, unit, sku, barcode, available, prep_time)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (company_id, name, category, product_class, product_group, description, price, unit_value, cost_price, stock_quantity, min_stock, unit, sku, barcode, addons, combo_items, available, prep_time)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         [(company_id, *product) for product in products],
     )
@@ -188,7 +248,7 @@ def seed_demo_data():
         (company_id, customer_name, fulfillment_type, table_id, status, total)
         VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (company_id, "Marina Costa", "Mesa", 2, "Em preparo", 86.4),
+        (company_id, "Marina Costa", "Mesa", 2, "Preparando", 86.4),
     )
     order_id = order_cursor.lastrowid
     db.executemany(
@@ -208,7 +268,7 @@ def seed_demo_data():
         (company_id, customer_name, fulfillment_type, status, total)
         VALUES (?, ?, ?, ?, ?)
         """,
-        (company_id, "Entrega rapida", "Entrega", "Novo", 49.9),
+        (company_id, "Entrega rapida", "Entrega", "Recebido", 49.9),
     )
 
     db.execute(
@@ -227,4 +287,5 @@ def seed_demo_data():
         (company_id, order_id, 86.4, 0, 8.64, 95.04, "Pix", "Finalizada"),
     )
 
+    ensure_demo_role_users(db)
     db.commit()

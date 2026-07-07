@@ -1,81 +1,75 @@
 {% extends "base.html" %}
 {% block title %}Pedidos | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header ops-hero" data-icon="PD">
-    <div><p class="eyebrow">Atendimento</p><h1>Pedidos</h1></div>
-    <div class="filter-row"><span class="pill info">{{ orders|length }} pedidos</span><a class="btn neutral" href="{{ url_for('pos.index') }}">Abrir PDV</a></div>
-</header>
-
-<section class="content-grid ops-grid">
-    <article class="panel">
-        <h2>Criar pedido</h2>
-        <form method="post" class="form-grid">
-            <label>Cliente<input name="customer_name" placeholder="Nome do cliente ou mesa"></label>
-            <label>Tipo
-                <select name="fulfillment_type">
-                    <option>Mesa</option>
-                    <option>Entrega</option>
-                    <option>Balc&atilde;o</option>
-                </select>
-            </label>
-            <label>Mesa
-                <select name="table_id">
-                    <option value="">Sem mesa</option>
-                    {% for table in tables %}
-                    <option value="{{ table.id }}">{{ table.name }} - {{ table.status }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <label>Produto
-                <select name="product_id" required>
-                    {% for product in products %}
-                    <option value="{{ product.id }}">{{ product.name }} - R$ {{ "%.2f"|format(product.price) }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <label>Quantidade<input name="quantity" type="number" min="1" value="1"></label>
-            <label>Observa&ccedil;&otilde;es<textarea name="notes" rows="3"></textarea></label>
-            <button class="btn primary" type="submit">Criar pedido</button>
-        </form>
-    </article>
-
-    <article class="panel wide">
-        <div class="panel-heading">
-            <h2>Lista de pedidos</h2>
-            <div class="filter-row">
-                <a class="pill {{ 'active' if not selected_status }}" href="{{ url_for('orders.index') }}">Todos</a>
-                {% for status in statuses %}
-                <a class="pill {{ 'active' if selected_status == status }}" href="{{ url_for('orders.index', status=status) }}">{{ status }}</a>
-                {% endfor %}
-            </div>
+<section class="orders-clean">
+    <header class="orders-clean-head">
+        <div>
+            <span>Atendimento</span>
+            <h1>{% if mode == "form" %}Novo pedido{% else %}{{ "Entregas" if is_delivery else "Pedidos" }}{% endif %}</h1>
         </div>
-        <div class="order-list">
-            {% for order in orders %}
-            <article class="order-card">
-                <div>
-                    <div class="order-top">
-                        <strong>#{{ order.id }} {{ order.customer_name }}</strong>
-                        <span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span>
-                    </div>
-                    <p>{{ order.items_summary or "Sem itens" }}</p>
-                    <small>{{ order.table_name or order.fulfillment_type }} · {{ order.created_at }}</small>
-                </div>
-                <div class="order-actions">
-                    <strong>R$ {{ "%.2f"|format(order.total) }}</strong>
-                    <form method="post" action="{{ url_for('orders.update_status', order_id=order.id) }}">
-                        <select name="status">
-                            {% for status in statuses %}
-                            <option value="{{ status }}" {{ "selected" if status == order.status }}>{{ status }}</option>
-                            {% endfor %}
-                        </select>
-                        <button class="btn neutral" type="submit">Atualizar</button>
-                    </form>
+        {% if mode == "list" %}
+        <div class="orders-head-metrics"><strong>{{ orders|length }}</strong><small>pedidos</small></div>
+        {% endif %}
+        {% if not is_delivery %}
+        <a class="orders-pos-link" href="{{ url_for('orders.index') if mode == 'form' else url_for('orders.new') }}">{{ "Voltar" if mode == "form" else "Novo pedido" }}</a>
+        {% endif %}
+        {% if mode == "list" and not is_delivery %}<a class="orders-pos-link neutral" href="{{ url_for('pos.index') }}">Abrir PDV</a>{% endif %}
+    </header>
+
+    {% if mode == "form" %}
+    <main class="orders-clean-grid orders-form-screen">
+        <article class="orders-create-card orders-create-page">
+            <div><span>Lancamento</span><h2>Dados do pedido</h2></div>
+            <form method="post" action="{{ url_for('orders.new') }}">
+                <label>Cliente<input name="customer_name" placeholder="Nome do cliente ou mesa"></label>
+                <label>Tipo<select name="fulfillment_type"><option>Mesa</option><option>Entrega</option><option>Balcao</option></select></label>
+                <label>Mesa<select name="table_id"><option value="">Sem mesa</option>{% for table in tables %}<option value="{{ table.id }}">{{ table.name }} - {{ table.status }}</option>{% endfor %}</select></label>
+                <label>Produto<select name="product_id" required>{% for product in products %}<option value="{{ product.id }}">{{ product.name }} - R$ {{ "%.2f"|format(product.price) }}</option>{% endfor %}</select></label>
+                <label>Qtd<input name="quantity" type="number" min="1" value="1"></label>
+                <label class="span-2">Observacoes<textarea name="notes" rows="3"></textarea></label>
+                <button type="submit">Criar pedido</button>
+            </form>
+        </article>
+    </main>
+    {% else %}
+    <main class="orders-clean-grid board-only {{ 'delivery-only' if is_delivery }}">
+        <section class="orders-board-clean">
+            {% for status in statuses %}
+            <article class="orders-lane status-lane-{{ status|lower|replace(' ', '-') }}">
+                <header>
+                    <h2>{{ status }}</h2>
+                    <strong>{{ orders_by_status.get(status, [])|length }}</strong>
+                </header>
+                <div class="orders-lane-list">
+                    {% for order in orders_by_status.get(status, []) %}
+                    <article class="order-clean-card">
+                        <div class="order-clean-top">
+                            <span>#{{ order.id }}</span>
+                            <strong>{{ order.customer_name or "Cliente" }}</strong>
+                        </div>
+                        <p>{{ order.items_summary or "Sem itens" }}</p>
+                        <div class="order-clean-meta">
+                            <span>{{ order.table_name or order.fulfillment_type }}</span>
+                            <span>{{ order.order_time or "--:--" }}</span>
+                            <span>{{ order.payment_method }}</span>
+                        </div>
+                        <div class="order-clean-total">
+                            <small>{{ order.status }}</small>
+                            <strong>R$ {{ "%.2f"|format(order.total) }}</strong>
+                        </div>
+                        <form method="post" action="{{ url_for('orders.update_status', order_id=order.id) }}">
+                            <select name="status">{% for option in statuses %}<option value="{{ option }}" {{ "selected" if option == order.status }}>{{ option }}</option>{% endfor %}</select>
+                            <button type="submit">Mover</button>
+                        </form>
+                    </article>
+                    {% else %}
+                    <div class="orders-empty">Sem pedidos.</div>
+                    {% endfor %}
                 </div>
             </article>
-            {% else %}
-            <p class="empty">Nenhum pedido encontrado.</p>
             {% endfor %}
-        </div>
-    </article>
+        </section>
+    </main>
+    {% endif %}
 </section>
 {% endblock %}

@@ -28,8 +28,12 @@ def index():
             """
             SELECT COUNT(*) AS value
             FROM orders
-            WHERE company_id = ? AND date(created_at) = date('now')
+            WHERE company_id = ? AND status NOT IN ('Entregue', 'Cancelado')
             """,
+            (cid,),
+        )["value"],
+        "monthly_revenue": query_one(
+            "SELECT COALESCE(SUM(total), 0) AS value FROM sales WHERE company_id = ? AND date(created_at) >= date('now', 'start of month')",
             (cid,),
         )["value"],
         "avg_ticket": query_one(
@@ -50,10 +54,35 @@ def index():
         )["value"],
         "total_tables": total_tables,
         "preparing_orders": query_one(
-            "SELECT COUNT(*) AS value FROM orders WHERE company_id = ? AND status = 'Em preparo'",
+            "SELECT COUNT(*) AS value FROM orders WHERE company_id = ? AND status = 'Preparando'",
             (cid,),
         )["value"],
     }
+
+    top_products = query_all(
+        """
+        SELECT order_items.product_name name, COALESCE(SUM(order_items.quantity), 0) sold
+        FROM order_items
+        JOIN orders ON orders.id = order_items.order_id
+        WHERE orders.company_id = ?
+        GROUP BY order_items.product_name
+        ORDER BY sold DESC
+        LIMIT 5
+        """,
+        (cid,),
+    )
+
+    cash_summary = query_one(
+        """
+        SELECT cash_registers.*,
+               COALESCE((SELECT SUM(total) FROM sales WHERE sales.company_id = cash_registers.company_id AND sales.created_at >= cash_registers.opened_at), 0) sales_total
+        FROM cash_registers
+        WHERE company_id = ?
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (cid,),
+    )
 
     low_stock = query_all(
         """
@@ -93,7 +122,7 @@ def index():
         SELECT COUNT(*) AS value
         FROM orders
         WHERE company_id = ?
-          AND status IN ('Novo', 'Em preparo')
+          AND status IN ('Recebido', 'Preparando')
           AND datetime(created_at) <= datetime('now', '-25 minutes')
         """,
         (cid,),
@@ -148,8 +177,8 @@ def index():
     )
     status_map = {row["status"]: row["count"] for row in status_rows}
     status_chart = [
-        {"label": "Novo", "value": int(status_map.get("Novo", 0)), "color": "#3B82F6"},
-        {"label": "Em preparo", "value": int(status_map.get("Em preparo", 0)), "color": "#22D3EE"},
+        {"label": "Recebido", "value": int(status_map.get("Recebido", 0)), "color": "#3B82F6"},
+        {"label": "Preparando", "value": int(status_map.get("Preparando", 0)), "color": "#22D3EE"},
         {"label": "Pronto", "value": int(status_map.get("Pronto", 0)), "color": "#22C55E"},
         {"label": "Entregue", "value": int(status_map.get("Entregue", 0)), "color": "#38BDF8"},
         {"label": "Cancelado", "value": int(status_map.get("Cancelado", 0)), "color": "#EF4444"},
@@ -167,9 +196,9 @@ def index():
     payment_map = {row["payment_method"]: float(row["total"]) for row in payment_rows}
     payment_chart = [
         {"label": "Dinheiro", "value": payment_map.get("Dinheiro", 0), "color": "#22C55E"},
-        {"label": "Cartao", "value": payment_map.get("Cartao", 0), "color": "#3B82F6"},
+        {"label": "Credito", "value": payment_map.get("Cartao Credito", 0), "color": "#3B82F6"},
+        {"label": "Debito", "value": payment_map.get("Cartao Debito", 0), "color": "#67E8F9"},
         {"label": "Pix", "value": payment_map.get("Pix", 0), "color": "#0EA5FF"},
-        {"label": "Outros", "value": payment_map.get("Outros", 0), "color": "#67E8F9"},
     ]
     payment_total = sum(item["value"] for item in payment_chart)
 
@@ -177,6 +206,8 @@ def index():
         "dashboard.html",
         summary=summary,
         low_stock=low_stock,
+        top_products=top_products,
+        cash_summary=cash_summary,
         recent_orders=recent_orders,
         chart_json=json.dumps(chart),
         status_chart_json=json.dumps(status_chart),

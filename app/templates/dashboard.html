@@ -34,33 +34,33 @@
         <article class="premium-metric metric-blue">
             <span class="metric-icon">#</span>
             <div>
-                <small>Pedidos de hoje</small>
+                <small>Pedidos em aberto</small>
                 <strong>{{ summary.orders_today }}</strong>
-                <em>+8 pedidos vs ontem</em>
+                <em>Fila operacional</em>
             </div>
         </article>
         <article class="premium-metric metric-green">
+                <span class="metric-icon">MES</span>
+            <div>
+                <small>Faturamento mensal</small>
+                <strong>R$ {{ "%.2f"|format(summary.monthly_revenue) }}</strong>
+                <em>Acumulado do m&ecirc;s</em>
+            </div>
+        </article>
+        <article class="premium-metric metric-orange">
             <span class="metric-icon">TM</span>
             <div>
                 <small>Ticket m&eacute;dio</small>
                 <strong>R$ {{ "%.2f"|format(summary.avg_ticket) }}</strong>
-                <em>+5,1% vs ontem</em>
-            </div>
-        </article>
-        <article class="premium-metric metric-orange">
-            <span class="metric-icon">M</span>
-            <div>
-                <small>Mesas ocupadas</small>
-                <strong>{{ summary.occupied_tables }} / {{ summary.total_tables }}</strong>
-                <em>Sal&atilde;o em movimento</em>
+                <em>Por venda finalizada</em>
             </div>
         </article>
         <article class="premium-metric metric-red">
-            <span class="metric-icon">K</span>
+            <span class="metric-icon">CX</span>
             <div>
-                <small>Pedidos em preparo</small>
-                <strong>{{ summary.preparing_orders }}</strong>
-                <em>Monitorar cozinha</em>
+                <small>Caixa atual</small>
+                <strong>{{ cash_summary.status if cash_summary else "Fechado" }}</strong>
+                <em>R$ {{ "%.2f"|format(cash_summary.sales_total if cash_summary else 0) }} vendidos</em>
             </div>
         </article>
     </section>
@@ -70,7 +70,7 @@
             <div class="panel-heading">
                 <div>
                     <h2>Vendas dos &uacute;ltimos 7 dias</h2>
-                    <p class="panel-subtitle">Linha principal em azul neon</p>
+                    <p class="panel-subtitle">Vendas recentes do restaurante</p>
                 </div>
                 <span class="pill info">7 dias</span>
             </div>
@@ -80,11 +80,20 @@
         <article class="panel dashboard-card status-panel">
             <div class="panel-heading">
                 <div>
-                    <h2>Pedidos por status</h2>
-                    <p class="panel-subtitle">Fluxo operacional</p>
+                    <h2>Produtos mais vendidos</h2>
+                    <p class="panel-subtitle">Ranking operacional</p>
                 </div>
             </div>
-            <div id="statusChart" class="status-chart" data-chart='{{ status_chart_json|safe }}'></div>
+            <div class="status-chart">
+                {% for product in top_products %}
+                <div class="status-chart-row">
+                    <div class="status-chart-top"><span>{{ product.name }}</span><strong>{{ product.sold }}</strong></div>
+                    <div class="status-chart-track"><i style="width:{{ [product.sold * 22, 100]|min }}%"></i></div>
+                </div>
+                {% else %}
+                <p class="empty">Sem vendas registradas.</p>
+                {% endfor %}
+            </div>
         </article>
 
         <article class="panel dashboard-card orders-panel">
@@ -153,8 +162,8 @@
         <article class="panel dashboard-card payment-panel">
             <div class="panel-heading">
                 <div>
-                    <h2>Formas de pagamento</h2>
-                    <p class="panel-subtitle">Total do dia: R$ {{ "%.2f"|format(payment_total) }}</p>
+                    <h2>Resumo do caixa atual</h2>
+                    <p class="panel-subtitle">Abertura: R$ {{ "%.2f"|format(cash_summary.opening_amount if cash_summary else 0) }} &middot; Vendas: R$ {{ "%.2f"|format(cash_summary.sales_total if cash_summary else 0) }}</p>
                 </div>
             </div>
             <div id="paymentChart" class="payment-chart" data-chart='{{ payment_chart_json|safe }}'>
