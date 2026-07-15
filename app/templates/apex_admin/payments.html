@@ -1,0 +1,33 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}Pagamentos | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top"><div class="admin-title"><p class="eyebrow">Financeiro SaaS</p><h1>Pagamentos</h1><p>Lan&ccedil;amentos administrativos, sem gateway integrado.</p></div></header>
+<form class="admin-card admin-form-grid" method="post">
+    <label>Cliente<select name="company_id">{% for company in companies %}<option value="{{ company.id }}">{{ company.trade_name }}</option>{% endfor %}</select></label>
+    <label>Valor<input name="amount" type="number" step="0.01" required></label>
+    <label>M&eacute;todo<input name="payment_method" value="manual"></label>
+    <label>Refer&ecirc;ncia<input name="external_reference"></label>
+    <label>Vencimento<input name="due_at" type="date"></label>
+    <label>Observa&ccedil;&atilde;o<textarea name="admin_note"></textarea></label>
+    <button class="admin-btn" type="submit">Criar cobran&ccedil;a manual</button>
+</form>
+<section class="admin-table">
+    {% for payment in payments %}
+    <div class="admin-table-row">
+        <strong>{{ payment.trade_name }}<small>{{ payment.external_reference or "sem referencia" }}</small></strong>
+        <span>R$ {{ "%.2f"|format(payment.amount) }}</span>
+        <span>{{ payment.payment_method or "manual" }}</span>
+        <span>Venc. {{ payment.due_at or "-" }}</span>
+        <span class="status-pill {{ payment.status }}">{{ payment.status }}</span>
+        <div class="admin-actions">
+            <form method="post" action="{{ url_for('apex_admin.confirm_payment', payment_id=payment.id) }}"><button class="btn positive" type="submit">Confirmar</button></form>
+            <form method="post" action="{{ url_for('apex_admin.overdue_payment', payment_id=payment.id) }}"><button class="btn warning" type="submit">Vencido</button></form>
+            <form method="post" action="{{ url_for('apex_admin.cancel_payment', payment_id=payment.id) }}" data-confirm="Cancelar este pagamento?"><button class="btn danger" type="submit">Cancelar</button></form>
+            <form method="post" action="{{ url_for('apex_admin.refund_payment', payment_id=payment.id) }}" data-confirm="Estornar este pagamento registrado?"><button class="btn neutral" type="submit">Estornar</button></form>
+        </div>
+    </div>
+    {% else %}
+    <div class="admin-card empty-state"><h2>Nenhum pagamento registrado.</h2><p>Crie uma cobran&ccedil;a manual para acompanhar vencimentos.</p></div>
+    {% endfor %}
+</section>
+{% endblock %}

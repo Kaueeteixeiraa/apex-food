@@ -31,7 +31,7 @@ def products_with_demo_images(products):
         product["image_url"] = product.get("image_url") or product_demo_image(product)
     return items
 
-ORDER_STATUSES = ["Novo", "Em preparo", "Pronto", "Entregue", "Cancelado"]
+ORDER_STATUSES = ["Recebido", "Preparando", "Pronto", "Entregue", "Cancelado"]
 
 TABLE_STATUSES = [
     "Livre",
@@ -42,6 +42,6 @@ TABLE_STATUSES = [
     "Pedido em preparo",
 ]
 
-PAYMENT_METHODS = ["Dinheiro", "Cartao", "Pix", "Outros"]
+PAYMENT_METHODS = ["Pix", "Dinheiro", "Cartao Credito", "Cartao Debito"]
 
-PERMISSIONS = ["Administrador", "Caixa", "Garcom", "Cozinha", "Gerente"]
+PERMISSIONS = ["Administrador", "Gerente", "Caixa", "Garcom", "Cozinha", "Estoque", "Entregador"]

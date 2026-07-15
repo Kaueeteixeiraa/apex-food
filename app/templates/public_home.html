@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Apex Food | Sistema para restaurantes{% endblock %}
+{% block content %}
+<section class="public-page">
+    <div class="public-shell">
+        <header class="public-header">
+            <a class="public-brand" href="{{ url_for('index') }}"><span class="brand-mark">A</span><span>Apex Food</span></a>
+            <nav class="public-nav">
+                <a href="#produto">Produto</a>
+                <a href="#recursos">Recursos</a>
+                <a href="#para-quem">Para quem &eacute;</a>
+                <a href="{{ url_for('auth.login') }}">Entrar</a>
+            </nav>
+            <div class="public-actions"><a class="public-cta" href="mailto:suporte@apexfood.local?subject=Acesso%20Apex%20Food">Solicitar acesso</a></div>
+        </header>
+
+        <section class="public-hero">
+            <div>
+                <p class="eyebrow">Sistema comercial para food service</p>
+                <h1>Seu restaurante inteiro. Em um &uacute;nico sistema.</h1>
+                <p>Pedidos, caixa, sal&atilde;o, cozinha e gest&atilde;o conectados para voc&ecirc; cuidar do que realmente importa.</p>
+                <div class="public-actions">
+                    <a class="public-cta" href="mailto:suporte@apexfood.local?subject=Acesso%20Apex%20Food">Solicitar acesso</a>
+                    <a class="public-secondary" href="{{ url_for('auth.login') }}">Entrar no sistema</a>
+                </div>
+            </div>
+            <div class="public-mockup">
+                <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1100&q=80" alt="Opera&ccedil;&atilde;o de restaurante">
+            </div>
+        </section>
+
+        <section id="recursos" class="public-grid">
+            <article class="public-card"><h3>Opera&ccedil;&atilde;o conectada</h3><p>Pedidos, caixa e cozinha trabalhando juntos.</p></article>
+            <article class="public-card"><h3>Mais controle</h3><p>Acompanhe vendas e opera&ccedil;&atilde;o em tempo real.</p></article>
+            <article class="public-card"><h3>Menos confus&atilde;o</h3><p>Centralize a rotina do estabelecimento.</p></article>
+            <article class="public-card"><h3>Feito para alimenta&ccedil;&atilde;o</h3><p>Experi&ecirc;ncia pensada para restaurantes e lanchonetes.</p></article>
+        </section>
+
+        <section id="produto" class="public-grid public-product">
+            {% for title, image in [
+                ("PDV rapido", "https://images.unsplash.com/photo-1556742031-c6961e8560b0?auto=format&fit=crop&w=800&q=80"),
+                ("Pedidos organizados", "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80"),
+                ("Cozinha clara", "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80"),
+                ("Salao sob controle", "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=800&q=80")
+            ] %}
+            <article class="public-card"><img src="{{ image }}" alt="{{ title }}"><h3>{{ title }}</h3></article>
+            {% endfor %}
+        </section>
+
+        <section class="public-final public-card">
+            <h2>Pronto para organizar sua opera&ccedil;&atilde;o?</h2>
+            <a class="public-cta" href="mailto:suporte@apexfood.local?subject=Acesso%20Apex%20Food">Falar com a Apex</a>
+        </section>
+
+        <footer class="public-footer">
+            <strong>Apex Food</strong>
+            <nav class="public-nav"><a href="#produto">Produto</a><a href="{{ url_for('auth.login') }}">Entrar</a><a href="#">Termos</a><a href="#">Privacidade</a></nav>
+        </footer>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,173 @@
+.btn,
+.admin-btn,
+.public-cta {
+    border-radius: var(--radius-md) !important;
+    box-shadow: none !important;
+    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease, color 180ms ease !important;
+}
+
+.btn.primary,
+.admin-btn,
+.auth-saas .btn.primary {
+    background: var(--accent) !important;
+    border: 0 !important;
+    color: #fff !important;
+}
+
+.btn.primary:hover,
+.admin-btn:hover {
+    background: var(--accent-hover) !important;
+    transform: translateY(-1px);
+}
+
+.btn.neutral,
+.btn.secondary {
+    background: var(--bg-panel-hover) !important;
+    border: 1px solid var(--border-soft) !important;
+    color: var(--text-primary) !important;
+}
+
+.btn.danger {
+    background: rgba(239, 68, 68, 0.14) !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    color: #fecaca !important;
+}
+
+.admin-card,
+.subscription-card,
+.onboarding-card,
+.panel,
+.premium-metric {
+    background: var(--bg-panel) !important;
+    border: 1px solid var(--border-soft) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-soft) !important;
+}
+
+input,
+select,
+textarea {
+    background: var(--bg-input) !important;
+    border: 1px solid var(--border-soft) !important;
+    color: var(--text-primary) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: rgba(255, 122, 0, 0.72) !important;
+    box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.12) !important;
+}
+
+.status-pill,
+.pill,
+.status {
+    border-radius: 999px !important;
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+}
+
+.status-pill.active,
+.status-pill.ativa,
+.status-pill.paid,
+.status-pill.trial,
+.status.status-entregue,
+.status.status-pronto {
+    background: rgba(34, 197, 94, 0.14) !important;
+    color: #86efac !important;
+}
+
+.status-pill.blocked,
+.status-pill.expired,
+.status-pill.cancelled,
+.status-pill.overdue,
+.status.status-cancelado {
+    background: rgba(239, 68, 68, 0.14) !important;
+    color: #fecaca !important;
+}
+
+.status-pill.grace_period,
+.status-pill.warning,
+.status-pill.pending,
+.status.status-recebido,
+.status.status-preparando {
+    background: rgba(245, 158, 11, 0.14) !important;
+    color: #fde68a !important;
+}
+
+.nav-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+}
+
+.nav-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+
+.eyebrow {
+    color: var(--accent) !important;
+    font-size: 0.72rem !important;
+    font-weight: 850 !important;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.premium-table table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.premium-table th,
+.premium-table td {
+    border-bottom: 1px solid var(--border-soft);
+    padding: 12px;
+}
+
+.premium-table th {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.premium-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+@keyframes apexEnter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-card,
+.panel,
+.premium-metric,
+.auth-form-panel {
+    animation: apexEnter 220ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+.motion-off *,
+.motion-off *::before,
+.motion-off *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+}

@@ -1,0 +1,6 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}Auditoria | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top"><div class="admin-title"><p class="eyebrow">Seguran&ccedil;a</p><h1>Auditoria global</h1></div></header>
+<section class="admin-table">{% for row in rows %}<div class="admin-table-row"><strong>{{ row.action }}</strong><span>{{ row.admin_name or "Sistema" }}</span><span>{{ row.trade_name or row.target_type or "-" }}</span><span>{{ row.ip_address or "-" }}</span><small>{{ row.created_at }}</small></div>{% else %}<p class="muted">Sem eventos.</p>{% endfor %}</section>
+{% endblock %}

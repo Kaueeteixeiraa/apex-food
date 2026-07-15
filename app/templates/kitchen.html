@@ -1,27 +1,39 @@
 {% extends "base.html" %}
-{% block title %}Cozinha / KDS | Apex Food{% endblock %}
+{% block title %}Cozinha | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
-    <div><p class="eyebrow">Produção</p><h1>Cozinha / KDS simples</h1></div>
-    <span class="pill info">{{ orders|length }} pedidos ativos</span>
-</header>
+<section class="kds-reference">
+    <header class="page-title-row">
+        <div><p class="eyebrow">Produ&ccedil;&atilde;o</p><h1>Cozinha (KDS)</h1></div>
+        <span class="pill info">{{ orders|length }} pedidos ativos</span>
+    </header>
 
-<section class="kds-grid">
-    {% for order in orders %}
-    <article class="kds-card">
-        <div class="order-top">
-            <strong>Pedido #{{ order.id }}</strong>
-            <span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span>
-        </div>
-        <p>{{ order.table_name or order.fulfillment_type }} · {{ order.customer_name }}</p>
-        <div class="kds-items">{{ order.items_summary or "Sem itens" }}</div>
-        <small>Entrada: {{ order.created_at }}</small>
-        <form method="post" action="{{ url_for('kitchen.mark_ready', order_id=order.id) }}">
-            <button class="btn primary" type="submit">Marcar como pronto</button>
-        </form>
-    </article>
-    {% else %}
-    <p class="empty">Nenhum pedido aguardando preparo.</p>
-    {% endfor %}
+    <section class="kds-columns">
+        {% for label, status in columns %}
+        <article class="kds-column">
+            <header><h2>{{ label }}</h2><span>{{ orders_by_status.get(status, [])|length }}</span></header>
+            <div class="kds-ticket-list">
+                {% for order in orders_by_status.get(status, []) %}
+                <article class="kds-ticket">
+                    <div class="kds-ticket-top"><strong>#{{ order.id }}</strong><span>{{ order.table_name or order.fulfillment_type }}</span></div>
+                    <small>{{ order.order_time or "--:--" }}{% if order.customer_name %} &middot; {{ order.customer_name }}{% endif %}</small>
+                    <p>{{ order.items_summary or "Sem itens" }}</p>
+                    {% if order.notes_summary %}<em>Obs: {{ order.notes_summary }}</em>{% endif %}
+                    <div class="kds-ticket-actions">
+                        {% if order.status == "Recebido" %}
+                        <form method="post" action="{{ url_for('kitchen.start_prepare', order_id=order.id) }}"><button class="btn warning" type="submit">Iniciar preparo</button></form>
+                        {% elif order.status == "Preparando" %}
+                        <form method="post" action="{{ url_for('kitchen.mark_ready', order_id=order.id) }}"><button class="btn primary" type="submit">Marcar pronto</button></form>
+                        {% else %}
+                        <span class="status status-pronto">Pronto</span>
+                        {% endif %}
+                    </div>
+                </article>
+                {% else %}
+                <p class="empty">Nenhum pedido.</p>
+                {% endfor %}
+            </div>
+        </article>
+        {% endfor %}
+    </section>
 </section>
 {% endblock %}

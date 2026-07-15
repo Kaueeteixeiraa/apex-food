@@ -1,80 +1,70 @@
 {% extends "base.html" %}
 {% block title %}Pedidos | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
-    <div><p class="eyebrow">Atendimento</p><h1>Pedidos</h1></div>
-</header>
-
-<section class="content-grid">
-    <article class="panel">
-        <h2>Criar pedido</h2>
-        <form method="post" class="form-grid">
-            <label>Cliente<input name="customer_name" placeholder="Nome do cliente ou mesa"></label>
-            <label>Tipo
-                <select name="fulfillment_type">
-                    <option>Mesa</option>
-                    <option>Entrega</option>
-                    <option>Balcao</option>
-                </select>
-            </label>
-            <label>Mesa
-                <select name="table_id">
-                    <option value="">Sem mesa</option>
-                    {% for table in tables %}
-                    <option value="{{ table.id }}">{{ table.name }} - {{ table.status }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <label>Produto
-                <select name="product_id" required>
-                    {% for product in products %}
-                    <option value="{{ product.id }}">{{ product.name }} - R$ {{ "%.2f"|format(product.price) }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <label>Quantidade<input name="quantity" type="number" min="1" value="1"></label>
-            <label>Observações<textarea name="notes" rows="3"></textarea></label>
-            <button class="btn primary" type="submit">Criar pedido</button>
-        </form>
-    </article>
-
-    <article class="panel wide">
-        <div class="panel-heading">
-            <h2>Lista de pedidos</h2>
-            <div class="filter-row">
-                <a class="pill {{ 'active' if not selected_status }}" href="{{ url_for('orders.index') }}">Todos</a>
-                {% for status in statuses %}
-                <a class="pill {{ 'active' if selected_status == status }}" href="{{ url_for('orders.index', status=status) }}">{{ status }}</a>
-                {% endfor %}
-            </div>
+<section class="orders-clean">
+    <header class="orders-clean-head">
+        <div>
+            <span>Atendimento</span>
+            <h1>{% if mode == "form" %}Novo pedido{% else %}{{ "Entregas" if is_delivery else "Pedidos" }}{% endif %}</h1>
         </div>
-        <div class="order-list">
-            {% for order in orders %}
-            <article class="order-card">
-                <div>
-                    <div class="order-top">
-                        <strong>#{{ order.id }} {{ order.customer_name }}</strong>
-                        <span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span>
-                    </div>
-                    <p>{{ order.items_summary or "Sem itens" }}</p>
-                    <small>{{ order.table_name or order.fulfillment_type }} · {{ order.created_at }}</small>
-                </div>
-                <div class="order-actions">
+        {% if mode == "list" %}
+        <div class="orders-head-metrics"><strong>{{ orders|length }}</strong><small>pedidos</small></div>
+        {% endif %}
+        {% if not is_delivery %}
+        <a class="orders-pos-link" href="{{ url_for('orders.index') if mode == 'form' else url_for('orders.new') }}">{{ "Voltar" if mode == "form" else "Novo pedido" }}</a>
+        {% endif %}
+        {% if mode == "list" and not is_delivery %}<a class="orders-pos-link neutral" href="{{ url_for('pos.index') }}">Abrir PDV</a>{% endif %}
+    </header>
+
+    {% if mode == "form" %}
+    <main class="orders-clean-grid orders-form-screen">
+        <article class="orders-create-card orders-create-page">
+            <div><span>Lancamento</span><h2>Dados do pedido</h2></div>
+            <form method="post" action="{{ url_for('orders.new') }}">
+                <label>Cliente<input name="customer_name" placeholder="Nome do cliente ou mesa"></label>
+                <label>Tipo<select name="fulfillment_type"><option>Mesa</option><option>Entrega</option><option>Balcao</option></select></label>
+                <label>Mesa<select name="table_id"><option value="">Sem mesa</option>{% for table in tables %}<option value="{{ table.id }}">{{ table.name }} - {{ table.status }}</option>{% endfor %}</select></label>
+                <label>Produto<select name="product_id" required>{% for product in products %}<option value="{{ product.id }}">{{ product.name }} - R$ {{ "%.2f"|format(product.price) }}</option>{% endfor %}</select></label>
+                <label>Qtd<input name="quantity" type="number" min="1" value="1"></label>
+                <label class="span-2">Observacoes<textarea name="notes" rows="3"></textarea></label>
+                <button type="submit">Criar pedido</button>
+            </form>
+        </article>
+    </main>
+    {% else %}
+    <main class="orders-clean-grid board-only orders-reference {{ 'delivery-only' if is_delivery }}">
+        <section class="orders-ref-panel">
+            <nav class="orders-ref-tabs">
+                <a class="{{ 'active' if not selected_status }}" href="{{ url_for('orders.index') }}">Todos</a>
+                {% for status in statuses %}
+                <a class="{{ 'active' if selected_status == status }}" href="{{ url_for('orders.index', status=status) }}">{{ status }}</a>
+                {% endfor %}
+            </nav>
+            <div class="orders-ref-filters">
+                <label><span class="nav-icon" data-nav-icon="search"></span><input type="search" placeholder="Buscar pedido..." data-orders-search></label>
+                <select data-orders-type-filter><option value="">Todos os tipos</option><option value="Mesa">Mesa</option><option value="Balcao">Balc&atilde;o</option><option value="Entrega">Entrega</option></select>
+            </div>
+            <div class="orders-ref-list">
+                {% for order in orders %}
+                <article class="orders-ref-row" data-order-row data-type="{{ order.fulfillment_type }}" data-search="#{{ order.id }} {{ order.table_name or '' }} {{ order.fulfillment_type }} {{ order.customer_name or '' }} {{ order.items_summary or '' }} {{ order.status }}">
+                    <span class="orders-ref-icon"><span class="nav-icon" data-nav-icon="orders"></span></span>
+                    <strong>#{{ order.id }}</strong>
+                    <div><b>{{ order.table_name or order.fulfillment_type }}</b><small>{{ order.customer_name or "Venda r&aacute;pida" }}</small></div>
+                    <span>{{ order.items_summary.split(',')|length if order.items_summary else 0 }} itens</span>
+                    <span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span>
+                    <span>{{ order.order_time or "--:--" }}</span>
                     <strong>R$ {{ "%.2f"|format(order.total) }}</strong>
                     <form method="post" action="{{ url_for('orders.update_status', order_id=order.id) }}">
-                        <select name="status">
-                            {% for status in statuses %}
-                            <option value="{{ status }}" {{ "selected" if status == order.status }}>{{ status }}</option>
-                            {% endfor %}
-                        </select>
-                        <button class="btn neutral" type="submit">Atualizar</button>
+                        <select name="status" aria-label="Mover pedido">{% for option in statuses %}<option value="{{ option }}" {{ "selected" if option == order.status }}>{{ option }}</option>{% endfor %}</select>
+                        <button type="submit">...</button>
                     </form>
-                </div>
-            </article>
-            {% else %}
-            <p class="empty">Nenhum pedido encontrado.</p>
-            {% endfor %}
-        </div>
-    </article>
+                </article>
+                {% else %}
+                <div class="orders-empty">Sem pedidos.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+    {% endif %}
 </section>
 {% endblock %}

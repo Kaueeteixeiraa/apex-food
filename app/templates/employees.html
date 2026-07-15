@@ -1,42 +1,53 @@
 {% extends "base.html" %}
-{% block title %}Funcionários | Apex Food{% endblock %}
+{% block title %}Funcionarios | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
-    <div><p class="eyebrow">Equipe</p><h1>Funcionários</h1></div>
-</header>
+<section class="record-manager">
+    <header class="record-head">
+        <div><span>Equipe</span><h1>{% if mode == "form" %}{{ "Editar funcionario" if employee else "Cadastrar funcionario" }}{% else %}Funcionarios{% endif %}</h1></div>
+        {% if mode == "list" %}<div class="record-metric"><strong>{{ employees|length }}</strong><small>Localizados</small></div>{% endif %}
+        <a class="manager-link {{ 'neutral' if mode == 'form' }}" href="{{ url_for('employees.index') if mode == 'form' else url_for('employees.new') }}">{{ "Voltar" if mode == "form" else "Cadastrar funcionario" }}</a>
+    </header>
 
-<section class="content-grid">
-    <article class="panel">
-        <h2>Novo funcionário</h2>
-        <form method="post" class="form-grid">
-            <label>Nome<input name="name" required></label>
-            <label>Cargo<input name="role" required></label>
-            <label>E-mail<input name="email" type="email"></label>
-            <label>Telefone<input name="phone"></label>
-            <label>Permissão
-                <select name="permission">
-                    {% for permission in permissions %}
-                    <option>{{ permission }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <button class="btn primary" type="submit">Cadastrar funcionário</button>
+    {% if mode == "form" %}
+    <section class="record-card record-form-card">
+        <form method="post" action="{{ form_action }}" class="record-dialog-form">
+            <label>Nome<input name="name" value="{{ (employee.name or '') if employee else '' }}" required></label>
+            <label>Cargo<input name="role" value="{{ (employee.role or '') if employee else '' }}" required></label>
+            <label>E-mail<input name="email" type="email" value="{{ (employee.email or '') if employee else '' }}"></label>
+            <label>Telefone<input name="phone" value="{{ (employee.phone or '') if employee else '' }}"></label>
+            <label class="span-2">Permissao<select name="permission">{% for permission in permissions %}<option value="{{ permission }}" {% if employee and permission == employee.permission %}selected{% endif %}>{{ permission }}</option>{% endfor %}</select></label>
+            <button class="span-2" type="submit">Salvar funcionario</button>
         </form>
-    </article>
-    <article class="panel wide">
-        <div class="panel-heading"><h2>Equipe cadastrada</h2><span class="pill">{{ employees|length }}</span></div>
-        <div class="card-grid">
+    </section>
+    {% else %}
+    <section class="record-card">
+        <form class="record-filter" method="get">
+            <input name="q" value="{{ search }}" placeholder="Localizar por nome, cargo, permissao ou contato">
+            <button type="submit">Buscar</button>
+        </form>
+
+        <div class="record-list">
             {% for employee in employees %}
-            <div class="mini-card">
-                <h3>{{ employee.name }}</h3>
-                <p>{{ employee.role }}</p>
-                <span class="pill info">{{ employee.permission }}</span>
-                <small>{{ employee.email }} · {{ employee.phone }}</small>
-            </div>
+            <article class="record-row">
+                <div class="record-main">
+                    <span>{{ employee.permission }}</span>
+                    <h2>{{ employee.name }}</h2>
+                    <p>{{ employee.role }} &middot; {{ employee.email or "Sem e-mail" }} &middot; {{ employee.phone or "Sem telefone" }}</p>
+                </div>
+                <div class="record-data"><small>Cargo</small><strong>{{ employee.role }}</strong></div>
+                <div class="record-data"><small>Acesso</small><strong>{{ employee.permission }}</strong></div>
+                <div class="record-actions">
+                    <a class="manager-link compact" href="{{ url_for('employees.edit', employee_id=employee.id) }}">Editar</a>
+                    <form method="post" action="{{ url_for('employees.delete', employee_id=employee.id) }}" onsubmit="return confirm('Excluir este funcionario?')">
+                        <button class="danger" type="submit">Excluir</button>
+                    </form>
+                </div>
+            </article>
             {% else %}
-            <p class="empty">Nenhum funcionário cadastrado.</p>
+            <p class="record-empty">Nenhum funcionario encontrado.</p>
             {% endfor %}
         </div>
-    </article>
+    </section>
+    {% endif %}
 </section>
 {% endblock %}

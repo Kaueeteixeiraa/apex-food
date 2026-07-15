@@ -1,0 +1,9 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}Planos | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top"><div class="admin-title"><p class="eyebrow">Produto</p><h1>Planos</h1></div></header>
+<form class="admin-card admin-form-grid" method="post">
+    <label>Nome<input name="name" required></label><label>Slug<input name="slug" required></label><label>Mensal<input name="monthly_price" type="number" step="0.01" value="0"></label><label>Anual<input name="annual_price" type="number" step="0.01" value="0"></label><label>Trial<input name="trial_days" type="number" value="7"></label><label>Usu&aacute;rios<input name="max_users" type="number" value="0"></label><label>Produtos<input name="max_products" type="number" value="0"></label><label>Mesas<input name="max_tables" type="number" value="0"></label><label>Descri&ccedil;&atilde;o<textarea name="description"></textarea></label><label>Features JSON<textarea name="features_json">[]</textarea></label><label><input type="checkbox" name="active" checked> Ativo</label><button class="admin-btn" type="submit">Criar plano</button>
+</form>
+<section class="admin-grid">{% for plan in plans %}<article class="admin-card"><span>{{ plan.slug }}</span><strong>{{ plan.name }}</strong><p>{{ plan.description }}</p><small>Trial {{ plan.trial_days }} dias &middot; R$ {{ "%.2f"|format(plan.monthly_price) }}</small><form method="post" action="{{ url_for('apex_admin.toggle_plan', plan_id=plan.id) }}"><button class="btn neutral" type="submit">{{ "Desativar" if plan.active else "Ativar" }}</button></form></article>{% endfor %}</section>
+{% endblock %}

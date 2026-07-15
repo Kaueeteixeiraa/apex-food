@@ -1,46 +1,52 @@
 {% extends "base.html" %}
 {% block title %}Estoque | Apex Food{% endblock %}
 {% block content %}
-<header class="page-header">
-    <div><p class="eyebrow">Insumos</p><h1>Estoque simples</h1></div>
-</header>
+<section class="record-manager">
+    <header class="record-head">
+        <div><span>Insumos</span><h1>{% if mode == "form" %}{{ "Editar item" if item else "Cadastrar item" }}{% else %}Estoque{% endif %}</h1></div>
+        {% if mode == "list" %}<div class="record-metric"><strong>{{ items|length }}</strong><small>Localizados</small></div>{% endif %}
+        <a class="manager-link {{ 'neutral' if mode == 'form' }}" href="{{ url_for('inventory.index') if mode == 'form' else url_for('inventory.new') }}">{{ "Voltar" if mode == "form" else "Cadastrar item" }}</a>
+    </header>
 
-<section class="content-grid">
-    <article class="panel">
-        <h2>Novo item</h2>
-        <form method="post" class="form-grid">
-            <label>Nome do item<input name="name" required></label>
-            <label>Quantidade<input name="quantity" type="number" step="0.01" required></label>
-            <label>Unidade<input name="unit" value="un"></label>
-            <label>Estoque mínimo<input name="min_stock" type="number" step="0.01" value="0"></label>
-            <button class="btn primary" type="submit">Adicionar item</button>
+    {% if mode == "form" %}
+    <section class="record-card record-form-card">
+        <form method="post" action="{{ form_action }}" class="record-dialog-form">
+            <label class="span-2">Nome do item<input name="name" value="{{ item.name if item else '' }}" required></label>
+            <label>Quantidade<input name="quantity" type="number" step="0.01" value="{{ item.quantity if item else 0 }}" required></label>
+            <label>Unidade<input name="unit" value="{{ item.unit if item else 'un' }}"></label>
+            <label>Estoque minimo<input name="min_stock" type="number" step="0.01" value="{{ item.min_stock if item else 0 }}"></label>
+            <button class="span-2" type="submit">Salvar item</button>
         </form>
-    </article>
-    <article class="panel wide">
-        <div class="panel-heading"><h2>Itens cadastrados</h2><span class="pill">{{ items|length }}</span></div>
-        <div class="table-wrap">
-            <table>
-                <thead><tr><th>Item</th><th>Quantidade</th><th>Mínimo</th><th>Status</th></tr></thead>
-                <tbody>
-                {% for item in items %}
-                <tr>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.quantity }} {{ item.unit }}</td>
-                    <td>{{ item.min_stock }} {{ item.unit }}</td>
-                    <td>
-                        {% if item.quantity <= item.min_stock %}
-                        <span class="status danger">Baixo</span>
-                        {% else %}
-                        <span class="status positive">OK</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="4">Nenhum item de estoque.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    </section>
+    {% else %}
+    <section class="record-card">
+        <form class="record-filter" method="get">
+            <input name="q" value="{{ search }}" placeholder="Localizar item ou unidade">
+            <button type="submit">Buscar</button>
+        </form>
+
+        <div class="record-list">
+            {% for item in items %}
+            <article class="record-row">
+                <div class="record-main">
+                    <span>{{ "Baixo" if item.quantity <= item.min_stock else "OK" }}</span>
+                    <h2>{{ item.name }}</h2>
+                    <p>Minimo: {{ item.min_stock }} {{ item.unit }}</p>
+                </div>
+                <div class="record-data"><small>Atual</small><strong>{{ item.quantity }} {{ item.unit }}</strong></div>
+                <div class="record-data"><small>Status</small><strong>{{ "Baixo" if item.quantity <= item.min_stock else "OK" }}</strong></div>
+                <div class="record-actions">
+                    <a class="manager-link compact" href="{{ url_for('inventory.edit', item_id=item.id) }}">Editar</a>
+                    <form method="post" action="{{ url_for('inventory.delete', item_id=item.id) }}" onsubmit="return confirm('Excluir este item?')">
+                        <button class="danger" type="submit">Excluir</button>
+                    </form>
+                </div>
+            </article>
+            {% else %}
+            <p class="record-empty">Nenhum item encontrado.</p>
+            {% endfor %}
         </div>
-    </article>
+    </section>
+    {% endif %}
 </section>
 {% endblock %}

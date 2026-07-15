@@ -1,0 +1,8 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}Configura&ccedil;&otilde;es | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top"><div class="admin-title"><p class="eyebrow">Administra&ccedil;&atilde;o</p><h1>Configura&ccedil;&otilde;es globais</h1></div></header>
+<form class="admin-card admin-form-grid" method="post">
+    <label>Nome do produto<input name="product_name" value="{{ settings.product_name }}"></label><label>E-mail suporte<input name="support_email" value="{{ settings.support_email }}"></label><label>Toler&acirc;ncia padr&atilde;o<input name="default_grace_days" type="number" value="{{ settings.default_grace_days }}"></label><label>Plano padr&atilde;o<select name="default_plan_slug">{% for plan in plans %}<option value="{{ plan.slug }}" {{ "selected" if settings.default_plan_slug==plan.slug }}>{{ plan.name }}</option>{% endfor %}</select></label><label>Manuten&ccedil;&atilde;o<select name="maintenance_mode"><option value="0" {{ "selected" if settings.maintenance_mode!="1" }}>Inativa</option><option value="1" {{ "selected" if settings.maintenance_mode=="1" }}>Ativa</option></select></label><label>Mensagem<textarea name="maintenance_message">{{ settings.maintenance_message }}</textarea></label><button class="admin-btn" type="submit">Salvar</button>
+</form>
+{% endblock %}

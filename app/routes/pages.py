@@ -1,12 +1,26 @@
+import csv
+from io import StringIO
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template
+from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
 
-from ..database import query_all, query_one
-from ..models import PRODUCT_CATEGORIES, products_with_demo_images
+from ..database import execute, query_all, query_one
+from ..models import ORDER_STATUSES, PRODUCT_CATEGORIES, products_with_demo_images
+from ..services.saas import license_context
 from .auth import company_id, login_required
 
 bp = Blueprint("pages", __name__)
+
+REPORT_TYPES = [
+    ("all", "Geral"),
+    ("sales", "Vendas"),
+    ("orders", "Pedidos"),
+    ("products", "Produtos"),
+    ("customers", "Clientes"),
+    ("delivery", "Atendimento"),
+    ("inventory", "Estoque"),
+    ("tables", "Mesas"),
+]
 
 
 def _value(sql, params):
@@ -23,25 +37,95 @@ def _summary(cid):
     }
 
 
-def _sales_chart(cid):
+def _period_context():
+    today = datetime.now().date()
+    period = request.args.get("period", "7")
+    start_raw = request.args.get("start") or ""
+    end_raw = request.args.get("end") or ""
+    labels = {"today": "Hoje", "7": "7 dias", "30": "30 dias", "90": "90 dias"}
+
+    if period == "custom" and start_raw and end_raw:
+        try:
+            start = datetime.strptime(start_raw, "%Y-%m-%d").date()
+            end = datetime.strptime(end_raw, "%Y-%m-%d").date()
+            if start > end:
+                start, end = end, start
+            return {"key": period, "label": "Personalizado", "start": start.isoformat(), "end": end.isoformat()}
+        except ValueError:
+            period = "7"
+
+    days = {"today": 1, "7": 7, "30": 30, "90": 90}.get(period, 7)
+    start = today - timedelta(days=days - 1)
+    return {"key": period, "label": labels.get(period, "7 dias"), "start": start.isoformat(), "end": today.isoformat()}
+
+
+def _period_where(column, period):
+    return f"date({column}) BETWEEN date(?) AND date(?)", (period["start"], period["end"])
+
+
+def _sales_chart(cid, period=None):
+    period = period or _period_context()
+    where, dates = _period_where("created_at", period)
     rows = query_all(
-        """
+        f"""
         SELECT date(created_at) day, COALESCE(SUM(total),0) total
         FROM sales
-        WHERE company_id=? AND date(created_at)>=date('now','-6 day')
+        WHERE company_id=? AND {where}
         GROUP BY date(created_at)
         """,
-        (cid,),
+        (cid, *dates),
     )
     by_day = {row["day"]: float(row["total"]) for row in rows}
-    today = datetime.now().date()
+    start = datetime.strptime(period["start"], "%Y-%m-%d").date()
+    end = datetime.strptime(period["end"], "%Y-%m-%d").date()
+    total_days = max(1, (end - start).days + 1)
+    step = max(1, (total_days + 9) // 10)
     data = []
     max_total = max(by_day.values(), default=1)
-    for offset in range(6, -1, -1):
-        day = today - timedelta(days=offset)
-        total = by_day.get(day.isoformat(), 0)
+    for offset in range(0, total_days, step):
+        day = start + timedelta(days=offset)
+        chunk = [day + timedelta(days=i) for i in range(step) if day + timedelta(days=i) <= end]
+        total = sum(by_day.get(item.isoformat(), 0) for item in chunk)
         data.append({"label": day.strftime("%d/%m"), "total": total, "height": max(8, int(total / max_total * 100)) if max_total else 8})
     return data
+
+
+def _report_summary(cid, period):
+    where, dates = _period_where("created_at", period)
+    sales = query_one(
+        f"SELECT COALESCE(SUM(total),0) revenue, COUNT(*) sales, COALESCE(AVG(total),0) ticket FROM sales WHERE company_id=? AND {where}",
+        (cid, *dates),
+    )
+    orders = query_one(f"SELECT COUNT(*) orders FROM orders WHERE company_id=? AND {where}", (cid, *dates))
+    customers = query_one(
+        f"SELECT COUNT(DISTINCT COALESCE(NULLIF(customer_name,''), 'Cliente ' || id)) customers FROM orders WHERE company_id=? AND {where}",
+        (cid, *dates),
+    )
+    order_where, order_dates = _period_where("orders.created_at", period)
+    cost = query_one(
+        f"""
+        SELECT COALESCE(SUM(order_items.quantity * products.cost_price), 0) cost
+        FROM order_items
+        JOIN orders ON orders.id = order_items.order_id
+        LEFT JOIN products ON products.id = order_items.product_id
+        WHERE orders.company_id=? AND {order_where}
+        """,
+        (cid, *order_dates),
+    )
+    cash = query_one(
+        "SELECT status, opening_amount FROM cash_registers WHERE company_id=? ORDER BY id DESC LIMIT 1",
+        (cid,),
+    )
+    return {
+        "revenue": sales["revenue"],
+        "sales": sales["sales"],
+        "ticket": sales["ticket"],
+        "orders": orders["orders"],
+        "customers": customers["customers"],
+        "profit": float(sales["revenue"] or 0) - float(cost["cost"] or 0),
+        "cash_status": cash["status"] if cash else "Fechado",
+        "cash_opening": cash["opening_amount"] if cash else 0,
+    }
 
 
 def _top_products(cid, limit=6):
@@ -60,12 +144,112 @@ def _top_products(cid, limit=6):
     )
 
 
+def _top_products_period(cid, period, limit=6):
+    where, dates = _period_where("o.created_at", period)
+    rows = query_all(
+        f"""
+        SELECT oi.product_name name, COALESCE(p.category,'Vendas') category,
+               COALESCE(SUM(oi.quantity),0) sold, COALESCE(SUM(oi.quantity * oi.unit_price),0) total
+        FROM order_items oi
+        JOIN orders o ON o.id=oi.order_id
+        LEFT JOIN products p ON p.id=oi.product_id
+        WHERE o.company_id=? AND {where}
+        GROUP BY oi.product_name, p.category
+        ORDER BY sold DESC, total DESC
+        LIMIT ?
+        """,
+        (cid, *dates, limit),
+    )
+    return rows or _top_products(cid, limit)
+
+
+def _report_customers(cid, period):
+    where, dates = _period_where("created_at", period)
+    return query_all(
+        f"""
+        SELECT COALESCE(NULLIF(customer_name,''),'Cliente balcão') name, COUNT(*) orders, COALESCE(SUM(total),0) total
+        FROM orders
+        WHERE company_id=? AND {where}
+        GROUP BY COALESCE(NULLIF(customer_name,''),'Cliente balcão')
+        ORDER BY total DESC, orders DESC
+        LIMIT 5
+        """,
+        (cid, *dates),
+    )
+
+
+def _report_channels(cid, period):
+    where, dates = _period_where("created_at", period)
+    return query_all(
+        f"""
+        SELECT fulfillment_type name, COUNT(*) orders, COALESCE(SUM(total),0) total
+        FROM orders
+        WHERE company_id=? AND {where}
+        GROUP BY fulfillment_type
+        ORDER BY orders DESC
+        """,
+        (cid, *dates),
+    )
+
+
+def _rows_to_report(rows, label, value, meta=None, money=False):
+    return [
+        {
+            "label": row[label],
+            "meta": row[meta] if meta else "",
+            "value": f"R$ {float(row[value]):.2f}" if money else row[value],
+        }
+        for row in rows
+    ]
+
+
+def _report_sections(cid, period, selected):
+    where, dates = _period_where("created_at", period)
+    sections = []
+
+    def wants(key):
+        return selected == "all" or selected == key
+
+    if wants("sales"):
+        rows = query_all(
+            f"SELECT payment_method name, COUNT(*) count, COALESCE(SUM(total),0) total FROM sales WHERE company_id=? AND {where} GROUP BY payment_method ORDER BY total DESC LIMIT 5",
+            (cid, *dates),
+        )
+        sections.append({"key": "sales", "title": "Vendas e pagamentos", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "count", True)})
+    if wants("orders"):
+        rows = query_all(
+            f"SELECT status name, COUNT(*) count, COALESCE(SUM(total),0) total FROM orders WHERE company_id=? AND {where} GROUP BY status ORDER BY count DESC LIMIT 6",
+            (cid, *dates),
+        )
+        sections.append({"key": "orders", "title": "Pedidos por status", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "count", True)})
+    if wants("products"):
+        rows = _top_products_period(cid, period, 6)
+        sections.append({"key": "products", "title": "Produtos vendidos", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "sold", True)})
+    if wants("customers"):
+        rows = _report_customers(cid, period)
+        sections.append({"key": "customers", "title": "Clientes", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "orders", True)})
+    if wants("delivery"):
+        rows = query_all(
+            f"SELECT fulfillment_type name, COUNT(*) count, COALESCE(SUM(total),0) total FROM orders WHERE company_id=? AND {where} GROUP BY fulfillment_type ORDER BY count DESC",
+            (cid, *dates),
+        )
+        sections.append({"key": "delivery", "title": "Canais de atendimento", "total": len(rows), "rows": _rows_to_report(rows, "name", "total", "count", True)})
+    if wants("inventory"):
+        rows = query_all(
+            "SELECT name, quantity, unit, min_stock FROM inventory_items WHERE company_id=? ORDER BY CASE WHEN quantity<=min_stock THEN 0 ELSE 1 END, quantity LIMIT 6",
+            (cid,),
+        )
+        sections.append({"key": "inventory", "title": "Estoque", "total": len(rows), "rows": [{"label": row["name"], "meta": f"min. {row['min_stock']} {row['unit']}", "value": f"{row['quantity']} {row['unit']}"} for row in rows]})
+    if wants("tables"):
+        rows = query_all("SELECT status name, COUNT(*) count FROM tables WHERE company_id=? GROUP BY status ORDER BY count DESC", (cid,))
+        sections.append({"key": "tables", "title": "Mesas", "total": len(rows), "rows": _rows_to_report(rows, "name", "count")})
+    return sections[:6] if selected == "all" else sections
+
+
 @bp.get("/menu")
 @login_required
 def menu():
-    cid = company_id()
-    products = products_with_demo_images(query_all("SELECT * FROM products WHERE company_id=? ORDER BY category,name", (cid,)))
-    return render_template("workspace.html", screen="menu", title="Cardapio", products=products)
+    return redirect(url_for("products.index"))
 
 
 @bp.get("/categories")
@@ -112,52 +296,85 @@ def delivery():
     return render_template("workspace.html", screen="delivery", title="Delivery", orders=orders, metrics=metrics)
 
 
-@bp.get("/finance")
+@bp.post("/delivery/<int:order_id>/status")
 @login_required
-def finance():
+def delivery_status(order_id):
     cid = company_id()
-    payments = query_all(
-        "SELECT payment_method, COALESCE(SUM(total),0) total, COUNT(*) count FROM sales WHERE company_id=? GROUP BY payment_method ORDER BY total DESC",
-        (cid,),
+    status = request.form.get("status", "Recebido")
+    if status not in ORDER_STATUSES:
+        status = "Recebido"
+    execute(
+        "UPDATE orders SET status=? WHERE id=? AND company_id=? AND fulfillment_type='Entrega'",
+        (status, order_id, cid),
     )
-    sales = query_all("SELECT id, total, payment_method, status, created_at FROM sales WHERE company_id=? ORDER BY created_at DESC LIMIT 8", (cid,))
-    return render_template(
-        "workspace.html",
-        screen="finance",
-        title="Financeiro",
-        summary=_summary(cid),
-        payments=payments,
-        sales=sales,
-        chart=_sales_chart(cid),
-    )
+    return redirect(url_for("pages.delivery"))
 
 
 @bp.get("/reports")
 @login_required
 def reports():
     cid = company_id()
-    low_stock = query_all("SELECT name, quantity, unit, min_stock FROM inventory_items WHERE company_id=? AND quantity<=min_stock ORDER BY quantity LIMIT 5", (cid,))
-    clients = query_all(
-        """
-        SELECT c.name, COUNT(o.id) orders, COALESCE(SUM(o.total),0) total
-        FROM customers c
-        LEFT JOIN orders o ON o.customer_id=c.id
-        WHERE c.company_id=?
-        GROUP BY c.id
-        ORDER BY total DESC
-        LIMIT 5
-        """,
-        (cid,),
-    )
+    period = _period_context()
+    selected_report = request.args.get("report", "all")
+    if selected_report not in {key for key, _ in REPORT_TYPES}:
+        selected_report = "all"
     return render_template(
         "workspace.html",
         screen="reports",
         title="Relatorios",
-        summary=_summary(cid),
-        chart=_sales_chart(cid),
-        top_products=_top_products(cid),
-        low_stock=low_stock,
-        clients=clients,
+        period=period,
+        report={"key": selected_report, "label": dict(REPORT_TYPES)[selected_report]},
+        report_types=REPORT_TYPES,
+        report_sections=_report_sections(cid, period, selected_report),
+        summary=_report_summary(cid, period),
+        chart=_sales_chart(cid, period),
+        top_products=_top_products_period(cid, period),
+        clients=_report_customers(cid, period),
+        channels=_report_channels(cid, period),
+    )
+
+
+@bp.get("/finance")
+@login_required
+def finance():
+    return redirect(url_for("pages.reports"))
+
+
+@bp.get("/reports/export")
+@login_required
+def reports_export():
+    cid = company_id()
+    period = _period_context()
+    selected_report = request.args.get("report", "all")
+    if selected_report not in {key for key, _ in REPORT_TYPES}:
+        selected_report = "all"
+
+    summary = _report_summary(cid, period)
+    output = StringIO()
+    writer = csv.writer(output, delimiter=";")
+    writer.writerow(["Apex Food 2.0", dict(REPORT_TYPES)[selected_report]])
+    writer.writerow(["Periodo", period["start"], period["end"]])
+    writer.writerow([])
+    writer.writerow(["Receita", "Pedidos", "Ticket medio", "Lucro estimado", "Caixa"])
+    writer.writerow([
+        f"{summary['revenue']:.2f}",
+        summary["orders"],
+        f"{summary['ticket']:.2f}",
+        f"{summary['profit']:.2f}",
+        summary["cash_status"],
+    ])
+    for section in _report_sections(cid, period, selected_report):
+        writer.writerow([])
+        writer.writerow([section["title"]])
+        writer.writerow(["Item", "Detalhe", "Valor"])
+        for row in section["rows"]:
+            writer.writerow([row["label"], row["meta"], row["value"]])
+
+    filename = f"apex-relatorio-{period['start']}-{period['end']}.csv"
+    return Response(
+        "\ufeff" + output.getvalue(),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
 
@@ -175,3 +392,50 @@ def settings():
         ("Operacao", "Mesas, cozinha, estoque e PDV."),
     ]
     return render_template("workspace.html", screen="settings", title="Configuracoes", company=company, groups=groups)
+
+
+@bp.get("/onboarding")
+@login_required
+def onboarding():
+    cid = company_id()
+    counts = {
+        "products": _value("SELECT COUNT(*) value FROM products WHERE company_id=?", (cid,)),
+        "categories": _value("SELECT COUNT(DISTINCT category) value FROM products WHERE company_id=?", (cid,)),
+        "employees": _value("SELECT COUNT(*) value FROM employees WHERE company_id=?", (cid,)),
+        "tables": _value("SELECT COUNT(*) value FROM tables WHERE company_id=?", (cid,)),
+    }
+    steps = [
+        ("Adicionar primeiros produtos", counts["products"] > 0, "products.index"),
+        ("Criar categorias", counts["categories"] > 1, "pages.categories"),
+        ("Configurar atendimento", True, "pages.settings"),
+        ("Cadastrar funcionarios", counts["employees"] > 1, "employees.index"),
+        ("Configurar mesas", counts["tables"] > 0, "floor.index"),
+    ]
+    done = sum(1 for _, ok, _ in steps if ok)
+    return render_template("onboarding.html", steps=steps, done=done)
+
+
+@bp.post("/onboarding/finish")
+@login_required
+def finish_onboarding():
+    execute("UPDATE companies SET onboarding_completed=1 WHERE id=?", (company_id(),))
+    flash("Onboarding concluido. Voce pode continuar configurando quando quiser.", "success")
+    return redirect(url_for("dashboard.index"))
+
+
+@bp.get("/subscription")
+@login_required
+def subscription():
+    cid = company_id()
+    context = license_context(cid)
+    payments = query_all(
+        """
+        SELECT *
+        FROM subscription_payments
+        WHERE company_id=?
+        ORDER BY created_at DESC
+        LIMIT 8
+        """,
+        (cid,),
+    )
+    return render_template("subscription.html", license_context=context, payments=payments)

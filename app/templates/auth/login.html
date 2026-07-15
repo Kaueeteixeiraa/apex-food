@@ -1,38 +1,36 @@
 {% extends "base.html" %}
-{% block title %}Login | Apex Food{% endblock %}
+{% block title %}Entrar | Apex Food{% endblock %}
 {% block content %}
-<section class="auth-card login-card">
-    <div class="brand auth-brand">
-        <span class="brand-mark">AF</span>
-        <span>
-            <strong>Apex Food</strong>
-            <small>SaaS para restaurantes inteligentes</small>
-        </span>
+<section class="auth-saas">
+    <div class="auth-panel">
+        <a class="public-brand apex-logo" href="{{ url_for('auth.login') }}"><svg class="apex-symbol" viewBox="0 0 48 42" aria-hidden="true"><path d="M24 2 46 40H34L24 22 14 40H2L24 2Z"/><path d="M24 15 31 28H17l7-13Z"/></svg><span class="apex-word"><strong><b>apex</b><em>food</em></strong></span></a>
+        <div class="auth-identity-copy">
+            <h1>Opera&ccedil;&atilde;o organizada<br>do pedido ao fechamento.</h1>
+            <div class="auth-benefits">
+                <span><i data-nav-icon="orders" class="nav-icon"></i><strong>Pedidos conectados</strong><small>Todos os canais em um s&oacute; lugar.</small></span>
+                <span><i data-nav-icon="pos" class="nav-icon"></i><strong>Caixa organizado</strong><small>Controle de vendas e recebimentos.</small></span>
+                <span><i data-nav-icon="reports" class="nav-icon"></i><strong>Opera&ccedil;&atilde;o em tempo real</strong><small>Informa&ccedil;&otilde;es atualizadas na hora.</small></span>
+            </div>
+        </div>
     </div>
-    <div class="auth-copy">
-        <p class="eyebrow">Operacao conectada</p>
-        <h1>Entre no painel do restaurante</h1>
-        <p class="muted">Pedidos, salao, caixa e cozinha em uma experiencia escura, rapida e bonita.</p>
+    <div class="auth-form-panel">
+        <a class="auth-mobile-brand apex-logo" href="{{ url_for('auth.login') }}"><svg class="apex-symbol" viewBox="0 0 48 42" aria-hidden="true"><path d="M24 2 46 40H34L24 22 14 40H2L24 2Z"/><path d="M24 15 31 28H17l7-13Z"/></svg><span class="apex-word"><strong><b>apex</b><em>food</em></strong></span></a>
+        {% include "_flash.html" %}
+        <h2>Acessar o Apex Food</h2>
+        <p>Entre com suas credenciais para continuar.</p>
+        <form method="post" class="form-grid" data-login-form>
+            <label>E-mail<input name="email" type="email" autocomplete="email" value="{{ email or '' }}" autofocus required></label>
+            <div class="password-field">
+                <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
+                <button class="btn neutral" type="button" data-toggle-password>Mostrar</button>
+            </div>
+            <div class="auth-row">
+                <label><input name="remember" type="checkbox"> Manter conectado</label>
+                <a href="{{ url_for('auth.forgot_password') }}">Esqueci minha senha</a>
+            </div>
+            <button class="btn primary auth-submit" type="submit" data-login-button>Entrar</button>
+        </form>
+        <p class="muted">Seu acesso &eacute; fornecido pelo administrador respons&aacute;vel pelo Apex Food.</p>
     </div>
-    <form method="post" class="form-grid" data-login-form>
-        <label class="input-icon" data-icon="@">
-            E-mail
-            <input name="email" type="email" value="admin@apexfood.local" required>
-        </label>
-        <label class="input-icon" data-icon="*">
-            Senha
-            <input name="password" type="password" value="123456" required>
-        </label>
-        <button class="btn primary" type="submit" data-login-button>Entrar no Apex Food</button>
-    </form>
-    <p class="auth-link">Ainda nao tem empresa? <a href="{{ url_for('auth.register') }}">Cadastrar empresa</a></p>
 </section>
-
-<div class="auth-loader" data-auth-loader>
-    <div class="loader-card">
-        <span class="brand-mark">AF</span>
-        <div class="loader-ring"></div>
-        <strong>Entrando no Apex Food...</strong>
-    </div>
-</div>
 {% endblock %}

@@ -1,0 +1,67 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}Novo cliente | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top">
+    <div class="admin-title"><p class="eyebrow">Clientes</p><h1>Novo cliente</h1><p>Crie empresa, acesso respons&aacute;vel e licen&ccedil;a em uma &uacute;nica transa&ccedil;&atilde;o.</p></div>
+    <a class="btn neutral" href="{{ url_for('apex_admin.clients') }}">Voltar</a>
+</header>
+<form method="post" class="admin-client-form" data-client-form>
+    <aside class="client-stepper">
+        {% for label in ["Empresa", "Respons&aacute;vel", "Acesso", "Plano e licen&ccedil;a", "Resumo"] %}
+        <span class="{{ 'active' if loop.first }}"><i>{{ loop.index }}</i>{{ label|safe }}</span>
+        {% endfor %}
+    </aside>
+    <section class="admin-card">
+        <h2>Dados da empresa</h2>
+        <p>Informe os dados da empresa que utilizar&aacute; o Apex Food.</p>
+        <div class="admin-form-grid">
+            <label>Nome fantasia<input name="trade_name" value="{{ form.get('trade_name','') }}" data-summary-source="company" required></label>
+            <label>Raz&atilde;o social<input name="legal_name" value="{{ form.get('legal_name','') }}" required></label>
+            <label>CNPJ ou CPF<input name="document" value="{{ form.get('document','') }}" required></label>
+            <label>Segmento<input name="segment" value="{{ form.get('segment','Restaurante') }}" required></label>
+            <label>E-mail comercial<input name="email" type="email" value="{{ form.get('email','') }}" required></label>
+            <label>Telefone<input name="phone" value="{{ form.get('phone','') }}" required></label>
+        </div>
+    </section>
+    <section class="admin-card">
+        <h2>Endere&ccedil;o</h2>
+        <div class="admin-form-grid">
+            <label>CEP<input name="cep" data-cep value="{{ form.get('cep','') }}" required></label>
+            <label>Rua<input name="address" value="{{ form.get('address','') }}" required></label>
+            <label>N&uacute;mero<input name="address_number" value="{{ form.get('address_number','') }}" required></label>
+            <label>Complemento<input name="address_complement" value="{{ form.get('address_complement','') }}"></label>
+            <label>Bairro<input name="neighborhood" value="{{ form.get('neighborhood','') }}" required></label>
+            <label>Cidade<input name="city" value="{{ form.get('city','') }}" required></label>
+            <label>Estado<input name="state" maxlength="2" value="{{ form.get('state','') }}" required></label>
+        </div>
+    </section>
+    <section class="admin-card">
+        <h2>Respons&aacute;vel</h2>
+        <div class="admin-form-grid">
+            <label>Nome<input name="responsible_name" value="{{ form.get('responsible_name','') }}" required></label>
+            <label>E-mail de acesso<input name="responsible_email" type="email" value="{{ form.get('responsible_email','') }}" data-summary-source="responsible" required></label>
+            <label>Telefone<input name="responsible_phone" value="{{ form.get('responsible_phone','') }}" required></label>
+            <label>Cargo<input name="responsible_role" value="{{ form.get('responsible_role','Administrador') }}" required></label>
+            <label>Equipe<input name="team_size" value="{{ form.get('team_size','') }}"></label>
+        </div>
+    </section>
+    <section class="admin-card">
+        <h2>Plano e licen&ccedil;a</h2>
+        <div class="admin-form-grid">
+            <label>Plano<select name="plan_id" data-summary-source="plan" required>{% for plan in plans %}<option value="{{ plan.id }}" {{ "selected" if form.get('plan_id') == plan.id|string }}>{{ plan.name }}</option>{% endfor %}</select></label>
+            <label>In&iacute;cio<input name="starts_at" type="date" value="{{ form.get('starts_at','') }}" required></label>
+            <label>Vencimento<input name="expires_at" type="date" value="{{ form.get('expires_at','') }}" data-summary-source="expires" required></label>
+            <label>Fim do trial<input name="trial_ends_at" type="date" value="{{ form.get('trial_ends_at','') }}"></label>
+            <label>Status<select name="license_status"><option value="trial">Trial</option><option value="active">Ativa</option><option value="grace_period">Toler&acirc;ncia</option><option value="expired">Vencida</option><option value="blocked">Bloqueada</option><option value="cancelled">Cancelada</option></select></label>
+            <label><input type="checkbox" name="auto_renew" {{ "checked" if form.get('auto_renew') }}> Renova&ccedil;&atilde;o autom&aacute;tica</label>
+            <label>Observa&ccedil;&otilde;es<textarea name="admin_note">{{ form.get('admin_note','') }}</textarea></label>
+        </div>
+    </section>
+    <section class="admin-card admin-sticky-summary">
+        <h2>Resumo</h2>
+        <dl class="client-form-summary"><dt>Empresa</dt><dd data-summary-target="company">-</dd><dt>Plano</dt><dd data-summary-target="plan">-</dd><dt>Vencimento</dt><dd data-summary-target="expires">-</dd><dt>Respons&aacute;vel</dt><dd data-summary-target="responsible">-</dd></dl>
+        <p>O respons&aacute;vel receber&aacute; um convite para definir a pr&oacute;pria senha.</p>
+        <button class="admin-btn" type="submit">Salvar e continuar</button>
+    </section>
+</form>
+{% endblock %}

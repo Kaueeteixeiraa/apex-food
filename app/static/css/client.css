@@ -1,0 +1,2286 @@
+html,
+body,
+.app-shell {
+    background: var(--apex-bg) !important;
+}
+
+:root {
+    --sidebar: 260px;
+    --bg: var(--apex-bg);
+    --bg-2: var(--apex-bg);
+    --surface: var(--apex-surface);
+    --surface-2: var(--apex-surface-raised);
+    --surface-3: var(--apex-surface-hover);
+    --line: var(--apex-border);
+    --line-strong: var(--apex-border-strong);
+    --text: var(--apex-text);
+    --soft: var(--apex-text-secondary);
+    --muted: var(--apex-text-muted);
+    --purple: var(--apex-orange);
+    --purple-hot: var(--apex-orange-hover);
+    --orange: var(--apex-orange);
+    --green: var(--apex-success);
+    --red: var(--apex-danger);
+    --brand: var(--apex-orange);
+    --brand-strong: var(--apex-orange-hover);
+}
+
+.app-shell {
+    grid-template-columns: var(--sidebar) minmax(0, 1fr) !important;
+}
+
+.sidebar {
+    width: var(--sidebar) !important;
+    padding: 14px 10px !important;
+    background: var(--apex-sidebar) !important;
+    border-right: 1px solid var(--border-soft) !important;
+    box-shadow: none !important;
+}
+
+.brand {
+    display: grid !important;
+    grid-template-columns: 28px 1fr;
+    gap: 8px !important;
+    align-items: center;
+    padding: 2px 4px 16px !important;
+}
+
+.brand .apex-symbol {
+    width: 28px;
+    height: 25px;
+}
+
+.brand-company {
+    grid-column: 1 / -1;
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-collapse,
+.sidebar-footer {
+    display: none !important;
+}
+
+.nav-section {
+    margin: 12px 8px 5px !important;
+    color: var(--text-muted) !important;
+    font-size: 0.65rem !important;
+    letter-spacing: 0.08em;
+}
+
+.nav-menu a {
+    min-height: 32px !important;
+    padding: 7px 9px !important;
+    border-left: 2px solid transparent !important;
+    border-radius: 7px !important;
+    color: var(--text-muted) !important;
+    font-size: 0.78rem !important;
+}
+
+.nav-menu a.active {
+    background: var(--bg-panel-hover) !important;
+    border-left-color: var(--accent) !important;
+    color: var(--text-primary) !important;
+}
+
+html .btn.primary,
+html .admin-btn,
+html .finish-sale,
+html .pdv-clean-actions .primary,
+html .pdv-ref-cash button,
+html .product-bottom i {
+    background: var(--accent) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+
+html .btn.primary:hover,
+html .pdv-clean-actions .primary:hover {
+    background: var(--accent-hover) !important;
+}
+
+html .pill.info,
+html .pill.active {
+    background: rgba(255, 101, 0, 0.12) !important;
+    color: var(--accent) !important;
+}
+
+.nav-menu a.active .nav-icon,
+.nav-menu a:hover .nav-icon {
+    color: var(--accent);
+}
+
+.main-content {
+    display: flex;
+    min-height: 100vh;
+    height: 100vh !important;
+    flex-direction: column;
+    min-width: 0;
+    padding: 8px 12px 12px !important;
+    overflow: hidden !important;
+    background: var(--apex-bg) !important;
+}
+
+.client-topbar {
+    display: flex;
+    flex: 0 0 34px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.client-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+}
+
+.client-profile .sidebar-avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 0.72rem;
+    background: #30343a !important;
+}
+
+.client-profile-text {
+    display: grid;
+    line-height: 1.1;
+}
+
+.client-profile-text strong {
+    color: var(--text-primary);
+    font-size: 0.78rem;
+}
+
+.client-profile-text small,
+.client-profile a {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+
+.dashboard-hero h1 {
+    font-size: 1.45rem !important;
+    letter-spacing: -0.035em;
+}
+
+.premium-dashboard {
+    grid-template-rows: auto auto auto minmax(0, 1fr) !important;
+    flex: 1;
+    min-height: 0;
+    gap: 10px !important;
+    height: auto !important;
+    overflow: hidden;
+}
+
+.dashboard-hero,
+.page-title-row {
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.dashboard-metrics {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+}
+
+.premium-metric {
+    min-height: 82px !important;
+    padding: 12px !important;
+}
+
+.premium-metric strong {
+    font-size: 1.35rem !important;
+}
+
+.metric-icon {
+    width: auto !important;
+    height: auto !important;
+    background: transparent !important;
+    color: var(--accent) !important;
+}
+
+.dashboard-panels-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.4fr) minmax(210px, 0.8fr) minmax(210px, 0.8fr) !important;
+    gap: 10px !important;
+    min-height: 0;
+}
+
+.dashboard-recent-row {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.panel,
+.dashboard-card {
+    padding: 14px !important;
+    border-color: var(--apex-border) !important;
+    background: var(--apex-surface) !important;
+}
+
+.panel-heading {
+    min-height: 0 !important;
+    margin-bottom: 10px !important;
+}
+
+.panel-heading h2 {
+    font-size: 0.9rem !important;
+}
+
+.dashboard-alert {
+    border-color: var(--border-soft) !important;
+    background: var(--bg-input) !important;
+}
+
+.best-seller-list,
+.compact-alert-list {
+    display: grid;
+    gap: 9px;
+}
+
+.best-seller-row {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) 24px;
+    gap: 9px;
+    align-items: center;
+}
+
+.best-seller-row img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.best-seller-row span,
+.compact-alert-row strong,
+.late-order-row strong {
+    display: block;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.best-seller-row i {
+    display: block;
+    height: 3px;
+    margin-top: 6px;
+    border-radius: 99px;
+    background: var(--accent);
+}
+
+.best-seller-row strong {
+    color: var(--text-primary);
+    font-size: 0.78rem;
+    text-align: right;
+}
+
+.compact-alert-row,
+.late-order-row {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 9px;
+    align-items: center;
+}
+
+.compact-alert-row .nav-icon,
+.late-order-row > span {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(255, 101, 0, 0.38);
+    border-radius: 7px;
+    color: var(--accent);
+}
+
+.compact-alert-row small,
+.late-order-row small {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+}
+
+.panel-link {
+    display: block;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 7px;
+    background: var(--apex-surface-hover);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.premium-table th,
+.premium-table td {
+    padding: 8px 10px !important;
+}
+
+/* PDV reference layout */
+.main-content:has(.pdv-reference) {
+    padding: 8px !important;
+}
+
+.pdv-reference {
+    display: grid !important;
+    flex: 1;
+    grid-template-rows: 48px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+.pdv-ref-head {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr) 70px;
+    gap: 8px;
+    align-items: center;
+}
+
+.pdv-ref-head > div,
+.pdv-ref-head label {
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--apex-border);
+    border-radius: 9px;
+    background: var(--apex-surface);
+}
+
+.pdv-ref-head h1 {
+    margin: 0;
+    font-size: 0.98rem;
+}
+
+.pdv-ref-head span,
+.pdv-ref-head label span,
+.pdv-ref-section-head small {
+    color: var(--text-muted);
+    font-size: 0.64rem;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pdv-ref-head input {
+    min-height: 28px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.pdv-ref-grid {
+    display: grid;
+    grid-template-columns: 100px minmax(340px, 1fr) 300px 260px;
+    gap: 8px;
+    min-height: 0;
+}
+
+.pdv-ref-cats,
+.pdv-ref-products,
+.pdv-ref-order,
+.pdv-ref-summary {
+    min-width: 0;
+    min-height: 0;
+    padding: 10px;
+    border: 1px solid var(--apex-border);
+    border-radius: 10px;
+    background: var(--apex-surface);
+    overflow: hidden;
+}
+
+.pdv-ref-cats h2,
+.pdv-ref-section-head h2,
+.pdv-ref-payment h3 {
+    margin: 0;
+    font-size: 0.88rem;
+}
+
+.pdv-ref-cats {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+}
+
+.pdv-ref-cats button {
+    display: grid;
+    gap: 4px;
+    min-height: 42px;
+    justify-items: start;
+    padding: 7px;
+    border: 1px solid var(--apex-border);
+    border-radius: 8px;
+    background: var(--apex-surface-raised);
+    color: var(--text-secondary);
+    font-size: 0.68rem;
+    font-weight: 850;
+}
+
+.pdv-ref-cats button span {
+    color: var(--accent);
+    font-size: 0.62rem;
+}
+
+.pdv-ref-cats button.active {
+    border-color: rgba(255, 101, 0, 0.55);
+    background: rgba(255, 101, 0, 0.12);
+    color: var(--text-primary);
+}
+
+.pdv-ref-products,
+.pdv-ref-order,
+.pdv-ref-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pdv-ref-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.pdv-ref-section-head button {
+    padding: 6px 9px;
+    border-radius: 7px;
+    background: var(--apex-surface-hover);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+}
+
+.pdv-ref-product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+    gap: 8px;
+    min-height: 0;
+    overflow: auto;
+}
+
+.pdv-ref-product {
+    display: grid;
+    gap: 6px;
+    min-height: 138px;
+    padding: 8px;
+    border: 1px solid var(--apex-border);
+    border-radius: 9px;
+    background: var(--apex-surface-raised);
+    color: var(--text-primary);
+    text-align: left;
+}
+
+.pdv-ref-product:hover {
+    border-color: rgba(255, 101, 0, 0.45);
+    background: var(--apex-surface-hover);
+}
+
+.pdv-ref-product img {
+    width: 100%;
+    aspect-ratio: 1.35;
+    border-radius: 7px;
+    object-fit: cover;
+}
+
+.pdv-ref-product strong {
+    overflow: hidden;
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pdv-ref-product span {
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.pdv-ref-customer {
+    display: grid;
+    grid-template-columns: 1fr 88px;
+    gap: 6px;
+}
+
+.pdv-ref-customer button,
+.pdv-ref-customer span {
+    min-height: 30px;
+    padding: 7px;
+    border: 1px solid var(--apex-border);
+    border-radius: 7px;
+    background: var(--apex-surface-raised);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.pdv-ref-cart {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.pdv-ref-total {
+    padding: 10px;
+    border: 1px solid rgba(255, 101, 0, 0.38);
+    border-radius: 9px;
+    background: rgba(255, 101, 0, 0.08);
+}
+
+.pdv-ref-total span {
+    color: var(--text-muted);
+    font-size: 0.66rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.pdv-ref-total strong {
+    display: block;
+    margin-top: 2px;
+    color: var(--accent);
+    font-size: 1.3rem;
+}
+
+.pdv-ref-values {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.pdv-ref-values > div,
+.pdv-ref-values label {
+    display: grid;
+    gap: 4px;
+    min-height: 44px;
+    padding: 7px;
+    border: 1px solid var(--apex-border);
+    border-radius: 7px;
+    background: var(--apex-surface-raised);
+    color: var(--text-secondary);
+    font-size: 0.66rem;
+    font-weight: 850;
+}
+
+.pdv-ref-values input {
+    min-height: 22px !important;
+    padding: 0 8px !important;
+    text-align: right;
+}
+
+.pdv-ref-payment,
+.pdv-ref-cash {
+    display: grid;
+    gap: 8px;
+}
+
+.pdv-pay-methods {
+    grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.pdv-pay-methods button.active {
+    background: var(--accent) !important;
+    color: #fff !important;
+}
+
+.pdv-ref-cash {
+    grid-template-columns: 1fr 1fr;
+}
+
+.pdv-ref-cash form {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 62px;
+    gap: 6px;
+}
+
+.pdv-ref-cash button,
+.pdv-clean-actions .primary {
+    background: var(--accent) !important;
+}
+
+.pdv-clean-actions {
+    margin-top: auto;
+    grid-template-columns: 1fr 1fr 1.35fr !important;
+}
+
+/* Orders reference */
+.orders-reference {
+    grid-template-columns: 1fr !important;
+}
+
+.orders-ref-panel {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 10px;
+    min-height: 0;
+    padding: 14px;
+    border: 1px solid var(--apex-border);
+    border-radius: 10px;
+    background: var(--apex-surface);
+}
+
+.orders-ref-tabs {
+    display: flex;
+    gap: 18px;
+    border-bottom: 1px solid var(--apex-border);
+}
+
+.orders-ref-tabs a {
+    padding: 0 0 9px;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 850;
+}
+
+.orders-ref-tabs a.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+}
+
+.orders-ref-filters {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 150px;
+    gap: 8px;
+}
+
+.orders-ref-filters label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid var(--apex-border);
+    border-radius: 7px;
+    background: var(--apex-surface-raised);
+}
+
+.orders-ref-filters input {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.orders-ref-filters button {
+    border-radius: 7px;
+    background: var(--apex-surface-hover);
+    color: var(--text-secondary);
+}
+
+.orders-ref-list {
+    display: grid;
+    align-content: start;
+    min-height: 0;
+    overflow: auto;
+}
+
+.orders-ref-row {
+    display: grid;
+    grid-template-columns: 34px 52px minmax(150px, 1fr) 70px 110px 56px 82px 86px;
+    gap: 10px;
+    align-items: center;
+    min-height: 48px;
+    border-bottom: 1px solid var(--apex-border);
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+}
+
+.orders-ref-icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: var(--apex-surface-raised);
+    color: var(--text-muted);
+}
+
+.orders-ref-row b,
+.orders-ref-row strong {
+    color: var(--text-primary);
+}
+
+.orders-ref-row small {
+    display: block;
+    color: var(--text-muted);
+}
+
+.orders-ref-row form {
+    display: grid;
+    grid-template-columns: 1fr 28px;
+    gap: 4px;
+}
+
+.orders-ref-row form select {
+    min-height: 28px !important;
+    padding: 0 6px !important;
+    font-size: 0.68rem;
+}
+
+.orders-ref-row form button {
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+}
+
+/* KDS reference */
+.kds-reference {
+    display: grid;
+    flex: 1;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 10px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.kds-columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    min-height: 0;
+}
+
+.kds-column {
+    display: grid;
+    grid-template-rows: 42px minmax(0, 1fr);
+    min-height: 0;
+    border: 1px solid var(--apex-border);
+    border-radius: 10px;
+    background: var(--apex-surface);
+    overflow: hidden;
+}
+
+.kds-column > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--apex-border);
+    background: var(--apex-surface-raised);
+}
+
+.kds-column h2 {
+    margin: 0;
+    font-size: 0.86rem;
+}
+
+.kds-column header span {
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 900;
+}
+
+.kds-ticket-list {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-height: 0;
+    padding: 10px;
+    overflow: auto;
+}
+
+.kds-ticket {
+    display: grid;
+    gap: 7px;
+    padding: 10px;
+    border: 1px solid var(--apex-border);
+    border-radius: 9px;
+    background: var(--apex-surface-raised);
+}
+
+.kds-ticket-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.kds-ticket small,
+.kds-ticket em {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+
+.kds-ticket p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+}
+
+.kds-ticket-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Dashboard/sidebar fidelity layer */
+.app-shell:has(.premium-dashboard) {
+    grid-template-columns: 260px minmax(0, 1fr) !important;
+}
+
+.app-shell:has(.premium-dashboard) .sidebar {
+    width: 260px !important;
+    padding: 20px 18px !important;
+    border-right-color: rgba(255, 255, 255, 0.1) !important;
+    background:
+        radial-gradient(circle at 18% 0%, rgba(255, 101, 0, 0.08), transparent 28%),
+        #090d11 !important;
+}
+
+.app-shell:has(.premium-dashboard) .brand {
+    display: grid !important;
+    grid-template-columns: 38px 1fr;
+    gap: 10px !important;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 0 !important;
+}
+
+.app-shell:has(.premium-dashboard) .brand .apex-symbol {
+    width: 39px;
+    height: 35px;
+}
+
+.app-shell:has(.premium-dashboard) .brand .apex-word strong {
+    font-size: 1.34rem;
+}
+
+.app-shell:has(.premium-dashboard) .brand-company {
+    position: relative;
+    grid-column: 1 / -1;
+    height: 38px;
+    margin-top: 8px;
+    padding: 10px 38px 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.app-shell:has(.premium-dashboard) .brand-company::after {
+    content: "⌄";
+    position: absolute;
+    right: 13px;
+    top: 7px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.app-shell:has(.premium-dashboard) .nav-section {
+    margin: 18px 12px 8px !important;
+    font-size: 0.68rem !important;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+}
+
+.app-shell:has(.premium-dashboard) .nav-menu {
+    gap: 2px !important;
+}
+
+.app-shell:has(.premium-dashboard) .nav-menu a {
+    position: relative;
+    min-height: 40px !important;
+    padding: 0 12px !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.88rem !important;
+    font-weight: 650;
+}
+
+.app-shell:has(.premium-dashboard) .nav-menu a::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 99px;
+    background: transparent;
+}
+
+.app-shell:has(.premium-dashboard) .nav-menu a.active {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)) !important;
+    color: var(--text-primary) !important;
+}
+
+.app-shell:has(.premium-dashboard) .nav-menu a.active::before {
+    background: var(--accent);
+}
+
+.app-shell:has(.premium-dashboard) .nav-menu .nav-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--accent) !important;
+}
+
+.main-content:has(.premium-dashboard) {
+    padding: clamp(10px, 1.4vh, 18px) clamp(14px, 2vw, 32px) clamp(10px, 1.6vh, 22px) !important;
+}
+
+.main-content:has(.premium-dashboard) .client-topbar {
+    display: none !important;
+}
+
+.main-content:has(.premium-dashboard) .client-profile {
+    gap: 16px;
+}
+
+.main-content:has(.premium-dashboard) .client-profile > .nav-icon {
+    width: 22px;
+    height: 22px;
+    color: var(--text-primary);
+}
+
+.main-content:has(.premium-dashboard) .client-profile .sidebar-avatar {
+    width: 40px;
+    height: 40px;
+    background: #4b515a !important;
+    font-size: 0.9rem;
+}
+
+.main-content:has(.premium-dashboard) .client-profile-text strong {
+    font-size: 0.88rem;
+}
+
+.main-content:has(.premium-dashboard) .client-profile-text small {
+    font-size: 0.75rem;
+}
+
+.main-content:has(.premium-dashboard) .client-profile a {
+    width: 18px;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-size: 0;
+}
+
+.main-content:has(.premium-dashboard) .client-profile a::before {
+    content: "⌄";
+    font-size: 1rem;
+}
+
+.premium-dashboard {
+    gap: clamp(8px, 1.2vh, 14px) !important;
+}
+
+.premium-dashboard .dashboard-hero {
+    align-items: center;
+    min-height: clamp(42px, 6vh, 56px) !important;
+    overflow: visible !important;
+}
+
+.premium-dashboard .dashboard-hero h1 {
+    font-size: clamp(1.55rem, 2.25vw, 1.9rem) !important;
+    font-weight: 850;
+}
+
+.premium-dashboard .dashboard-actions {
+    display: flex !important;
+    align-items: center;
+    gap: clamp(7px, 0.8vw, 12px);
+    min-width: 0;
+}
+
+.premium-dashboard .dashboard-actions .btn,
+.premium-dashboard .date-chip {
+    display: inline-flex;
+    min-height: clamp(36px, 5vh, 42px);
+    align-items: center;
+    gap: 8px;
+    padding: 0 clamp(10px, 1vw, 16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.035) !important;
+    color: var(--text-primary) !important;
+    font-size: 0.86rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.premium-dashboard .dashboard-actions .btn.primary {
+    border-color: transparent !important;
+    background: linear-gradient(180deg, var(--accent-hover), var(--accent)) !important;
+}
+
+.premium-dashboard .dashboard-metrics {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: clamp(8px, 1vw, 14px) !important;
+}
+
+.premium-dashboard .premium-metric {
+    display: grid !important;
+    grid-template-columns: clamp(38px, 3.2vw, 50px) minmax(0, 1fr);
+    gap: clamp(9px, 1vw, 16px);
+    align-items: center;
+    min-height: clamp(88px, 13vh, 130px) !important;
+    padding: clamp(12px, 2vh, 24px) clamp(12px, 1.2vw, 18px) !important;
+    border-color: rgba(255, 255, 255, 0.105) !important;
+    border-radius: 10px !important;
+    background:
+        radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.035), transparent 28%),
+        var(--apex-surface) !important;
+}
+
+.premium-dashboard .metric-icon {
+    display: grid !important;
+    place-items: center;
+    width: clamp(38px, 3.2vw, 50px) !important;
+    height: clamp(38px, 3.2vw, 50px) !important;
+    border: 1px solid rgba(255, 101, 0, 0.35);
+    border-radius: 999px;
+    background: rgba(255, 101, 0, 0.07) !important;
+    color: var(--accent) !important;
+    font-weight: 900;
+}
+
+.premium-dashboard .premium-metric small {
+    color: var(--text-secondary) !important;
+    font-size: 0.82rem !important;
+    font-weight: 750;
+}
+
+.premium-dashboard .premium-metric strong {
+    display: block;
+    margin: 6px 0;
+    color: var(--text-primary);
+    font-size: clamp(1.18rem, 1.8vw, 1.55rem) !important;
+    letter-spacing: -0.04em;
+}
+
+.premium-dashboard .premium-metric em {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-style: normal;
+}
+
+.premium-dashboard .dashboard-panels-row {
+    grid-template-columns: 1.15fr 1fr 1fr !important;
+    gap: clamp(8px, 1vw, 14px) !important;
+}
+
+.premium-dashboard .dashboard-card {
+    border-color: rgba(255, 255, 255, 0.105) !important;
+    border-radius: 10px !important;
+    background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.028), transparent 34%),
+        var(--apex-surface) !important;
+}
+
+.premium-dashboard .dashboard-panels-row .dashboard-card {
+    min-height: clamp(210px, 31vh, 350px);
+}
+
+.premium-dashboard .panel-heading {
+    margin-bottom: 20px !important;
+}
+
+.premium-dashboard .panel-heading h2 {
+    font-size: 1.08rem !important;
+}
+
+.premium-dashboard .best-seller-list,
+.premium-dashboard .compact-alert-list {
+    gap: 14px;
+}
+
+.premium-dashboard .best-seller-row {
+    grid-template-columns: 36px minmax(0, 1fr) 28px;
+    gap: 12px;
+}
+
+.premium-dashboard .best-seller-row img {
+    width: 36px;
+    height: 36px;
+}
+
+.premium-dashboard .best-seller-row span,
+.premium-dashboard .compact-alert-row strong,
+.premium-dashboard .late-order-row strong {
+    font-size: 0.9rem;
+}
+
+.premium-dashboard .best-seller-row i {
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-hover), var(--accent));
+}
+
+.premium-dashboard .compact-alert-row,
+.premium-dashboard .late-order-row {
+    grid-template-columns: 38px minmax(0, 1fr);
+}
+
+.premium-dashboard .compact-alert-row .nav-icon,
+.premium-dashboard .late-order-row > span {
+    width: 38px;
+    height: 38px;
+}
+
+.premium-dashboard .panel-link {
+    margin-top: 24px;
+    padding: 11px;
+    border-radius: 7px;
+}
+
+.premium-dashboard .dashboard-recent-row .dashboard-card {
+    min-height: clamp(200px, 28vh, 290px);
+}
+
+.dashboard-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    margin-left: 4px;
+}
+
+.dashboard-profile > .nav-icon {
+    width: 22px;
+    height: 22px;
+    color: var(--text-primary);
+}
+
+.dashboard-profile .sidebar-avatar {
+    width: clamp(30px, 3vw, 40px);
+    height: clamp(30px, 3vw, 40px);
+    background: #4b515a !important;
+    font-size: 0.86rem;
+}
+
+.dashboard-profile span:last-child {
+    display: grid;
+    min-width: 104px;
+    line-height: 1.1;
+}
+
+.dashboard-profile strong {
+    overflow: hidden;
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-profile small {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+}
+
+@media (max-width: 1380px) {
+    .app-shell:has(.premium-dashboard) {
+        grid-template-columns: 232px minmax(0, 1fr) !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .sidebar {
+        width: 232px !important;
+        padding: 16px 12px !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .nav-menu a {
+        min-height: 34px !important;
+        font-size: 0.82rem !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .nav-section {
+        margin: 13px 10px 6px !important;
+    }
+
+    .dashboard-profile span:last-child {
+        display: none;
+    }
+}
+
+@media (max-height: 820px) {
+    .premium-dashboard .dashboard-panels-row .dashboard-card {
+        min-height: 205px;
+    }
+
+    .premium-dashboard .dashboard-recent-row .dashboard-card {
+        min-height: 190px;
+    }
+
+    .premium-dashboard .panel-heading {
+        margin-bottom: 10px !important;
+    }
+
+    .premium-dashboard .best-seller-list,
+    .premium-dashboard .compact-alert-list {
+        gap: 8px;
+    }
+
+    .premium-dashboard .panel-link {
+        margin-top: 10px;
+        padding: 8px;
+    }
+
+    .premium-dashboard .premium-table th,
+    .premium-dashboard .premium-table td {
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+    }
+}
+
+.premium-dashboard .premium-table th {
+    padding: 12px 12px !important;
+    color: var(--text-muted);
+    font-size: 0.73rem;
+    letter-spacing: 0.1em;
+}
+
+.premium-dashboard .premium-table td {
+    padding: 13px 12px !important;
+    font-size: 0.9rem;
+}
+
+.premium-dashboard .premium-table td strong {
+    color: var(--text-primary);
+}
+
+.premium-dashboard .premium-table td span:not(.status) {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+.premium-dashboard .table-actions {
+    color: var(--text-secondary);
+    font-size: 1.2rem !important;
+    letter-spacing: 0.08em;
+}
+
+@media (max-width: 1100px) {
+    .dashboard-metrics,
+    .dashboard-panels-row,
+    .pdv-ref-grid,
+    .orders-ref-filters,
+    .kds-columns {
+        grid-template-columns: 1fr !important;
+    }
+
+    .main-content {
+        height: auto !important;
+        min-height: 100vh;
+        overflow: visible !important;
+    }
+
+    .pdv-reference,
+    .premium-dashboard,
+    .kds-reference {
+        overflow: visible !important;
+    }
+}
+
+@media (max-width: 720px) {
+    .dashboard-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .dashboard-actions .btn,
+    .dashboard-actions .date-chip {
+        flex: 1;
+    }
+
+    .premium-table table,
+    .premium-table thead,
+    .premium-table tbody,
+    .premium-table tr,
+    .premium-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .premium-table thead {
+        display: none;
+    }
+
+    .premium-table tr {
+        border-bottom: 1px solid var(--border-soft);
+        padding: 10px 0;
+    }
+
+    .app-shell {
+        display: block !important;
+    }
+
+    .sidebar {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .client-profile-text {
+        display: none;
+    }
+
+    .orders-ref-row {
+        grid-template-columns: 34px 1fr auto;
+        padding: 8px 0;
+    }
+
+    .orders-ref-row > span:nth-of-type(n+2),
+    .orders-ref-row > form {
+        grid-column: 2 / -1;
+    }
+
+    .pdv-ref-head,
+    .pdv-ref-customer,
+    .pdv-ref-values,
+    .pdv-ref-cash {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Final dashboard fit pass */
+html body .main-content:has(.premium-dashboard) {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding: 8px 14px 10px !important;
+    overflow: hidden !important;
+}
+
+html body .premium-dashboard {
+    display: grid !important;
+    grid-template-rows: 46px minmax(70px, 11.5vh) minmax(162px, 25.5vh) minmax(0, 1fr) !important;
+    gap: 8px !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+html body .premium-dashboard > .dashboard-hero {
+    display: flex !important;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center !important;
+    min-height: 0 !important;
+    height: 46px !important;
+    padding: 0 0 6px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+}
+
+html body .premium-dashboard > .dashboard-hero::before,
+html body .premium-dashboard > .dashboard-hero::after {
+    display: none !important;
+}
+
+html body .premium-dashboard > .dashboard-hero h1 {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    font-size: clamp(1.38rem, 1.75vw, 1.68rem) !important;
+    line-height: 1 !important;
+    letter-spacing: -0.045em;
+}
+
+html body .premium-dashboard > .dashboard-hero h1::before {
+    content: "";
+    width: 4px;
+    height: 24px;
+    border-radius: 99px;
+    background: var(--accent);
+    box-shadow: 0 0 18px rgba(255, 101, 0, 0.24);
+}
+
+html body .premium-dashboard .dashboard-actions {
+    display: flex !important;
+    flex: 0 1 auto;
+    justify-content: flex-end;
+    gap: 8px !important;
+    min-width: 0;
+    overflow: visible;
+}
+
+html body .premium-dashboard .dashboard-actions .btn,
+html body .premium-dashboard .date-chip {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 0 11px !important;
+    border-radius: 8px !important;
+    font-size: 0.78rem !important;
+}
+
+html body .dashboard-profile {
+    gap: 9px !important;
+    margin-left: 2px;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+html body .dashboard-profile > .nav-icon {
+    width: 19px !important;
+    height: 19px !important;
+}
+
+html body .dashboard-profile .sidebar-avatar {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+html body .dashboard-profile span:last-child {
+    min-width: 92px;
+}
+
+html body .premium-dashboard .dashboard-metrics {
+    gap: 8px !important;
+}
+
+html body .premium-dashboard .premium-metric {
+    min-height: 0 !important;
+    height: 100% !important;
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+}
+
+html body .premium-dashboard .metric-icon {
+    width: 42px !important;
+    height: 42px !important;
+}
+
+html body .premium-dashboard .premium-metric strong {
+    margin: 3px 0 !important;
+    font-size: clamp(1.18rem, 1.55vw, 1.45rem) !important;
+}
+
+html body .premium-dashboard .premium-metric small,
+html body .premium-dashboard .premium-metric em {
+    font-size: 0.72rem !important;
+}
+
+html body .premium-dashboard .dashboard-panels-row {
+    gap: 8px !important;
+    min-height: 0 !important;
+}
+
+html body .premium-dashboard .dashboard-panels-row .dashboard-card,
+html body .premium-dashboard .dashboard-recent-row .dashboard-card {
+    min-height: 0 !important;
+    height: 100% !important;
+    padding: 12px 14px !important;
+    overflow: hidden !important;
+}
+
+html body .premium-dashboard .dashboard-panels-row .dashboard-card {
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+html body .premium-dashboard .panel-heading {
+    margin-bottom: 8px !important;
+}
+
+html body .premium-dashboard .panel-heading h2 {
+    font-size: 0.98rem !important;
+}
+
+html body .premium-dashboard .best-seller-list,
+html body .premium-dashboard .compact-alert-list {
+    gap: 7px !important;
+    min-height: 0;
+    overflow: hidden;
+}
+
+html body .premium-dashboard .best-sellers-panel .panel-heading {
+    align-items: center;
+    margin-bottom: 6px !important;
+}
+
+html body .premium-dashboard .best-sellers-panel {
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    padding: 10px 12px !important;
+}
+
+html body .premium-dashboard .best-sellers-panel .best-seller-list {
+    gap: 5px !important;
+    grid-auto-rows: 24px;
+}
+
+html body .premium-dashboard .mini-panel-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 101, 0, 0.22);
+    border-radius: 999px;
+    background: rgba(255, 101, 0, 0.08);
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 850;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+html body .premium-dashboard .best-seller-row {
+    grid-template-columns: 24px minmax(0, 1fr) 20px !important;
+    gap: 8px !important;
+    min-height: 24px;
+}
+
+html body .premium-dashboard .best-seller-row img {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+html body .premium-dashboard .best-seller-row > div {
+    min-width: 0;
+    line-height: 1;
+}
+
+html body .premium-dashboard .best-seller-row i {
+    height: 3px !important;
+    margin-top: 4px !important;
+}
+
+html body .premium-dashboard .compact-alert-row .nav-icon,
+html body .premium-dashboard .late-order-row > span {
+    width: 30px !important;
+    height: 30px !important;
+}
+
+html body .premium-dashboard .best-seller-row span,
+html body .premium-dashboard .compact-alert-row strong,
+html body .premium-dashboard .late-order-row strong {
+    font-size: 0.74rem !important;
+    line-height: 1.05;
+}
+
+html body .premium-dashboard .compact-alert-row,
+html body .premium-dashboard .late-order-row {
+    grid-template-columns: 30px minmax(0, 1fr) !important;
+}
+
+html body .premium-dashboard .panel-link {
+    align-self: end;
+    margin-top: 5px !important;
+    padding: 6px !important;
+    position: relative;
+    z-index: 1;
+}
+
+html body .premium-dashboard .best-sellers-panel .panel-link {
+    min-height: 25px;
+    padding: 5px !important;
+}
+
+html body .premium-dashboard .late-panel .compact-alert-list {
+    display: grid;
+    align-items: center;
+}
+
+html body .premium-dashboard .late-panel .empty {
+    display: grid;
+    min-height: 54px;
+    margin: 0 !important;
+    place-items: center;
+}
+
+html body .premium-dashboard .dashboard-recent-row {
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+html body .premium-dashboard .orders-panel {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+html body .premium-dashboard .orders-panel .table-wrap {
+    min-height: 0;
+    overflow: hidden !important;
+}
+
+html body .premium-dashboard .premium-table th,
+html body .premium-dashboard .premium-table td {
+    padding: 8px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+html body .premium-dashboard .premium-table td span:not(.status) {
+    font-size: 0.7rem !important;
+}
+
+@media (max-width: 1366px) {
+    .app-shell:has(.premium-dashboard) {
+        grid-template-columns: 218px minmax(0, 1fr) !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .sidebar {
+        width: 218px !important;
+        padding: 12px 9px !important;
+    }
+
+    html body .premium-dashboard {
+        grid-template-rows: 42px minmax(64px, 10.5vh) minmax(148px, 24vh) minmax(0, 1fr) !important;
+        gap: 6px !important;
+    }
+
+    html body .premium-dashboard > .dashboard-hero {
+        height: 42px !important;
+        padding-bottom: 5px !important;
+    }
+
+    html body .premium-dashboard .dashboard-actions .btn,
+    html body .premium-dashboard .date-chip {
+        height: 30px !important;
+        min-height: 30px !important;
+        padding: 0 9px !important;
+        font-size: 0.74rem !important;
+    }
+
+    html body .premium-dashboard .dashboard-actions .btn.neutral {
+        max-width: 104px;
+    }
+
+    html body .premium-dashboard > .dashboard-hero h1 {
+        font-size: 1.42rem !important;
+    }
+
+    html body .premium-dashboard .date-chip .nav-icon,
+    html body .dashboard-profile > .nav-icon {
+        display: none !important;
+    }
+
+    html body .dashboard-profile span:last-child {
+        display: none !important;
+    }
+
+    html body .premium-dashboard .best-sellers-panel .best-seller-row:nth-child(n+3) {
+        display: grid !important;
+    }
+}
+
+@media (max-width: 1260px) {
+    .app-shell:has(.premium-dashboard) {
+        grid-template-columns: 200px minmax(0, 1fr) !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .sidebar {
+        width: 200px !important;
+        padding-inline: 8px !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .nav-menu a {
+        min-height: 31px !important;
+        font-size: 0.76rem !important;
+        padding-inline: 9px !important;
+    }
+
+    html body .main-content:has(.premium-dashboard) {
+        padding-inline: 10px !important;
+    }
+
+    html body .premium-dashboard .dashboard-actions .btn.neutral,
+    html body .premium-dashboard .date-chip {
+        max-width: 95px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+@media (max-height: 700px) {
+    .app-shell:has(.premium-dashboard) .sidebar {
+        gap: 0 !important;
+        padding: 8px !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .brand {
+        grid-template-columns: 30px 1fr;
+        gap: 7px !important;
+        margin-bottom: 6px !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .brand .apex-symbol {
+        width: 30px !important;
+        height: 27px !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .brand .apex-word strong {
+        font-size: 1.05rem !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .brand-company {
+        height: 28px !important;
+        margin-top: 4px !important;
+        padding: 7px 28px 7px 10px !important;
+        font-size: 0.7rem !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .brand-company::after {
+        top: 3px !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .nav-section {
+        margin: 7px 9px 3px !important;
+        font-size: 0.58rem !important;
+        line-height: 1 !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .nav-menu {
+        gap: 0 !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .nav-menu a {
+        min-height: 26px !important;
+        padding: 4px 8px !important;
+        font-size: 0.7rem !important;
+    }
+
+    .app-shell:has(.premium-dashboard) .nav-menu .nav-icon {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    html body .premium-dashboard {
+        grid-template-rows: 40px 64px 145px minmax(0, 1fr) !important;
+        gap: 6px !important;
+    }
+
+    html body .premium-dashboard > .dashboard-hero {
+        height: 40px !important;
+    }
+
+    html body .premium-dashboard .premium-metric {
+        padding: 8px 10px !important;
+    }
+
+    html body .premium-dashboard .metric-icon {
+        width: 34px !important;
+        height: 34px !important;
+    }
+
+    html body .premium-dashboard .best-sellers-panel .best-seller-row:nth-child(n+3) {
+        display: grid !important;
+    }
+
+    html body .premium-dashboard .late-panel .empty {
+        min-height: 48px;
+    }
+}
+
+/* Dashboard orange accent override */
+html body .premium-dashboard .metric-icon,
+html body .premium-dashboard .compact-alert-row .nav-icon,
+html body .premium-dashboard .late-order-row > span {
+    color: #ff8a1f !important;
+    border-color: rgba(255, 122, 24, 0.42) !important;
+    background: rgba(255, 122, 24, 0.1) !important;
+    box-shadow: 0 0 18px rgba(255, 122, 24, 0.08) !important;
+}
+
+html body .premium-dashboard .dashboard-actions .btn.neutral,
+html body .premium-dashboard .date-chip,
+html body .premium-dashboard .pill,
+html body .premium-dashboard .mini-panel-link,
+html body .premium-dashboard .status-entregue {
+    color: #ff9a32 !important;
+    border-color: rgba(255, 122, 24, 0.38) !important;
+    background: rgba(255, 122, 24, 0.11) !important;
+    box-shadow: none !important;
+}
+
+html body .premium-dashboard .dashboard-actions .btn.neutral .nav-icon,
+html body .premium-dashboard .date-chip .nav-icon {
+    color: #ff9a32 !important;
+}
+
+html body .premium-dashboard .metric-icon .nav-icon,
+html body .premium-dashboard .metric-icon .nav-icon svg,
+html body .premium-dashboard .metric-icon .nav-icon svg path,
+html body .premium-dashboard .metric-icon .nav-icon svg rect,
+html body .premium-dashboard .metric-icon .nav-icon svg circle,
+html body .premium-dashboard .compact-alert-row .nav-icon svg,
+html body .premium-dashboard .compact-alert-row .nav-icon svg path {
+    color: #ff8a1f !important;
+    stroke: #ff8a1f !important;
+}
+
+html body .premium-dashboard .metric-icon > .nav-icon {
+    width: 19px !important;
+    height: 19px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Global graphite/orange client theme */
+:root,
+html.theme-light,
+html:not(.theme-light) {
+    --apex-bg: #080b0e !important;
+    --apex-sidebar: #090d11 !important;
+    --apex-surface: #0f1419 !important;
+    --apex-surface-raised: #12181e !important;
+    --apex-surface-hover: #171e25 !important;
+    --apex-border: rgba(255, 255, 255, 0.08) !important;
+    --apex-border-strong: rgba(255, 255, 255, 0.13) !important;
+    --apex-text: #f4f5f6 !important;
+    --apex-text-secondary: #a1a8b0 !important;
+    --apex-text-muted: #68717b !important;
+    --apex-orange: #ff6500 !important;
+    --apex-orange-hover: #ff8a1f !important;
+    --bg: var(--apex-bg) !important;
+    --bg-2: var(--apex-bg) !important;
+    --surface: var(--apex-surface) !important;
+    --surface-2: var(--apex-surface-raised) !important;
+    --surface-3: var(--apex-surface-hover) !important;
+    --line: var(--apex-border) !important;
+    --line-strong: var(--apex-border-strong) !important;
+    --text: var(--apex-text) !important;
+    --soft: var(--apex-text-secondary) !important;
+    --muted: var(--apex-text-muted) !important;
+    --brand: var(--apex-orange) !important;
+    --brand-strong: var(--apex-orange-hover) !important;
+    --brand-soft: rgba(255, 101, 0, 0.12) !important;
+    --accent: var(--apex-orange) !important;
+    --accent-hover: var(--apex-orange-hover) !important;
+    --accent-soft: rgba(255, 101, 0, 0.14) !important;
+    --sidebar: 218px;
+}
+
+html body,
+html body.auth-body,
+html body .app-shell {
+    color: var(--apex-text) !important;
+    background:
+        radial-gradient(circle at 12% 0%, rgba(255, 101, 0, 0.07), transparent 30%),
+        var(--apex-bg) !important;
+}
+
+html body .app-shell {
+    grid-template-columns: var(--sidebar) minmax(0, 1fr) !important;
+}
+
+html body .sidebar {
+    width: var(--sidebar) !important;
+    gap: 0 !important;
+    padding: 14px 10px !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background:
+        radial-gradient(circle at 18% 0%, rgba(255, 101, 0, 0.08), transparent 28%),
+        var(--apex-sidebar) !important;
+    box-shadow: none !important;
+}
+
+html body .brand {
+    display: grid !important;
+    grid-template-columns: 32px 1fr;
+    gap: 9px !important;
+    align-items: center;
+    margin-bottom: 12px !important;
+    padding: 0 2px 10px !important;
+}
+
+html body .brand .apex-symbol {
+    width: 32px !important;
+    height: 29px !important;
+    fill: var(--accent) !important;
+}
+
+html body .brand .apex-word strong {
+    color: var(--text-primary) !important;
+    font-size: 1.16rem !important;
+}
+
+html body .brand .apex-word em,
+html body .apex-word em {
+    color: var(--accent) !important;
+}
+
+html body .nav-section {
+    margin: 13px 10px 6px !important;
+    color: var(--text-muted) !important;
+    font-size: 0.62rem !important;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+}
+
+html body .nav-menu {
+    gap: 2px !important;
+}
+
+html body .nav-menu a {
+    position: relative;
+    min-height: 34px !important;
+    padding: 0 11px !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.8rem !important;
+    font-weight: 700;
+}
+
+html body .nav-menu a::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 99px;
+    background: transparent;
+}
+
+html body .nav-menu a:hover,
+html body .nav-menu a.active {
+    color: var(--text-primary) !important;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)) !important;
+    box-shadow: none !important;
+}
+
+html body .nav-menu a.active::before {
+    background: var(--accent) !important;
+}
+
+html body .nav-menu .nav-icon,
+html body .client-profile .nav-icon,
+html body .suite-icon,
+html body .metric-icon,
+html body .status-icon,
+html body .payment-method span,
+html body .pos-chip span {
+    color: var(--accent) !important;
+    border-color: rgba(255, 101, 0, 0.34) !important;
+    background: rgba(255, 101, 0, 0.1) !important;
+    box-shadow: none !important;
+}
+
+html body .nav-icon svg,
+html body .nav-icon svg path,
+html body .nav-icon svg rect,
+html body .nav-icon svg circle {
+    stroke: var(--accent) !important;
+}
+
+html body .main-content {
+    background: var(--apex-bg) !important;
+}
+
+html body .panel,
+html body .metric-card,
+html body .dashboard-card,
+html body .product-card,
+html body .order-card,
+html body .mini-card,
+html body .kds-card,
+html body .suite-card,
+html body .table-wrap,
+html body .kanban-card,
+html body .kitchen-ticket,
+html body .menu-side,
+html body .menu-showcase,
+html body .product-editor,
+html body .product-browser,
+html body .product-admin-card,
+html body .reports-list-card,
+html body .report-chart-card,
+html body .report-section-card,
+html body .list-row,
+html body .linked-order,
+html body .dashboard-alert,
+html body .pos-catalog,
+html body .pos-order,
+html body .pos-payment,
+html body .pos-bottom,
+html body .pos-product-card,
+html body .pos-mini-product,
+html body .payment-method,
+html body .payment-detail {
+    color: var(--text-primary) !important;
+    border-color: var(--apex-border) !important;
+    background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.028), transparent 34%),
+        var(--apex-surface) !important;
+    box-shadow: none !important;
+}
+
+html body input,
+html body select,
+html body textarea {
+    color: var(--text-primary) !important;
+    border-color: var(--apex-border) !important;
+    background: var(--apex-surface-raised) !important;
+}
+
+html body .btn.primary,
+html body .finish-sale,
+html body .admin-btn,
+html body .pdv-clean-actions .primary,
+html body .pdv-ref-cash button {
+    color: #fff !important;
+    border-color: transparent !important;
+    background: linear-gradient(180deg, var(--accent-hover), var(--accent)) !important;
+    box-shadow: 0 0 18px rgba(255, 101, 0, 0.14) !important;
+}
+
+html body .btn.neutral,
+html body .btn.ghost,
+html body .date-chip,
+html body .pill,
+html body .pos-chip,
+html body .menu-category,
+html body .preference-row,
+html body .pos-order-meta span {
+    color: var(--accent-hover) !important;
+    border-color: rgba(255, 101, 0, 0.32) !important;
+    background: rgba(255, 101, 0, 0.1) !important;
+}
+
+html body .line-chart-path {
+    stroke: var(--accent) !important;
+}
+
+html body .line-chart-dot {
+    fill: var(--accent-hover) !important;
+}
+
+html body .line-chart-area {
+    fill: rgba(255, 101, 0, 0.12) !important;
+}
+
+/* Orders tabs cleanup */
+html body .orders-clean .orders-reference {
+    margin-top: 0 !important;
+}
+
+html body .orders-clean .orders-ref-panel {
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+html body .orders-clean .orders-ref-tabs {
+    min-height: 36px;
+    padding: 0 12px;
+    align-items: end;
+    border: 0 !important;
+    border-radius: 10px 10px 0 0;
+    background: transparent !important;
+}
+
+/* Force dashboard shell model on every internal screen */
+html body .app-shell:has(.premium-dashboard),
+html body .app-shell:has(.pdv-clean),
+html body .app-shell:has(.orders-clean),
+html body .app-shell:has(.products-clean),
+html body .app-shell:has(.products-manager),
+html body .app-shell:has(.record-manager),
+html body .app-shell:has(.suite-page),
+html body .app-shell:has(.kds-reference),
+html body .app-shell:has(.floor-layout) {
+    grid-template-columns: 218px minmax(0, 1fr) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .sidebar,
+html body .app-shell:has(.pdv-clean) .sidebar,
+html body .app-shell:has(.orders-clean) .sidebar,
+html body .app-shell:has(.products-clean) .sidebar,
+html body .app-shell:has(.products-manager) .sidebar,
+html body .app-shell:has(.record-manager) .sidebar,
+html body .app-shell:has(.suite-page) .sidebar,
+html body .app-shell:has(.kds-reference) .sidebar,
+html body .app-shell:has(.floor-layout) .sidebar {
+    width: 218px !important;
+    height: 100dvh !important;
+    gap: 0 !important;
+    padding: 14px 10px !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background:
+        radial-gradient(circle at 18% 0%, rgba(255, 101, 0, 0.08), transparent 28%),
+        #090d11 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .brand,
+html body .app-shell:has(.pdv-clean) .brand,
+html body .app-shell:has(.orders-clean) .brand,
+html body .app-shell:has(.products-clean) .brand,
+html body .app-shell:has(.products-manager) .brand,
+html body .app-shell:has(.record-manager) .brand,
+html body .app-shell:has(.suite-page) .brand,
+html body .app-shell:has(.kds-reference) .brand,
+html body .app-shell:has(.floor-layout) .brand {
+    display: grid !important;
+    grid-template-columns: 32px 1fr !important;
+    gap: 9px !important;
+    align-items: center !important;
+    margin-bottom: 12px !important;
+    padding: 0 2px 10px !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .brand .apex-symbol,
+html body .app-shell:has(.pdv-clean) .brand .apex-symbol,
+html body .app-shell:has(.orders-clean) .brand .apex-symbol,
+html body .app-shell:has(.products-clean) .brand .apex-symbol,
+html body .app-shell:has(.products-manager) .brand .apex-symbol,
+html body .app-shell:has(.record-manager) .brand .apex-symbol,
+html body .app-shell:has(.suite-page) .brand .apex-symbol,
+html body .app-shell:has(.kds-reference) .brand .apex-symbol,
+html body .app-shell:has(.floor-layout) .brand .apex-symbol {
+    width: 32px !important;
+    height: 29px !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .brand .apex-word strong,
+html body .app-shell:has(.pdv-clean) .brand .apex-word strong,
+html body .app-shell:has(.orders-clean) .brand .apex-word strong,
+html body .app-shell:has(.products-clean) .brand .apex-word strong,
+html body .app-shell:has(.products-manager) .brand .apex-word strong,
+html body .app-shell:has(.record-manager) .brand .apex-word strong,
+html body .app-shell:has(.suite-page) .brand .apex-word strong,
+html body .app-shell:has(.kds-reference) .brand .apex-word strong,
+html body .app-shell:has(.floor-layout) .brand .apex-word strong {
+    font-size: 1.16rem !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .nav-section,
+html body .app-shell:has(.pdv-clean) .nav-section,
+html body .app-shell:has(.orders-clean) .nav-section,
+html body .app-shell:has(.products-clean) .nav-section,
+html body .app-shell:has(.products-manager) .nav-section,
+html body .app-shell:has(.record-manager) .nav-section,
+html body .app-shell:has(.suite-page) .nav-section,
+html body .app-shell:has(.kds-reference) .nav-section,
+html body .app-shell:has(.floor-layout) .nav-section {
+    margin: 13px 10px 6px !important;
+    color: var(--text-muted) !important;
+    font-size: 0.62rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.12em !important;
+    line-height: 1 !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .nav-menu,
+html body .app-shell:has(.pdv-clean) .nav-menu,
+html body .app-shell:has(.orders-clean) .nav-menu,
+html body .app-shell:has(.products-clean) .nav-menu,
+html body .app-shell:has(.products-manager) .nav-menu,
+html body .app-shell:has(.record-manager) .nav-menu,
+html body .app-shell:has(.suite-page) .nav-menu,
+html body .app-shell:has(.kds-reference) .nav-menu,
+html body .app-shell:has(.floor-layout) .nav-menu {
+    gap: 2px !important;
+    overflow: hidden !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .nav-menu a,
+html body .app-shell:has(.pdv-clean) .nav-menu a,
+html body .app-shell:has(.orders-clean) .nav-menu a,
+html body .app-shell:has(.products-clean) .nav-menu a,
+html body .app-shell:has(.products-manager) .nav-menu a,
+html body .app-shell:has(.record-manager) .nav-menu a,
+html body .app-shell:has(.suite-page) .nav-menu a,
+html body .app-shell:has(.kds-reference) .nav-menu a,
+html body .app-shell:has(.floor-layout) .nav-menu a {
+    position: relative !important;
+    min-height: 34px !important;
+    padding: 0 11px !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .nav-menu a.active,
+html body .app-shell:has(.pdv-clean) .nav-menu a.active,
+html body .app-shell:has(.orders-clean) .nav-menu a.active,
+html body .app-shell:has(.products-clean) .nav-menu a.active,
+html body .app-shell:has(.products-manager) .nav-menu a.active,
+html body .app-shell:has(.record-manager) .nav-menu a.active,
+html body .app-shell:has(.suite-page) .nav-menu a.active,
+html body .app-shell:has(.kds-reference) .nav-menu a.active,
+html body .app-shell:has(.floor-layout) .nav-menu a.active {
+    color: var(--text-primary) !important;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)) !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .nav-menu .nav-icon,
+html body .app-shell:has(.pdv-clean) .nav-menu .nav-icon,
+html body .app-shell:has(.orders-clean) .nav-menu .nav-icon,
+html body .app-shell:has(.products-clean) .nav-menu .nav-icon,
+html body .app-shell:has(.products-manager) .nav-menu .nav-icon,
+html body .app-shell:has(.record-manager) .nav-menu .nav-icon,
+html body .app-shell:has(.suite-page) .nav-menu .nav-icon,
+html body .app-shell:has(.kds-reference) .nav-menu .nav-icon,
+html body .app-shell:has(.floor-layout) .nav-menu .nav-icon {
+    width: 20px !important;
+    height: 20px !important;
+    color: var(--accent) !important;
+    border-color: rgba(255, 101, 0, 0.34) !important;
+    background: rgba(255, 101, 0, 0.1) !important;
+}
+
+html body .app-shell:has(.premium-dashboard) .sidebar-footer,
+html body .app-shell:has(.pdv-clean) .sidebar-footer,
+html body .app-shell:has(.orders-clean) .sidebar-footer,
+html body .app-shell:has(.products-clean) .sidebar-footer,
+html body .app-shell:has(.products-manager) .sidebar-footer,
+html body .app-shell:has(.record-manager) .sidebar-footer,
+html body .app-shell:has(.suite-page) .sidebar-footer,
+html body .app-shell:has(.kds-reference) .sidebar-footer,
+html body .app-shell:has(.floor-layout) .sidebar-footer {
+    display: none !important;
+}
+
+@media (min-width: 901px) {
+    html body .main-content:has(.premium-dashboard),
+    html body .main-content:has(.pdv-clean),
+    html body .main-content:has(.orders-clean),
+    html body .main-content:has(.products-clean),
+    html body .main-content:has(.products-manager),
+    html body .main-content:has(.record-manager),
+    html body .main-content:has(.suite-page),
+    html body .main-content:has(.kds-reference),
+    html body .main-content:has(.floor-layout) {
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        min-height: 0 !important;
+        padding: 8px 14px 10px !important;
+        overflow: hidden !important;
+    }
+
+    html body .main-content:has(.pdv-clean) .client-topbar,
+    html body .main-content:has(.orders-clean) .client-topbar,
+    html body .main-content:has(.products-clean) .client-topbar,
+    html body .main-content:has(.products-manager) .client-topbar,
+    html body .main-content:has(.record-manager) .client-topbar,
+    html body .main-content:has(.suite-page) .client-topbar,
+    html body .main-content:has(.kds-reference) .client-topbar,
+    html body .main-content:has(.floor-layout) .client-topbar {
+        display: none !important;
+    }
+}

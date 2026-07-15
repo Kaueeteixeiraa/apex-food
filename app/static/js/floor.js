@@ -11,10 +11,29 @@
     const areaSelect = document.querySelector("[data-area-select]");
     const gridToggle = document.querySelector("[data-toggle-grid]");
     const closePanelButton = document.querySelector("[data-close-panel]");
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
     const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
     let activeAreaId = state.areas[0]?.id || null;
     let selectedTableId = null;
+    let zoom = 1;
+    let pan = { x: 0, y: 0 };
+    let panning = null;
+
+    function applyViewport() {
+        canvas.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
+        canvas.style.transformOrigin = "0 0";
+    }
+
+    function fitMap() {
+        const stage = canvas.parentElement;
+        if (!stage) return;
+        const scaleX = (stage.clientWidth - 24) / Math.max(canvas.scrollWidth || 820, 820);
+        const scaleY = (stage.clientHeight - 64) / Math.max(canvas.scrollHeight || 620, 620);
+        zoom = Math.min(1, Math.max(0.55, Math.min(scaleX, scaleY)));
+        pan = { x: 12, y: 54 };
+        applyViewport();
+    }
 
     function slug(value) {
         return String(value || "")
@@ -36,7 +55,7 @@
     async function saveTable(tableId, fields) {
         const response = await fetch(updateUrl(tableId), {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
             body: JSON.stringify(fields),
         });
         const result = await response.json();
@@ -95,6 +114,31 @@
             });
     }
 
+    document.querySelectorAll("[data-floor-zoom]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const action = button.dataset.floorZoom;
+            if (action === "in") zoom = Math.min(1.6, zoom + 0.1);
+            if (action === "out") zoom = Math.max(0.55, zoom - 0.1);
+            if (action === "center") pan = { x: 12, y: 54 };
+            if (action === "fit") fitMap();
+            else applyViewport();
+        });
+    });
+
+    canvas.parentElement?.addEventListener("pointerdown", (event) => {
+        if (event.target !== canvas) return;
+        panning = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
+        canvas.parentElement.setPointerCapture(event.pointerId);
+    });
+    canvas.parentElement?.addEventListener("pointermove", (event) => {
+        if (!panning || panning.id !== event.pointerId) return;
+        pan = { x: panning.panX + event.clientX - panning.x, y: panning.panY + event.clientY - panning.y };
+        applyViewport();
+    });
+    canvas.parentElement?.addEventListener("pointerup", (event) => {
+        if (panning?.id === event.pointerId) panning = null;
+    });
+
     function attachDragBehavior(element, table) {
         let start = null;
         let moved = false;
@@ -117,8 +161,8 @@
 
         element.addEventListener("pointermove", (event) => {
             if (!start) return;
-            const dx = event.clientX - start.pointerX;
-            const dy = event.clientY - start.pointerY;
+            const dx = (event.clientX - start.pointerX) / zoom;
+            const dy = (event.clientY - start.pointerY) / zoom;
             if (Math.abs(dx) + Math.abs(dy) > 2) moved = true;
 
             if (start.resizing) {
@@ -219,4 +263,5 @@
 
     if (areaSelect && activeAreaId) areaSelect.value = activeAreaId;
     render();
+    fitMap();
 })();

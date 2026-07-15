@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Manuten&ccedil;&atilde;o | Apex Food{% endblock %}
+{% block content %}
+<section class="auth-saas">
+    <div class="auth-form-panel">
+        <a class="public-brand" href="{{ url_for('index') }}"><span class="brand-mark">A</span><span>Apex Food</span></a>
+        <h1>Estamos em manuten&ccedil;&atilde;o.</h1>
+        <p>{{ message or "O Apex Food esta temporariamente indisponivel." }}</p>
+        <p class="muted">Tente novamente em instantes ou fale com o suporte.</p>
+    </div>
+</section>
+{% endblock %}

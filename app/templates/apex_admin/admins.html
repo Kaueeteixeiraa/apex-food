@@ -1,0 +1,7 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}Administradores | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top"><div class="admin-title"><p class="eyebrow">Acesso global</p><h1>Administradores</h1></div></header>
+<form class="admin-card admin-form-grid" method="post"><label>Nome<input name="name" required></label><label>E-mail<input name="email" type="email" required></label><label>Senha<input name="password" type="password" minlength="6" required></label><label>Cargo<select name="role"><option>Super Admin</option><option>Financeiro</option><option>Suporte</option></select></label><button class="admin-btn" type="submit">Criar admin</button></form>
+<section class="admin-table">{% for admin in admins %}<div class="admin-table-row"><strong>{{ admin.name }}</strong><span>{{ admin.email }}</span><span>{{ admin.role }}</span><span>{{ admin.last_login_at or "-" }}</span><span class="status-pill">{{ "Ativo" if admin.active else "Inativo" }}</span></div>{% endfor %}</section>
+{% endblock %}

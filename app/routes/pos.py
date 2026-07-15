@@ -1,12 +1,81 @@
 import json
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 
 from ..database import get_db, query_all, query_one
 from ..models import PAYMENT_METHODS, products_with_demo_images
+from ..services.audit import log_audit
 from .auth import company_id, login_required
 
 bp = Blueprint("pos", __name__, url_prefix="/pos")
+
+
+def _money(value):
+    try:
+        return max(float(value or 0), 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _quantity(value):
+    try:
+        return max(int(value or 1), 1)
+    except (TypeError, ValueError):
+        return 1
+
+
+def _decrement_stock(db, cid, product_id, quantity):
+    db.execute(
+        """
+        UPDATE products
+        SET stock_quantity = CASE WHEN stock_quantity >= ? THEN stock_quantity - ? ELSE 0 END
+        WHERE id = ? AND company_id = ?
+        """,
+        (quantity, quantity, product_id, cid),
+    )
+
+
+def _cash_context(cid, register):
+    if not register:
+        return {"sales": 0, "supply": 0, "withdraw": 0, "expected": 0}, []
+
+    opened_at = register["opened_at"] or register["created_at"]
+    closed_at = register["closed_at"]
+    close_clause = "AND datetime(created_at) <= datetime(?)" if closed_at else ""
+    params = (cid, opened_at, closed_at) if closed_at else (cid, opened_at)
+    sales_total = query_one(
+        f"""
+        SELECT COALESCE(SUM(total),0) value
+        FROM sales
+        WHERE company_id=? AND datetime(created_at) >= datetime(?) {close_clause}
+        """,
+        params,
+    )["value"]
+    movements = query_all(
+        """
+        SELECT * FROM cash_movements
+        WHERE company_id=? AND register_id=?
+        ORDER BY created_at DESC
+        LIMIT 6
+        """,
+        (cid, register["id"]),
+    )
+    movement_totals = query_all(
+        """
+        SELECT type, COALESCE(SUM(amount),0) total
+        FROM cash_movements
+        WHERE company_id=? AND register_id=?
+        GROUP BY type
+        """,
+        (cid, register["id"]),
+    )
+    totals_by_type = {row["type"]: float(row["total"] or 0) for row in movement_totals}
+    supply = totals_by_type.get("Suprimento", 0)
+    withdraw = totals_by_type.get("Sangria", 0)
+    expected = float(register["opening_amount"] or 0) + float(sales_total or 0) + supply - withdraw
+    if register["status"] == "Fechado" and float(register["expected_amount"] or 0):
+        expected = float(register["expected_amount"] or 0)
+    return {"sales": sales_total, "supply": supply, "withdraw": withdraw, "expected": expected}, movements
 
 
 @bp.get("/")
@@ -17,6 +86,7 @@ def index():
         "SELECT * FROM cash_registers WHERE company_id = ? ORDER BY id DESC LIMIT 1",
         (cid,),
     )
+    cash_totals, cash_movements = _cash_context(cid, register)
     orders = query_all(
         """
         SELECT id, customer_name, fulfillment_type, status, total
@@ -90,7 +160,7 @@ def index():
             (cid,),
         )["value"],
         "kitchen_orders": query_one(
-            "SELECT COUNT(*) AS value FROM orders WHERE company_id = ? AND status IN ('Novo', 'Em preparo')",
+            "SELECT COUNT(*) AS value FROM orders WHERE company_id = ? AND status IN ('Recebido', 'Preparando')",
             (cid,),
         )["value"],
     }
@@ -106,6 +176,8 @@ def index():
         sales=sales,
         payment_methods=PAYMENT_METHODS,
         stats=stats,
+        cash_totals=cash_totals,
+        cash_movements=cash_movements,
     )
 
 
@@ -114,15 +186,48 @@ def index():
 def open_register():
     cid = company_id()
     db = get_db()
+    opening_amount = _money(request.form.get("opening_amount"))
     db.execute(
         """
         INSERT INTO cash_registers (company_id, status, opening_amount, opened_at)
         VALUES (?, 'Aberto', ?, datetime('now'))
         """,
-        (cid, float(request.form.get("opening_amount") or 0)),
+        (cid, opening_amount),
     )
+    log_audit(cid, "cash.open", "cash_registers", None, {"amount": opening_amount})
     db.commit()
     flash("Caixa aberto.", "success")
+    return redirect(url_for("pos.index"))
+
+
+@bp.post("/movement")
+@login_required
+def movement():
+    cid = company_id()
+    db = get_db()
+    register = db.execute(
+        "SELECT * FROM cash_registers WHERE company_id=? AND status='Aberto' ORDER BY id DESC LIMIT 1",
+        (cid,),
+    ).fetchone()
+    if not register:
+        flash("Abra o caixa antes de lançar movimentações.", "error")
+        return redirect(url_for("pos.index"))
+
+    movement_type = request.form.get("type", "Suprimento")
+    if movement_type not in ("Suprimento", "Sangria"):
+        movement_type = "Suprimento"
+    amount = _money(request.form.get("amount"))
+    if amount <= 0:
+        flash("Informe um valor válido.", "error")
+        return redirect(url_for("pos.index"))
+
+    db.execute(
+        "INSERT INTO cash_movements (company_id, register_id, type, amount, note) VALUES (?, ?, ?, ?, ?)",
+        (cid, register["id"], movement_type, amount, request.form.get("note", "").strip()),
+    )
+    log_audit(cid, f"cash.{movement_type.lower()}", "cash_registers", register["id"], {"amount": amount})
+    db.commit()
+    flash("Movimento de caixa registrado.", "success")
     return redirect(url_for("pos.index"))
 
 
@@ -131,16 +236,32 @@ def open_register():
 def close_register():
     cid = company_id()
     db = get_db()
+    register = db.execute(
+        "SELECT * FROM cash_registers WHERE company_id=? AND status='Aberto' ORDER BY id DESC LIMIT 1",
+        (cid,),
+    ).fetchone()
+    if not register:
+        flash("Nenhum caixa aberto para fechar.", "error")
+        return redirect(url_for("pos.index"))
+
+    cash_totals, _ = _cash_context(cid, register)
+    closing_amount = _money(request.form.get("closing_amount"))
+    expected_amount = round(float(cash_totals["expected"] or 0), 2)
+    difference_amount = round(closing_amount - expected_amount, 2)
     db.execute(
         """
         UPDATE cash_registers
-        SET status = 'Fechado', closed_at = datetime('now')
-        WHERE id = (
-            SELECT id FROM cash_registers WHERE company_id = ? ORDER BY id DESC LIMIT 1
-        )
+        SET status = 'Fechado',
+            closing_amount = ?,
+            expected_amount = ?,
+            difference_amount = ?,
+            closed_by = ?,
+            closed_at = datetime('now')
+        WHERE id = ? AND company_id = ?
         """,
-        (cid,),
+        (closing_amount, expected_amount, difference_amount, g.user["name"], register["id"], cid),
     )
+    log_audit(cid, "cash.close", "cash_registers", register["id"], {"expected": expected_amount, "counted": closing_amount, "difference": difference_amount})
     db.commit()
     flash("Caixa fechado.", "success")
     return redirect(url_for("pos.index"))
@@ -193,7 +314,7 @@ def finish_sale():
             ).fetchone()
             if not product:
                 continue
-            quantity = max(int(item.get("quantity") or 1), 1)
+            quantity = _quantity(item.get("quantity"))
             line_total = round(float(product["price"]) * quantity, 2)
             subtotal += line_total
             db.execute(
@@ -210,6 +331,7 @@ def finish_sale():
                     item.get("note", ""),
                 ),
             )
+            _decrement_stock(db, cid, product["id"], quantity)
 
         if subtotal <= 0:
             db.rollback()
@@ -217,11 +339,16 @@ def finish_sale():
             return redirect(url_for("pos.index"))
 
     elif order_id:
-        order = db.execute("SELECT total FROM orders WHERE id = ? AND company_id = ?", (order_id, cid)).fetchone()
+        order = db.execute("SELECT total, status FROM orders WHERE id = ? AND company_id = ?", (order_id, cid)).fetchone()
         if not order:
             flash("Pedido não encontrado.", "error")
             return redirect(url_for("pos.index"))
         subtotal = float(order["total"])
+        if order["status"] != "Entregue":
+            items = db.execute("SELECT product_id, quantity FROM order_items WHERE order_id = ?", (order_id,)).fetchall()
+            for item in items:
+                if item["product_id"]:
+                    _decrement_stock(db, cid, item["product_id"], _quantity(item["quantity"]))
     else:
         product = db.execute(
             "SELECT id, name, price FROM products WHERE id = ? AND company_id = ?",
@@ -230,7 +357,7 @@ def finish_sale():
         if not product:
             flash("Escolha um pedido ou produto.", "error")
             return redirect(url_for("pos.index"))
-        quantity = max(int(form.get("quantity") or 1), 1)
+        quantity = _quantity(form.get("quantity"))
         subtotal = round(float(product["price"]) * quantity, 2)
         order_cursor = db.execute(
             """
@@ -247,10 +374,11 @@ def finish_sale():
             """,
             (order_id, product["id"], product["name"], quantity, product["price"]),
         )
+        _decrement_stock(db, cid, product["id"], quantity)
 
-    discount = float(form.get("discount") or 0)
-    service_fee = float(form.get("service_fee") or 0)
-    delivery_fee = float(form.get("delivery_fee") or 0)
+    discount = _money(form.get("discount"))
+    service_fee = _money(form.get("service_fee"))
+    delivery_fee = _money(form.get("delivery_fee"))
     total = max(round(subtotal - discount + service_fee + delivery_fee, 2), 0)
     db.execute(
         """

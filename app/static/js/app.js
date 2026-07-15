@@ -1,5 +1,114 @@
 (function () {
     const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
+    if (csrfToken) {
+        document.querySelectorAll("form").forEach((form) => {
+            if ((form.method || "get").toLowerCase() !== "post" || form.querySelector('[name="_csrf_token"]')) return;
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "_csrf_token";
+            input.value = csrfToken;
+            form.appendChild(input);
+        });
+    }
+    const prefsKey = "apexUiPrefs";
+    const readPrefs = () => {
+        try {
+            return JSON.parse(localStorage.getItem(prefsKey) || "{}");
+        } catch (error) {
+            return {};
+        }
+    };
+    const applyPrefs = (prefs = readPrefs()) => {
+        document.documentElement.classList.toggle("theme-light", prefs.theme === "light");
+        document.documentElement.classList.toggle("motion-off", prefs.motion === "off");
+    };
+    const navIcons = {
+        dashboard: '<rect x="3" y="3" width="7" height="8" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="15" width="7" height="6" rx="2"/>',
+        pos: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/>',
+        orders: '<path d="M8 4h8l2 3v13H6V7z"/><path d="M9 11h6M9 15h6"/>',
+        kitchen: '<path d="M6 3v8M3 3v8M9 3v8M3 11h6M6 11v10"/><path d="M16 3v18M16 3c3 2 4 5 2 8"/>',
+        menu: '<path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H20v17H7.5A3.5 3.5 0 0 0 4 22z"/><path d="M8 7h8M8 11h8"/>',
+        products: '<path d="M21 8l-9-5-9 5 9 5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>',
+        categories: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+        clients: '<path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.8M19 3.4a4 4 0 0 1 0 7.2"/>',
+        tables: '<circle cx="12" cy="10" r="5"/><path d="M12 15v6M8 21h8"/>',
+        delivery: '<path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+        inventory: '<path d="M4 7l8-4 8 4-8 4z"/><path d="M4 7v10l8 4 8-4V7M12 11v10"/>',
+        reports: '<path d="M4 19V5"/><path d="M8 17v-6M13 17V7M18 17v-9"/><path d="M3 19h18"/>',
+        employees: '<rect x="4" y="4" width="16" height="18" rx="3"/><circle cx="12" cy="10" r="3"/><path d="M8 17a4 4 0 0 1 8 0"/>',
+        settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2 3-.2-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-5v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.2.1-2-3 .1-.1A1.7 1.7 0 0 0 5 15a1.7 1.7 0 0 0-1.5-1H3v-4h.5A1.7 1.7 0 0 0 5 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1 2-3 .2.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h5v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.2-.1 2 3-.1.1A1.7 1.7 0 0 0 19 9a1.7 1.7 0 0 0 1.5 1h.5v4h-.5A1.7 1.7 0 0 0 19.4 15z"/>',
+        building: '<path d="M4 21V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16"/><path d="M9 21v-4h3v4M8 7h1M12 7h1M8 11h1M12 11h1M17 9h1a2 2 0 0 1 2 2v10"/>',
+        key: '<circle cx="7.5" cy="14.5" r="3.5"/><path d="M10 12l10-10M15 7l3 3M13 9l2 2"/>',
+        credit: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/>',
+        clipboard: '<path d="M9 3h6l1 2h3v16H5V5h3z"/><path d="M9 9h6M9 13h6M9 17h3"/>',
+        shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/>',
+        search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+        bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
+        calendar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>',
+        warning: '<path d="M12 3 22 20H2L12 3z"/><path d="M12 9v5M12 18h.01"/>',
+        mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    };
+
+    document.querySelectorAll("[data-nav-icon]").forEach((icon) => {
+        icon.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${navIcons[icon.dataset.navIcon] || navIcons.dashboard}</svg>`;
+    });
+
+    const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+    const navOpen = document.querySelector("[data-nav-open]");
+    const navClose = document.querySelector("[data-nav-close]");
+    const setNavOpen = (open) => document.body.classList.toggle("nav-open", open);
+    sidebarToggle?.addEventListener("click", () => {
+        const compact = !document.documentElement.classList.contains("sidebar-compact");
+        document.documentElement.classList.toggle("sidebar-compact", compact);
+        localStorage.setItem("apexSidebar", compact ? "compact" : "expanded");
+    });
+    navOpen?.addEventListener("click", () => setNavOpen(true));
+    navClose?.addEventListener("click", () => setNavOpen(false));
+    document.querySelectorAll(".nav-menu a").forEach((link) => link.addEventListener("click", () => setNavOpen(false)));
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setNavOpen(false);
+    });
+    const setAdminNavOpen = (open) => document.body.classList.toggle("admin-open", open);
+    document.querySelector("[data-admin-open]")?.addEventListener("click", () => setAdminNavOpen(true));
+    document.querySelector("[data-admin-close]")?.addEventListener("click", () => setAdminNavOpen(false));
+    document.querySelectorAll(".admin-nav a").forEach((link) => link.addEventListener("click", () => setAdminNavOpen(false)));
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setAdminNavOpen(false);
+    });
+
+    document.querySelectorAll("[data-confirm]").forEach((element) => {
+        element.addEventListener("submit", (event) => {
+            if (!window.confirm(element.dataset.confirm)) event.preventDefault();
+        });
+    });
+
+    applyPrefs();
+
+    const prefButtons = [...document.querySelectorAll("[data-ui-pref]")];
+    if (prefButtons.length) {
+        const renderPrefs = () => {
+            const prefs = readPrefs();
+            prefButtons.forEach((button) => {
+                const active = (button.dataset.uiPref === "theme" && (prefs.theme || "dark") === button.dataset.value)
+                    || (button.dataset.uiPref === "motion" && (prefs.motion || "on") === button.dataset.value);
+                button.classList.toggle("active", active);
+            });
+            document.querySelector('[data-ui-pref-status="theme"]').textContent = prefs.theme === "light" ? "Claro" : "Escuro";
+            document.querySelector('[data-ui-pref-status="motion"]').textContent = prefs.motion === "off" ? "Ativado" : "Desativado";
+        };
+
+        prefButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const prefs = { theme: "dark", motion: "on", ...readPrefs() };
+                prefs[button.dataset.uiPref] = button.dataset.value;
+                localStorage.setItem(prefsKey, JSON.stringify(prefs));
+                applyPrefs(prefs);
+                renderPrefs();
+            });
+        });
+        renderPrefs();
+    }
 
     document.querySelectorAll(".flash").forEach((flash) => {
         setTimeout(() => flash.classList.add("fade-out"), 4200);
@@ -22,11 +131,21 @@
 
             submitting = true;
             loginButton.classList.add("loading");
-            loginButton.textContent = "Validando acesso";
+            loginButton.disabled = true;
+            loginButton.textContent = "Entrando...";
             loader?.classList.add("show");
-            setTimeout(() => loginForm.submit(), 720);
+            setTimeout(() => loginForm.submit(), 450);
         });
     }
+
+    document.querySelectorAll("[data-toggle-password]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const input = button.closest(".password-field")?.querySelector("input");
+            if (!input) return;
+            input.type = input.type === "password" ? "text" : "password";
+            button.textContent = input.type === "password" ? "Mostrar" : "Ocultar";
+        });
+    });
 
     const registerForm = document.querySelector("[data-register-form]");
     if (registerForm) {
@@ -64,7 +183,7 @@
             renderStep();
         });
         registerForm.addEventListener("submit", (event) => {
-            if (![0, 1, 2].every((step) => fieldsInStep(step).every((field) => field.checkValidity()))) {
+            if (!steps.every((_, step) => fieldsInStep(step).every((field) => field.checkValidity()))) {
                 event.preventDefault();
                 current = steps.findIndex((step) => fieldsInStep(Number(step.dataset.step)).some((field) => !field.checkValidity()));
                 if (current < 0) current = 0;
@@ -73,6 +192,54 @@
             }
         });
         renderStep();
+
+    }
+
+    document.querySelectorAll("[data-cep]").forEach((cep) => {
+        cep.addEventListener("blur", async () => {
+            const value = cep.value.replace(/\D/g, "");
+            const form = cep.closest("form");
+            if (value.length !== 8) return;
+            try {
+                const response = await fetch(`https://viacep.com.br/ws/${value}/json/`);
+                const data = await response.json();
+                if (data.erro) return;
+                form.querySelector('[name="address"]').value ||= data.logradouro || "";
+                form.querySelector('[name="neighborhood"]').value ||= data.bairro || "";
+                form.querySelector('[name="city"]').value ||= data.localidade || "";
+                form.querySelector('[name="state"]').value ||= data.uf || "";
+            } catch (error) {}
+        });
+    });
+
+    const clientForm = document.querySelector("[data-client-form]");
+    if (clientForm) {
+        const updateSummary = () => {
+            clientForm.querySelectorAll("[data-summary-source]").forEach((source) => {
+                const target = clientForm.querySelector(`[data-summary-target="${source.dataset.summarySource}"]`);
+                if (!target) return;
+                target.textContent = source.options ? source.options[source.selectedIndex]?.text || "-" : source.value || "-";
+            });
+        };
+        clientForm.addEventListener("input", updateSummary);
+        clientForm.addEventListener("change", updateSummary);
+        updateSummary();
+    }
+
+    const ordersSearch = document.querySelector("[data-orders-search]");
+    const ordersType = document.querySelector("[data-orders-type-filter]");
+    if (ordersSearch || ordersType) {
+        const filterOrders = () => {
+            const term = (ordersSearch?.value || "").toLowerCase().trim();
+            const type = ordersType?.value || "";
+            document.querySelectorAll("[data-order-row]").forEach((row) => {
+                const matchesTerm = !term || (row.dataset.search || "").toLowerCase().includes(term);
+                const matchesType = !type || row.dataset.type === type;
+                row.hidden = !(matchesTerm && matchesType);
+            });
+        };
+        ordersSearch?.addEventListener("input", filterOrders);
+        ordersType?.addEventListener("change", filterOrders);
     }
 
     const chart = document.querySelector("#salesChart");
@@ -235,6 +402,7 @@
         const search = document.querySelector("[data-pos-search]");
         const success = document.querySelector("[data-pos-success]");
         const favoritesPanel = document.querySelector("[data-favorites-panel]");
+        const productsDrawer = document.querySelector("[data-products-drawer]");
         const tableModal = document.querySelector("[data-table-modal]");
         const selectedTable = document.querySelector("[data-selected-table]");
         let activeCategory = "Todos";
@@ -288,7 +456,7 @@
                         <span class="cart-thumb"><img src="${escapeHtml(item.image)}" alt=""></span>
                         <div class="cart-main">
                             <strong>${escapeHtml(item.name)}</strong>
-                            <input data-note="${item.id}" placeholder="Observação" value="${escapeHtml(item.note || "")}">
+                            <input data-note="${item.id}" placeholder="Observa&ccedil;&atilde;o" value="${escapeHtml(item.note || "")}">
                         </div>
                         <div class="cart-qty">
                             <button type="button" data-dec="${item.id}">-</button>
@@ -296,7 +464,7 @@
                             <button type="button" data-inc="${item.id}">+</button>
                         </div>
                         <strong>${money.format(item.price * item.quantity)}</strong>
-                        <button class="cart-remove" type="button" data-remove="${item.id}">×</button>
+                        <button class="cart-remove" type="button" data-remove="${item.id}">&times;</button>
                     </article>
                 `).join("");
             }
@@ -342,7 +510,10 @@
 
         document.addEventListener("click", (event) => {
             const add = event.target.closest("[data-add-product]");
-            if (add) addProduct(add.dataset.addProduct);
+            if (add) {
+                addProduct(add.dataset.addProduct);
+                if (productsDrawer && add.closest("[data-products-drawer]")) productsDrawer.hidden = true;
+            }
 
             const inc = event.target.closest("[data-inc]");
             if (inc) {
@@ -391,7 +562,14 @@
                 tableModal.hidden = true;
             }
 
-            if (event.target.closest("[data-favorites-toggle]")) favoritesPanel.hidden = false;
+            if (event.target.closest("[data-products-open]") && productsDrawer) {
+                productsDrawer.hidden = false;
+                search?.focus();
+                filterProducts();
+            }
+            if (event.target.closest("[data-products-close]") && productsDrawer) productsDrawer.hidden = true;
+            if (event.target === productsDrawer) productsDrawer.hidden = true;
+            if (event.target.closest("[data-favorites-toggle]") && favoritesPanel) favoritesPanel.hidden = false;
             if (event.target.closest("[data-table-modal-open]")) tableModal.hidden = false;
             if (event.target.closest("[data-close-panel]")) event.target.closest(".pos-modal").hidden = true;
             if (event.target.classList.contains("pos-modal")) event.target.hidden = true;
@@ -428,6 +606,21 @@
             }
             success.classList.add("show");
             setTimeout(() => success.classList.remove("show"), 1800);
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "F5") {
+                event.preventDefault();
+                document.querySelector("[data-pos-checkout]")?.requestSubmit();
+            }
+            if (event.key === "Escape") {
+                cart.clear();
+                renderCart();
+            }
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f") {
+                event.preventDefault();
+                search?.focus();
+            }
         });
 
         syncClock();

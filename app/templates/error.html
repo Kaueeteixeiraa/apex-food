@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} | Apex Food{% endblock %}
+{% block content %}
+<section class="record-manager">
+    <header class="record-head">
+        <div><span>Erro {{ code }}</span><h1>{{ title }}</h1></div>
+        <a class="manager-link" href="{{ url_for('dashboard.index') if g.user else url_for('auth.login') }}">Voltar</a>
+    </header>
+    <section class="record-card record-form-card">
+        <p class="record-empty">{{ message }}</p>
+    </section>
+</section>
+{% endblock %}
