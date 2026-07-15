@@ -1,0 +1,93 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}{{ company.trade_name }} | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top">
+    <div class="admin-detail-header">
+        <a class="btn neutral" href="{{ url_for('apex_admin.clients') }}">Voltar</a>
+        <div class="admin-title">
+            <h1>{{ company.trade_name }}</h1>
+            <p><span class="status-pill {{ company.status }}">{{ company.status }}</span> <span class="status-pill {{ license.status if license else '' }}">{{ license.plan_name if license else "Sem plano" }}</span> Vencimento: {{ license.expires_at if license else "-" }}</p>
+        </div>
+    </div>
+    <div class="admin-actions">
+        {% if session.get("platform_admin_role") == "Super Admin" %}
+        <form method="post" action="{{ url_for('apex_admin.impersonate', company_id=company.id) }}"><button class="btn warning" type="submit">Entrar como cliente</button></form>
+        {% endif %}
+    </div>
+</header>
+
+{% if invite_link %}
+<section class="admin-card invite-box">
+    <h2>Link de convite gerado</h2>
+    <input readonly value="{{ invite_link }}" onclick="this.select()">
+    <p class="muted">Copie este link agora. O token puro n&atilde;o fica armazenado.</p>
+</section>
+{% endif %}
+
+<nav class="admin-tabs">
+    <a class="active" href="#visao">Vis&atilde;o geral</a>
+    <a href="#acessos">Acessos</a>
+    <a href="#licenca">Licen&ccedil;a</a>
+    <a href="#pagamentos">Pagamentos</a>
+    <a href="#atividade">Atividade</a>
+</nav>
+
+<section id="visao" class="admin-detail-grid">
+    <article class="admin-card">
+        <h2>Dados da empresa</h2>
+        <div class="admin-read-list">
+            <p><small>Nome fantasia</small><strong>{{ company.trade_name }}</strong></p>
+            <p><small>Raz&atilde;o social</small><strong>{{ company.legal_name }}</strong></p>
+            <p><small>CNPJ / CPF</small><strong>{{ company.cnpj or "-" }}</strong></p>
+            <p><small>Segmento</small><strong>{{ company.segment or "-" }}</strong></p>
+            <p><small>E-mail</small><strong>{{ company.email or "-" }}</strong></p>
+            <p><small>Telefone</small><strong>{{ company.phone or "-" }}</strong></p>
+            <p><small>Endere&ccedil;o</small><strong>{{ company.address }}, {{ company.address_number }}{% if company.address_complement %} - {{ company.address_complement }}{% endif %}</strong></p>
+            <p><small>Bairro</small><strong>{{ company.neighborhood or "-" }}</strong></p>
+            <p><small>Cidade / Estado</small><strong>{{ company.city or "-" }} / {{ company.state or "-" }}</strong></p>
+            <p><small>CEP</small><strong>{{ company.cep or "-" }}</strong></p>
+        </div>
+    </article>
+    <aside class="dashboard-side">
+        <article class="admin-card">
+            <h2>Respons&aacute;vel</h2>
+            <div class="admin-read-list">
+                <p><small>Nome</small><strong>{{ company.responsible_name or "-" }}</strong></p>
+                <p><small>E-mail</small><strong>{{ company.responsible_email or "-" }}</strong></p>
+                <p><small>Telefone</small><strong>{{ company.phone or "-" }}</strong></p>
+                <p><small>Cargo</small><strong>Administrador</strong></p>
+            </div>
+        </article>
+        <article class="admin-card">
+            <h2>Resumo da licen&ccedil;a</h2>
+            <div class="admin-read-list">
+                <p><small>Plano</small><strong>{{ license.plan_name if license else "-" }}</strong></p>
+                <p><small>In&iacute;cio</small><strong>{{ license.starts_at if license else "-" }}</strong></p>
+                <p><small>Vencimento</small><strong>{{ license.expires_at if license else "-" }}</strong></p>
+                <p><small>Trial</small><strong>{{ license.trial_ends_at if license else "-" }}</strong></p>
+                <p><small>Status</small><strong><span class="status-pill {{ license.status if license else '' }}">{{ license.status if license else "-" }}</span></strong></p>
+            </div>
+        </article>
+    </aside>
+</section>
+
+<section id="acessos" class="admin-card">
+    <div class="admin-section-head"><h2>Acessos</h2><div class="admin-actions"><form method="post" action="{{ url_for('apex_admin.generate_invite', company_id=company.id) }}"><button class="btn neutral" type="submit">Gerar/reenviar convite</button></form>{% if invite %}<form method="post" action="{{ url_for('apex_admin.revoke_invite', company_id=company.id) }}"><button class="btn danger" type="submit">Invalidar convite</button></form>{% endif %}</div></div>
+    <div class="admin-table">{% for user in users %}<div class="admin-table-row"><strong>{{ user.name }}<small>{{ user.email }}</small></strong><span>{{ user.role }}</span><span class="status-pill {{ '' if user.active else 'blocked' }}">{{ "Ativo" if user.active else "Pendente/inativo" }}</span><span>{{ user.last_login_at or "sem acesso" }}</span></div>{% else %}<p class="muted">Nenhum acesso cadastrado.</p>{% endfor %}</div>
+</section>
+
+<section id="licenca" class="admin-card">
+    <h2>Licen&ccedil;a</h2>
+    {% if license %}
+    <form class="admin-form-grid" method="post" action="{{ url_for('apex_admin.renew', license_id=license.id) }}"><label>Dias<input name="days" type="number" value="30"></label><label>Motivo<input name="reason" value="Renova&ccedil;&atilde;o manual" required></label><button class="admin-btn" type="submit">Adicionar dias</button></form>
+    <form class="admin-form-grid" method="post" action="{{ url_for('apex_admin.change_plan', license_id=license.id) }}"><label>Plano<select name="plan_id">{% for plan in plans %}<option value="{{ plan.id }}" {{ "selected" if license.plan_id==plan.id }}>{{ plan.name }}</option>{% endfor %}</select></label><button class="btn neutral" type="submit">Alterar plano</button></form>
+    {% endif %}
+    <div class="admin-actions">
+        <form method="post" action="{{ url_for('apex_admin.block_client', company_id=company.id) }}"><input name="reason" placeholder="Motivo do bloqueio" required><button class="btn danger" type="submit">Bloquear</button></form>
+        <form method="post" action="{{ url_for('apex_admin.unblock_client', company_id=company.id) }}"><button class="btn positive" type="submit">Desbloquear</button></form>
+    </div>
+</section>
+
+<section id="pagamentos" class="admin-card"><h2>Pagamentos</h2>{% for payment in payments %}<p>R$ {{ "%.2f"|format(payment.amount) }} &middot; {{ payment.status }} &middot; {{ payment.created_at }}</p>{% else %}<p class="muted">Nenhum pagamento registrado.</p>{% endfor %}</section>
+<section id="atividade" class="admin-card"><h2>Atividade</h2>{% for row in audit %}<p>{{ row.action }} <small>{{ row.created_at }}</small></p>{% else %}<p class="muted">Sem eventos administrativos.</p>{% endfor %}</section>
+{% endblock %}

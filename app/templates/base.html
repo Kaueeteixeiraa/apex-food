@@ -3,58 +3,87 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}Apex Food{% endblock %}</title>
     <script>
         (function () {
             try {
                 var prefs = JSON.parse(localStorage.getItem("apexUiPrefs") || "{}");
+                var sidebar = localStorage.getItem("apexSidebar");
                 document.documentElement.classList.toggle("theme-light", prefs.theme === "light");
                 document.documentElement.classList.toggle("motion-off", prefs.motion === "off");
+                document.documentElement.classList.toggle("sidebar-compact", sidebar === "compact");
             } catch (error) {}
         })();
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/saas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
 </head>
 {% set is_auth_page = request.blueprint == "auth" %}
 <body class="{% if not g.user or is_auth_page %}auth-body{% endif %}">
     {% if g.user and not is_auth_page %}
     {% set role = g.user.role %}
     {% set is_admin = role == "Administrador" %}
+    {% set is_manager = role == "Gerente" %}
     <div class="app-shell">
+        <button class="mobile-menu-button" type="button" data-nav-open>Menu</button>
+        <button class="sidebar-overlay" type="button" data-nav-close aria-label="Fechar menu"></button>
         <aside class="sidebar">
-            <a class="brand" href="{{ url_for('dashboard.index') }}">
-                <span class="brand-mark">A</span>
-                <span>
-                    <strong>Apex Food</strong>
-                    <small>2.0 &middot; {{ session.get("company_name", "Restaurante") }}</small>
-                </span>
+            <a class="brand apex-logo" href="{{ url_for('dashboard.index') }}">
+                <svg class="apex-symbol" viewBox="0 0 48 42" aria-hidden="true"><path d="M24 2 46 40H34L24 22 14 40H2L24 2Z"/><path d="M24 15 31 28H17l7-13Z"/></svg>
+                <span class="apex-word"><strong><b>apex</b><em>food</em></strong></span>
             </a>
+            <button class="sidebar-collapse" type="button" data-sidebar-toggle>Recolher menu</button>
             <nav class="nav-menu">
-                {% if is_admin %}
+                <span class="nav-section">Opera&ccedil;&atilde;o</span>
+                {% if is_admin or is_manager %}
                 <a class="{{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}"><span class="nav-icon" data-nav-icon="dashboard"></span>Dashboard</a>
                 {% endif %}
-                {% if is_admin or role == "Caixa" %}
+                {% if is_admin or is_manager or role == "Caixa" %}
+                <a class="{{ 'active' if request.blueprint == 'orders' }}" href="{{ url_for('orders.index') }}"><span class="nav-icon" data-nav-icon="orders"></span>Pedidos</a>
                 <a class="{{ 'active' if request.blueprint == 'pos' }}" href="{{ url_for('pos.index') }}"><span class="nav-icon" data-nav-icon="pos"></span>Caixa / PDV</a>
+                {% elif role == "Garcom" %}
                 <a class="{{ 'active' if request.blueprint == 'orders' }}" href="{{ url_for('orders.index') }}"><span class="nav-icon" data-nav-icon="orders"></span>Pedidos</a>
                 {% elif role == "Entregador" %}
                 <a class="{{ 'active' if request.blueprint == 'orders' }}" href="{{ url_for('orders.index') }}"><span class="nav-icon" data-nav-icon="orders"></span>Entregas</a>
                 {% endif %}
-                {% if is_admin or role == "Cozinha" %}
+                {% if is_admin or is_manager or role == "Garcom" %}
+                <a class="{{ 'active' if request.blueprint == 'floor' }}" href="{{ url_for('floor.index') }}"><span class="nav-icon" data-nav-icon="tables"></span>Sal&atilde;o</a>
+                {% endif %}
+                {% if is_admin or is_manager or role == "Cozinha" %}
                 <a class="{{ 'active' if request.blueprint == 'kitchen' }}" href="{{ url_for('kitchen.index') }}"><span class="nav-icon" data-nav-icon="kitchen"></span>Cozinha</a>
                 {% endif %}
-                {% if is_admin %}
+                <span class="nav-section">Gest&atilde;o</span>
+                {% if is_admin or is_manager or role == "Estoque" %}
                 <a class="{{ 'active' if request.blueprint == 'products' }}" href="{{ url_for('products.index') }}"><span class="nav-icon" data-nav-icon="products"></span>Produtos</a>
-                <a class="{{ 'active' if request.endpoint == 'pages.categories' }}" href="{{ url_for('pages.categories') }}"><span class="nav-icon" data-nav-icon="categories"></span>Categorias</a>
-                <a class="{{ 'active' if request.blueprint == 'clients' }}" href="{{ url_for('clients.index') }}"><span class="nav-icon" data-nav-icon="clients"></span>Clientes</a>
-                <a class="{{ 'active' if request.blueprint == 'floor' }}" href="{{ url_for('floor.index') }}"><span class="nav-icon" data-nav-icon="tables"></span>Mesas</a>
                 {% endif %}
-                {% if is_admin or role == "Entregador" %}
+                {% if is_admin or is_manager %}
+                <a class="{{ 'active' if request.endpoint == 'pages.menu' }}" href="{{ url_for('pages.menu') }}"><span class="nav-icon" data-nav-icon="menu"></span>Card&aacute;pio</a>
+                <a class="{{ 'active' if request.endpoint == 'pages.categories' }}" href="{{ url_for('pages.categories') }}"><span class="nav-icon" data-nav-icon="categories"></span>Categorias</a>
+                {% endif %}
+                {% if is_admin or is_manager or role == "Entregador" %}
                 <a class="{{ 'active' if request.endpoint == 'pages.delivery' }}" href="{{ url_for('pages.delivery') }}"><span class="nav-icon" data-nav-icon="delivery"></span>Delivery</a>
                 {% endif %}
-                {% if is_admin %}
+                {% if is_admin or is_manager or role == "Estoque" %}
                 <a class="{{ 'active' if request.blueprint == 'inventory' }}" href="{{ url_for('inventory.index') }}"><span class="nav-icon" data-nav-icon="inventory"></span>Estoque</a>
+                {% endif %}
+                {% if is_admin or is_manager %}
+                <a class="{{ 'active' if request.blueprint == 'clients' }}" href="{{ url_for('clients.index') }}"><span class="nav-icon" data-nav-icon="clients"></span>Clientes</a>
+                {% endif %}
+                <span class="nav-section">An&aacute;lise</span>
+                {% if is_admin or is_manager %}
+                <a class="{{ 'active' if request.endpoint == 'pages.finance' }}" href="{{ url_for('pages.finance') }}"><span class="nav-icon" data-nav-icon="credit"></span>Financeiro</a>
                 <a class="{{ 'active' if request.endpoint == 'pages.reports' }}" href="{{ url_for('pages.reports') }}"><span class="nav-icon" data-nav-icon="reports"></span>Relat&oacute;rios</a>
+                {% endif %}
+                <span class="nav-section">Conta</span>
+                {% if is_admin %}
                 <a class="{{ 'active' if request.blueprint == 'employees' }}" href="{{ url_for('employees.index') }}"><span class="nav-icon" data-nav-icon="employees"></span>Funcion&aacute;rios</a>
+                <a class="{{ 'active' if request.endpoint == 'pages.subscription' }}" href="{{ url_for('pages.subscription') }}"><span class="nav-icon" data-nav-icon="key"></span>Assinatura</a>
                 <a class="{{ 'active' if request.endpoint == 'pages.settings' }}" href="{{ url_for('pages.settings') }}"><span class="nav-icon" data-nav-icon="settings"></span>Configura&ccedil;&otilde;es</a>
                 {% endif %}
             </nav>
@@ -62,19 +91,38 @@
                 <span class="sidebar-avatar">{{ (g.user.name or "A")[:2].upper() }}</span>
                 <span class="sidebar-user">
                     <strong>{{ g.user.name }}</strong>
-                    <small>{{ role }} &middot; Premium</small>
+                    <small>{{ role }}{% if g.license_context and g.license_context.license %} &middot; {{ g.license_context.license.plan_name }}{% endif %}</small>
                 </span>
                 <a href="{{ url_for('auth.logout') }}">Sair</a>
             </div>
         </aside>
         <main class="main-content">
+            <header class="client-topbar">
+                <span></span>
+                <div class="client-profile">
+                    <span class="nav-icon" data-nav-icon="search"></span>
+                    <span class="nav-icon" data-nav-icon="bell"></span>
+                    <span class="sidebar-avatar">{{ (g.user.name or "AD")[:2].upper() }}</span>
+                    <span class="client-profile-text"><strong>{{ g.user.name }}</strong><small>{{ role }}</small></span>
+                    <a href="{{ url_for('auth.logout') }}">Sair</a>
+                </div>
+            </header>
+            {% if session.get("impersonated_by") %}
+            <form class="impersonation-banner" method="post" action="{{ url_for('apex_admin.stop_impersonation') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <strong>Voc&ecirc; est&aacute; acessando como administrador Apex.</strong>
+                <button class="btn neutral" type="submit">Sair do modo administrativo</button>
+            </form>
+            {% endif %}
             {% include "_flash.html" %}
             {% block content %}{% endblock %}
         </main>
     </div>
     {% else %}
     <main class="auth-main">
+        {% if not is_auth_page %}
         {% include "_flash.html" %}
+        {% endif %}
         {{ self.content() }}
     </main>
     {% endif %}

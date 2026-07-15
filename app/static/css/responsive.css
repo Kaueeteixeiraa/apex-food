@@ -1,0 +1,395 @@
+:root {
+    --content-max: 1680px;
+}
+
+.app-shell,
+.main-content,
+.sidebar,
+.nav-menu,
+.pdv-clean,
+.pdv-clean-grid,
+.orders-clean,
+.orders-clean-grid,
+.orders-board-clean,
+.products-manager,
+.products-manager-card,
+.record-manager,
+.record-card,
+.floor-layout,
+.kitchen-board {
+    min-width: 0 !important;
+}
+
+.mobile-menu-button,
+.sidebar-overlay {
+    display: none;
+}
+
+.sidebar-collapse {
+    min-height: 34px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface-2);
+    font-size: .72rem;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.mobile-menu-button,
+.sidebar-overlay {
+    border: 0;
+}
+
+html.sidebar-compact {
+    --sidebar: 76px;
+}
+
+html.sidebar-compact .brand > span:not(.brand-mark),
+html.sidebar-compact .sidebar-user {
+    display: none !important;
+}
+
+html.sidebar-compact .nav-menu a {
+    justify-content: center;
+    gap: 0;
+    font-size: 0;
+}
+
+html.sidebar-compact .sidebar-collapse {
+    width: 40px;
+    padding: 0;
+    align-self: center;
+    font-size: 0;
+}
+
+html.sidebar-compact .sidebar-collapse::after {
+    content: ">";
+    font-size: 1rem;
+}
+
+html.sidebar-compact .sidebar-footer {
+    justify-content: center;
+    padding: 8px;
+}
+
+html.sidebar-compact .sidebar-footer a {
+    display: grid;
+    width: 38px;
+    height: 32px;
+    margin-left: 0;
+    place-items: center;
+    font-size: 0;
+}
+
+html.sidebar-compact .sidebar-footer a::after {
+    content: "Sair";
+    font-size: .7rem;
+}
+
+.main-content > :not(.pdv-clean):not(.premium-dashboard) {
+    width: min(100%, var(--content-max));
+    margin-inline: auto;
+}
+
+.dashboard-metrics,
+.reports-kpis,
+.suite-metrics {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)) !important;
+}
+
+.dashboard-premium-grid,
+.dashboard-grid,
+.reports-layout,
+.settings-layout,
+.menu-premium,
+.suite-grid,
+.orders-board-clean,
+.kitchen-board {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)) !important;
+}
+
+.products-manager-filter,
+.record-filter,
+.product-dialog-form,
+.record-dialog-form,
+.form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)) !important;
+}
+
+.product-row-main h2,
+.product-row-main p,
+.record-main h2,
+.record-main p,
+.order-clean-card p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.floor-stage {
+    position: relative !important;
+    overflow: hidden !important;
+    touch-action: none !important;
+}
+
+.floor-zoom-controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.floor-canvas {
+    transition: transform .16s ease;
+    will-change: transform;
+}
+
+.product-dialog,
+.record-dialog {
+    width: min(640px, calc(100vw - 32px)) !important;
+    max-height: calc(100dvh - 32px) !important;
+}
+
+@media (min-width: 1921px) {
+    :root {
+        --content-max: 1800px;
+    }
+
+    .pdv-clean {
+        width: min(100%, 1880px);
+        margin-inline: auto;
+    }
+}
+
+@media (max-width: 1366px) {
+    :root {
+        --sidebar: 218px;
+    }
+}
+
+@media (max-width: 1180px) and (min-width: 861px) {
+    :root {
+        --sidebar: 82px;
+    }
+
+    .brand > span:not(.brand-mark),
+    .sidebar-user,
+    .sidebar-collapse {
+        display: none !important;
+    }
+
+    .nav-menu a {
+        justify-content: center !important;
+        gap: 0 !important;
+        font-size: 0 !important;
+    }
+}
+
+@media (max-width: 860px) {
+    body.nav-open {
+        overflow: hidden !important;
+    }
+
+    .mobile-menu-button {
+        position: fixed !important;
+        top: 10px !important;
+        left: 10px !important;
+        z-index: 80 !important;
+        display: inline-grid !important;
+        place-items: center !important;
+        min-height: 40px !important;
+        padding: 0 14px !important;
+        color: #fff !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, var(--brand-strong, #0ea5ff), var(--brand, #22d3ee)) !important;
+        box-shadow: var(--shadow-soft) !important;
+        font-weight: 900 !important;
+    }
+
+    .sidebar-overlay {
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 70 !important;
+        background: rgba(0, 0, 0, .48) !important;
+        backdrop-filter: blur(2px) !important;
+    }
+
+    body.nav-open .sidebar-overlay {
+        display: block !important;
+    }
+
+    .app-shell {
+        display: block !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        overflow: visible !important;
+    }
+
+    .sidebar,
+    .app-shell .sidebar,
+    .app-shell:has(.pdv-clean) .sidebar,
+    .app-shell:has(.orders-clean) .sidebar,
+    .app-shell:has(.products-manager) .sidebar,
+    .app-shell:has(.record-manager) .sidebar {
+        position: fixed !important;
+        inset: 0 auto 0 0 !important;
+        z-index: 90 !important;
+        width: min(84vw, 310px) !important;
+        height: 100dvh !important;
+        padding: 14px !important;
+        transform: translateX(-105%) !important;
+        transition: transform .22s ease !important;
+    }
+
+    body.nav-open .sidebar {
+        transform: translateX(0) !important;
+    }
+
+    .brand > span:not(.brand-mark),
+    .sidebar-user,
+    .sidebar-footer {
+        display: flex !important;
+    }
+
+    .sidebar-collapse {
+        display: none !important;
+    }
+
+    .nav-menu,
+    .app-shell:has(.pdv-clean) .nav-menu,
+    .app-shell:has(.orders-clean) .nav-menu,
+    .app-shell:has(.products-manager) .nav-menu,
+    .app-shell:has(.record-manager) .nav-menu {
+        display: grid !important;
+        overflow: auto !important;
+    }
+
+    .nav-menu a,
+    .app-shell:has(.pdv-clean) .nav-menu a,
+    .app-shell:has(.orders-clean) .nav-menu a,
+    .app-shell:has(.products-manager) .nav-menu a,
+    .app-shell:has(.record-manager) .nav-menu a {
+        justify-content: flex-start !important;
+        gap: .65rem !important;
+        min-height: 42px !important;
+        font-size: .9rem !important;
+        white-space: normal !important;
+    }
+
+    .main-content,
+    .main-content:has(.pdv-clean),
+    .main-content:has(.orders-clean),
+    .main-content:has(.products-manager),
+    .main-content:has(.record-manager) {
+        width: 100% !important;
+        padding: 62px 8px 10px !important;
+        overflow: visible !important;
+    }
+
+    .page-header,
+    .orders-clean-head,
+    .products-manager-head,
+    .record-head,
+    .pdv-clean-head {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    .orders-clean,
+    .products-manager,
+    .record-manager,
+    .pdv-clean {
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+
+    .pdv-clean-grid,
+    .orders-clean-grid,
+    .products-manager-card,
+    .record-card,
+    .floor-layout {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .pdv-checkout-card {
+        position: static !important;
+    }
+
+    .pdv-clean-actions {
+        position: sticky !important;
+        bottom: 8px !important;
+        z-index: 30 !important;
+        grid-template-columns: 1fr 1fr 1.4fr !important;
+    }
+
+    .products-table,
+    .record-list,
+    .orders-lane-list {
+        overflow: visible !important;
+    }
+
+    .product-row-card,
+    .record-row,
+    .order-clean-card {
+        grid-template-columns: 1fr !important;
+    }
+
+    .product-row-card img {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 180px !important;
+    }
+
+    .product-row-actions,
+    .record-actions {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .floor-stage {
+        min-height: 58dvh !important;
+    }
+
+    .table-panel {
+        position: fixed !important;
+        inset: auto 8px 8px 8px !important;
+        z-index: 60 !important;
+        max-height: 72dvh !important;
+        overflow: auto !important;
+        transform: translateY(calc(100% + 16px));
+        transition: transform .22s ease;
+    }
+
+    .table-panel.open {
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-metrics,
+    .reports-kpis,
+    .suite-metrics,
+    .pdv-pay-methods,
+    .pdv-values-box,
+    .pdv-cash-mini,
+    .product-row-actions,
+    .record-actions,
+    .pdv-clean-actions {
+        grid-template-columns: 1fr !important;
+    }
+
+    .pdv-drawer-products {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr)) !important;
+    }
+
+    button,
+    .btn,
+    .manager-link {
+        min-height: 40px;
+    }
+}

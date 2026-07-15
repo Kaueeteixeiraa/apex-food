@@ -4,173 +4,110 @@
 <section class="premium-dashboard">
     <header class="dashboard-hero">
         <div>
-            <p class="eyebrow">Dashboard</p>
-            <h1>Ol&aacute;, Admin Apex</h1>
-            <p>Bem-vindo ao seu painel de controle.</p>
+            <h1>Dashboard</h1>
         </div>
         <div class="dashboard-actions">
-            <label class="restaurant-switcher">
-                Restaurante
-                <select>
-                    <option>{{ company.trade_name if company else "Apex Food" }}</option>
-                </select>
-            </label>
-            <button class="notification-button" type="button" aria-label="Notifica&ccedil;&otilde;es">
-                <span></span>
-            </button>
-            <div class="date-chip">{{ current_date }}</div>
+            <a class="btn primary" href="{{ url_for('pos.index') }}">+ Nova venda</a>
+            <a class="btn neutral" href="{{ url_for('orders.index') }}"><span class="nav-icon" data-nav-icon="orders"></span>Pedidos</a>
+            <div class="date-chip">{{ current_date }} <span class="nav-icon" data-nav-icon="calendar"></span></div>
+            <div class="dashboard-profile">
+                <span class="nav-icon" data-nav-icon="search"></span>
+                <span class="nav-icon" data-nav-icon="bell"></span>
+                <span class="sidebar-avatar">{{ (g.user.name or "AD")[:2].upper() }}</span>
+                <span><strong>{{ g.user.name }}</strong><small>{{ g.user.role }}</small></span>
+            </div>
         </div>
     </header>
 
     <section class="dashboard-metrics">
-        <article class="premium-metric metric-purple">
+        <article class="premium-metric">
             <span class="metric-icon">R$</span>
-            <div>
-                <small>Vendas de hoje</small>
-                <strong>R$ {{ "%.2f"|format(summary.sales_today) }}</strong>
-                <em>+12,4% vs ontem</em>
-            </div>
+            <div><small>Vendas hoje</small><strong>R$ {{ "%.2f"|format(summary.sales_today) }}</strong><em>Vendas finalizadas</em></div>
         </article>
-        <article class="premium-metric metric-blue">
-            <span class="metric-icon">#</span>
-            <div>
-                <small>Pedidos em aberto</small>
-                <strong>{{ summary.orders_today }}</strong>
-                <em>Fila operacional</em>
-            </div>
+        <article class="premium-metric">
+            <span class="metric-icon"><span class="nav-icon" data-nav-icon="orders"></span></span>
+            <div><small>Pedidos abertos</small><strong>{{ summary.orders_today }}</strong><em>Em atendimento</em></div>
         </article>
-        <article class="premium-metric metric-green">
-                <span class="metric-icon">MES</span>
-            <div>
-                <small>Faturamento mensal</small>
-                <strong>R$ {{ "%.2f"|format(summary.monthly_revenue) }}</strong>
-                <em>Acumulado do m&ecirc;s</em>
-            </div>
+        <article class="premium-metric">
+            <span class="metric-icon"><span class="nav-icon" data-nav-icon="kitchen"></span></span>
+            <div><small>Em preparo</small><strong>{{ summary.preparing_orders }}</strong><em>Cozinha agora</em></div>
         </article>
-        <article class="premium-metric metric-orange">
+        <article class="premium-metric">
             <span class="metric-icon">TM</span>
-            <div>
-                <small>Ticket m&eacute;dio</small>
-                <strong>R$ {{ "%.2f"|format(summary.avg_ticket) }}</strong>
-                <em>Por venda finalizada</em>
-            </div>
+            <div><small>Ticket m&eacute;dio</small><strong>R$ {{ "%.2f"|format(summary.avg_ticket) }}</strong><em>Por venda</em></div>
         </article>
-        <article class="premium-metric metric-red">
-            <span class="metric-icon">CX</span>
-            <div>
-                <small>Caixa atual</small>
-                <strong>{{ cash_summary.status if cash_summary else "Fechado" }}</strong>
-                <em>R$ {{ "%.2f"|format(cash_summary.sales_total if cash_summary else 0) }} vendidos</em>
-            </div>
+        <article class="premium-metric">
+            <span class="metric-icon"><span class="nav-icon" data-nav-icon="tables"></span></span>
+            <div><small>Mesas ocupadas</small><strong>{{ summary.occupied_tables }} / {{ summary.total_tables }}</strong><em>Sal&atilde;o</em></div>
         </article>
     </section>
 
-    <section class="dashboard-premium-grid">
-        <article class="panel dashboard-card sales-panel">
+    <section class="dashboard-panels-row">
+        <article class="panel dashboard-card best-sellers-panel">
             <div class="panel-heading">
-                <div>
-                    <h2>Vendas dos &uacute;ltimos 7 dias</h2>
-                    <p class="panel-subtitle">Vendas recentes do restaurante</p>
-                </div>
-                <span class="pill info">7 dias</span>
+                <div><h2>Produtos mais vendidos</h2><p class="panel-subtitle">Hoje</p></div>
+                <a class="mini-panel-link" href="{{ url_for('products.index') }}">Ver todos</a>
             </div>
-            <div id="salesLineChart" class="line-chart" data-chart='{{ chart_json|safe }}'></div>
-        </article>
-
-        <article class="panel dashboard-card status-panel">
-            <div class="panel-heading">
-                <div>
-                    <h2>Produtos mais vendidos</h2>
-                    <p class="panel-subtitle">Ranking operacional</p>
-                </div>
-            </div>
-            <div class="status-chart">
+            <div class="best-seller-list">
                 {% for product in top_products %}
-                <div class="status-chart-row">
-                    <div class="status-chart-top"><span>{{ product.name }}</span><strong>{{ product.sold }}</strong></div>
-                    <div class="status-chart-track"><i style="width:{{ [product.sold * 22, 100]|min }}%"></i></div>
+                <div class="best-seller-row">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+                    <div><span>{{ product.name }}</span><i style="width:{{ [product.sold * 8, 100]|min }}%"></i></div>
+                    <strong>{{ product.sold }}</strong>
                 </div>
-                {% else %}
-                <p class="empty">Sem vendas registradas.</p>
-                {% endfor %}
+                {% else %}<p class="empty">Sem vendas registradas.</p>{% endfor %}
             </div>
         </article>
 
+        <article class="panel dashboard-card stock-panel">
+            <div class="panel-heading"><div><h2>Estoque baixo</h2></div><span class="pill danger">{{ low_stock|length }} itens</span></div>
+            <div class="compact-alert-list">
+                {% for item in low_stock %}
+                <div class="compact-alert-row"><span class="nav-icon" data-nav-icon="inventory"></span><div><strong>{{ item.name }}</strong><small>Estoque: {{ item.quantity }} {{ item.unit }}</small></div></div>
+                {% else %}<p class="empty">Estoque em dia.</p>{% endfor %}
+            </div>
+            <a class="panel-link" href="{{ url_for('inventory.index') }}">Abrir estoque</a>
+        </article>
+
+        <article class="panel dashboard-card late-panel">
+            <div class="panel-heading"><div><h2>Pedidos em atraso</h2></div><span class="pill danger">{{ delayed_count }} pedidos</span></div>
+            <div class="compact-alert-list">
+                {% for order in delayed_orders %}
+                <div class="late-order-row"><span>#</span><div><strong>#{{ order.id }}</strong><small>{{ order.table_name or order.fulfillment_type }} &middot; {{ order.minutes_open or 0 }} min</small></div></div>
+                {% else %}<p class="empty">Tudo em dia por aqui.</p>{% endfor %}
+            </div>
+            <a class="panel-link" href="{{ url_for('orders.index') }}">Ver pedidos</a>
+        </article>
+    </section>
+
+    <section class="dashboard-recent-row">
         <article class="panel dashboard-card orders-panel">
             <div class="panel-heading">
-                <div>
-                    <h2>Pedidos recentes</h2>
-                    <p class="panel-subtitle">Atualiza&ccedil;&atilde;o em tempo real do sal&atilde;o</p>
-                </div>
+                <div><h2>Pedidos recentes</h2><p class="panel-subtitle">Movimento atual do restaurante</p></div>
                 <a class="pill active" href="{{ url_for('orders.index') }}">Ver todos</a>
             </div>
             <div class="table-wrap premium-table">
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Pedido</th>
-                            <th>Mesa / Cliente</th>
-                            <th>Itens</th>
-                            <th>Status</th>
-                            <th>Hor&aacute;rio</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Pedido</th><th>Mesa / Cliente</th><th>Itens</th><th>Status</th><th>Hora</th><th>Total</th><th>A&ccedil;&otilde;es</th></tr></thead>
                     <tbody>
                     {% for order in recent_orders %}
                     <tr>
                         <td><strong>#{{ order.id }}</strong></td>
-                        <td>
-                            <strong>{{ order.table_name or order.fulfillment_type }}</strong>
-                            <span>{{ order.customer_name }}</span>
-                        </td>
+                        <td><strong>{{ order.table_name or order.fulfillment_type }}</strong><span>{{ order.customer_name or "-" }}</span></td>
                         <td>{{ order.items_summary or "Sem itens" }}</td>
                         <td><span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span></td>
                         <td>{{ order.order_time or "--:--" }}</td>
                         <td>R$ {{ "%.2f"|format(order.total) }}</td>
+                        <td class="table-actions">...</td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="6">Nenhum pedido recente.</td></tr>
+                    <tr><td colspan="7">Nenhum pedido recente.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
         </article>
 
-        <article class="panel dashboard-card alerts-panel">
-            <div class="panel-heading">
-                <div>
-                    <h2>Alertas</h2>
-                    <p class="panel-subtitle">Pontos que pedem aten&ccedil;&atilde;o</p>
-                </div>
-                <span class="pill danger">{{ dashboard_alerts|length }}</span>
-            </div>
-            <div class="dashboard-alert-list">
-                {% for alert in dashboard_alerts %}
-                <div class="dashboard-alert alert-{{ alert.kind }}">
-                    <span>{{ alert.icon }}</span>
-                    <div>
-                        <strong>{{ alert.title }}</strong>
-                        <small>{{ alert.description }}</small>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            <a class="btn neutral alert-button" href="{{ url_for('inventory.index') }}">Ver todos os alertas</a>
-        </article>
-
-        <article class="panel dashboard-card payment-panel">
-            <div class="panel-heading">
-                <div>
-                    <h2>Resumo do caixa atual</h2>
-                    <p class="panel-subtitle">Abertura: R$ {{ "%.2f"|format(cash_summary.opening_amount if cash_summary else 0) }} &middot; Vendas: R$ {{ "%.2f"|format(cash_summary.sales_total if cash_summary else 0) }}</p>
-                </div>
-            </div>
-            <div id="paymentChart" class="payment-chart" data-chart='{{ payment_chart_json|safe }}'>
-                <div class="payment-donut" data-payment-donut></div>
-                <div class="payment-legend" data-payment-legend></div>
-            </div>
-        </article>
     </section>
 </section>
 {% endblock %}

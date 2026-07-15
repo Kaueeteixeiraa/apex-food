@@ -1,6 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from ..database import execute, query_all, query_one
+from ..services.audit import log_audit
 from .auth import company_id, login_required
 
 bp = Blueprint("clients", __name__, url_prefix="/clients")
@@ -105,6 +106,8 @@ def update(client_id):
 @bp.post("/<int:client_id>/delete")
 @login_required
 def delete(client_id):
-    execute("DELETE FROM customers WHERE id=? AND company_id=?", (client_id, company_id()))
+    cid = company_id()
+    log_audit(cid, "customer.delete", "customers", client_id)
+    execute("DELETE FROM customers WHERE id=? AND company_id=?", (client_id, cid))
     flash("Cliente excluido.", "success")
     return redirect(url_for("clients.index"))

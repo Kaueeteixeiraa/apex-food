@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Apex Admin{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/saas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="apex-admin-body">
+    <button class="admin-menu-button" type="button" data-admin-open>Menu</button>
+    <button class="admin-overlay" type="button" data-admin-close aria-label="Fechar menu"></button>
+    <aside class="admin-sidebar">
+        <a class="admin-brand apex-logo" href="{{ url_for('apex_admin.dashboard') }}"><svg class="apex-symbol" viewBox="0 0 48 42" aria-hidden="true"><path d="M24 2 46 40H34L24 22 14 40H2L24 2Z"/><path d="M24 15 31 28H17l7-13Z"/></svg><span class="apex-word"><strong><b>apex</b><em>food</em></strong><small>Apex Admin</small></span></a>
+        <small>Administra&ccedil;&atilde;o da plataforma</small>
+        <nav class="admin-nav">
+            <span class="nav-section">Vis&atilde;o geral</span>
+            <a class="{{ 'active' if request.endpoint == 'apex_admin.dashboard' }}" href="{{ url_for('apex_admin.dashboard') }}"><span class="nav-icon" data-nav-icon="dashboard"></span>Dashboard</a>
+            <span class="nav-section">Clientes</span>
+            <a class="{{ 'active' if request.endpoint.startswith('apex_admin.client') }}" href="{{ url_for('apex_admin.clients') }}"><span class="nav-icon" data-nav-icon="building"></span>Empresas</a>
+            <a class="{{ 'active' if request.endpoint == 'apex_admin.licenses' }}" href="{{ url_for('apex_admin.licenses') }}"><span class="nav-icon" data-nav-icon="key"></span>Licen&ccedil;as</a>
+            <a class="{{ 'active' if request.endpoint == 'apex_admin.plans' }}" href="{{ url_for('apex_admin.plans') }}"><span class="nav-icon" data-nav-icon="clipboard"></span>Planos</a>
+            <a class="{{ 'active' if request.endpoint == 'apex_admin.payments' }}" href="{{ url_for('apex_admin.payments') }}"><span class="nav-icon" data-nav-icon="credit"></span>Pagamentos</a>
+            <span class="nav-section">Administra&ccedil;&atilde;o</span>
+            <a class="{{ 'active' if request.endpoint == 'apex_admin.admins' }}" href="{{ url_for('apex_admin.admins') }}"><span class="nav-icon" data-nav-icon="employees"></span>Administradores</a>
+            <a class="{{ 'active' if request.endpoint == 'apex_admin.audit' }}" href="{{ url_for('apex_admin.audit') }}"><span class="nav-icon" data-nav-icon="shield"></span>Auditoria</a>
+            <a class="{{ 'active' if request.endpoint == 'apex_admin.settings' }}" href="{{ url_for('apex_admin.settings') }}"><span class="nav-icon" data-nav-icon="settings"></span>Configura&ccedil;&otilde;es</a>
+        </nav>
+    </aside>
+    <main class="admin-main">
+        <header class="admin-pagebar">
+            <div></div>
+            <div class="admin-pagebar-actions">
+                <span class="nav-icon" data-nav-icon="bell"></span>
+                <span class="sidebar-avatar">{{ (g.platform_admin.name if g.platform_admin else "AD")[:2].upper() }}</span>
+                <span class="client-profile-text"><strong>{{ g.platform_admin.name if g.platform_admin else "Administrador" }}</strong><small>{{ g.platform_admin.role if g.platform_admin else "Apex Admin" }}</small></span>
+                <a href="{{ url_for('apex_admin.logout') }}">Sair</a>
+            </div>
+        </header>
+        {% include "_flash.html" %}
+        {% block content %}{% endblock %}
+    </main>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

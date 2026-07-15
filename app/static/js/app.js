@@ -1,5 +1,16 @@
 (function () {
     const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
+    if (csrfToken) {
+        document.querySelectorAll("form").forEach((form) => {
+            if ((form.method || "get").toLowerCase() !== "post" || form.querySelector('[name="_csrf_token"]')) return;
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "_csrf_token";
+            input.value = csrfToken;
+            form.appendChild(input);
+        });
+    }
     const prefsKey = "apexUiPrefs";
     const readPrefs = () => {
         try {
@@ -27,10 +38,49 @@
         reports: '<path d="M4 19V5"/><path d="M8 17v-6M13 17V7M18 17v-9"/><path d="M3 19h18"/>',
         employees: '<rect x="4" y="4" width="16" height="18" rx="3"/><circle cx="12" cy="10" r="3"/><path d="M8 17a4 4 0 0 1 8 0"/>',
         settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2 3-.2-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-5v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.2.1-2-3 .1-.1A1.7 1.7 0 0 0 5 15a1.7 1.7 0 0 0-1.5-1H3v-4h.5A1.7 1.7 0 0 0 5 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1 2-3 .2.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h5v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.2-.1 2 3-.1.1A1.7 1.7 0 0 0 19 9a1.7 1.7 0 0 0 1.5 1h.5v4h-.5A1.7 1.7 0 0 0 19.4 15z"/>',
+        building: '<path d="M4 21V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16"/><path d="M9 21v-4h3v4M8 7h1M12 7h1M8 11h1M12 11h1M17 9h1a2 2 0 0 1 2 2v10"/>',
+        key: '<circle cx="7.5" cy="14.5" r="3.5"/><path d="M10 12l10-10M15 7l3 3M13 9l2 2"/>',
+        credit: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/>',
+        clipboard: '<path d="M9 3h6l1 2h3v16H5V5h3z"/><path d="M9 9h6M9 13h6M9 17h3"/>',
+        shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/>',
+        search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+        bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
+        calendar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>',
+        warning: '<path d="M12 3 22 20H2L12 3z"/><path d="M12 9v5M12 18h.01"/>',
+        mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
     };
 
     document.querySelectorAll("[data-nav-icon]").forEach((icon) => {
         icon.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${navIcons[icon.dataset.navIcon] || navIcons.dashboard}</svg>`;
+    });
+
+    const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+    const navOpen = document.querySelector("[data-nav-open]");
+    const navClose = document.querySelector("[data-nav-close]");
+    const setNavOpen = (open) => document.body.classList.toggle("nav-open", open);
+    sidebarToggle?.addEventListener("click", () => {
+        const compact = !document.documentElement.classList.contains("sidebar-compact");
+        document.documentElement.classList.toggle("sidebar-compact", compact);
+        localStorage.setItem("apexSidebar", compact ? "compact" : "expanded");
+    });
+    navOpen?.addEventListener("click", () => setNavOpen(true));
+    navClose?.addEventListener("click", () => setNavOpen(false));
+    document.querySelectorAll(".nav-menu a").forEach((link) => link.addEventListener("click", () => setNavOpen(false)));
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setNavOpen(false);
+    });
+    const setAdminNavOpen = (open) => document.body.classList.toggle("admin-open", open);
+    document.querySelector("[data-admin-open]")?.addEventListener("click", () => setAdminNavOpen(true));
+    document.querySelector("[data-admin-close]")?.addEventListener("click", () => setAdminNavOpen(false));
+    document.querySelectorAll(".admin-nav a").forEach((link) => link.addEventListener("click", () => setAdminNavOpen(false)));
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setAdminNavOpen(false);
+    });
+
+    document.querySelectorAll("[data-confirm]").forEach((element) => {
+        element.addEventListener("submit", (event) => {
+            if (!window.confirm(element.dataset.confirm)) event.preventDefault();
+        });
     });
 
     applyPrefs();
@@ -81,11 +131,21 @@
 
             submitting = true;
             loginButton.classList.add("loading");
-            loginButton.textContent = "Validando acesso";
+            loginButton.disabled = true;
+            loginButton.textContent = "Entrando...";
             loader?.classList.add("show");
-            setTimeout(() => loginForm.submit(), 1050);
+            setTimeout(() => loginForm.submit(), 450);
         });
     }
+
+    document.querySelectorAll("[data-toggle-password]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const input = button.closest(".password-field")?.querySelector("input");
+            if (!input) return;
+            input.type = input.type === "password" ? "text" : "password";
+            button.textContent = input.type === "password" ? "Mostrar" : "Ocultar";
+        });
+    });
 
     const registerForm = document.querySelector("[data-register-form]");
     if (registerForm) {
@@ -123,7 +183,7 @@
             renderStep();
         });
         registerForm.addEventListener("submit", (event) => {
-            if (![0, 1, 2].every((step) => fieldsInStep(step).every((field) => field.checkValidity()))) {
+            if (!steps.every((_, step) => fieldsInStep(step).every((field) => field.checkValidity()))) {
                 event.preventDefault();
                 current = steps.findIndex((step) => fieldsInStep(Number(step.dataset.step)).some((field) => !field.checkValidity()));
                 if (current < 0) current = 0;
@@ -132,6 +192,54 @@
             }
         });
         renderStep();
+
+    }
+
+    document.querySelectorAll("[data-cep]").forEach((cep) => {
+        cep.addEventListener("blur", async () => {
+            const value = cep.value.replace(/\D/g, "");
+            const form = cep.closest("form");
+            if (value.length !== 8) return;
+            try {
+                const response = await fetch(`https://viacep.com.br/ws/${value}/json/`);
+                const data = await response.json();
+                if (data.erro) return;
+                form.querySelector('[name="address"]').value ||= data.logradouro || "";
+                form.querySelector('[name="neighborhood"]').value ||= data.bairro || "";
+                form.querySelector('[name="city"]').value ||= data.localidade || "";
+                form.querySelector('[name="state"]').value ||= data.uf || "";
+            } catch (error) {}
+        });
+    });
+
+    const clientForm = document.querySelector("[data-client-form]");
+    if (clientForm) {
+        const updateSummary = () => {
+            clientForm.querySelectorAll("[data-summary-source]").forEach((source) => {
+                const target = clientForm.querySelector(`[data-summary-target="${source.dataset.summarySource}"]`);
+                if (!target) return;
+                target.textContent = source.options ? source.options[source.selectedIndex]?.text || "-" : source.value || "-";
+            });
+        };
+        clientForm.addEventListener("input", updateSummary);
+        clientForm.addEventListener("change", updateSummary);
+        updateSummary();
+    }
+
+    const ordersSearch = document.querySelector("[data-orders-search]");
+    const ordersType = document.querySelector("[data-orders-type-filter]");
+    if (ordersSearch || ordersType) {
+        const filterOrders = () => {
+            const term = (ordersSearch?.value || "").toLowerCase().trim();
+            const type = ordersType?.value || "";
+            document.querySelectorAll("[data-order-row]").forEach((row) => {
+                const matchesTerm = !term || (row.dataset.search || "").toLowerCase().includes(term);
+                const matchesType = !type || row.dataset.type === type;
+                row.hidden = !(matchesTerm && matchesType);
+            });
+        };
+        ordersSearch?.addEventListener("input", filterOrders);
+        ordersType?.addEventListener("change", filterOrders);
     }
 
     const chart = document.querySelector("#salesChart");

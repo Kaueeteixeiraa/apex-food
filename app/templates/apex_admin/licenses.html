@@ -1,0 +1,20 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}Licen&ccedil;as | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top"><div class="admin-title"><p class="eyebrow">Clientes</p><h1>Licen&ccedil;as</h1><p>Controle planos, vencimentos e bloqueios.</p></div></header>
+<section class="admin-table">
+    {% for item in licenses %}
+    <div class="admin-table-row">
+        <strong>{{ item.trade_name }}<small>{{ item.responsible_name or item.email }}</small></strong>
+        <span>{{ item.plan_name or "-" }}</span>
+        <span class="status-pill {{ item.status }}">{{ item.status }}</span>
+        <span>{{ item.expires_at or "-" }}<small>{{ item.days_remaining if item.days_remaining is not none else "-" }} dias</small></span>
+        <form method="post" action="{{ url_for('apex_admin.renew', license_id=item.id) }}"><input type="hidden" name="days" value="30"><input type="hidden" name="reason" value="Renovacao rapida"><button class="btn positive" type="submit">Renovar</button></form>
+        <form method="post" action="{{ url_for('apex_admin.adjust_license_days', license_id=item.id) }}" class="inline-license-form"><input name="days" type="number" placeholder="+/- dias" required><input name="reason" placeholder="Motivo" required><button class="btn neutral" type="submit">Ajustar</button></form>
+        <form method="post" action="{{ url_for('apex_admin.set_license_status', license_id=item.id) }}" class="inline-license-form" data-confirm="Alterar status desta licenca?"><select name="status"><option value="active">Ativa</option><option value="trial">Trial</option><option value="grace_period">Tolerancia</option><option value="expired">Vencida</option><option value="blocked">Bloqueada</option><option value="cancelled">Cancelada</option></select><input name="reason" placeholder="Motivo"><button class="btn warning" type="submit">Status</button></form>
+    </div>
+    {% else %}
+    <div class="admin-card empty-state"><h2>Nenhuma licen&ccedil;a encontrada.</h2><p>As licen&ccedil;as ser&atilde;o criadas junto com novos clientes.</p></div>
+    {% endfor %}
+</section>
+{% endblock %}

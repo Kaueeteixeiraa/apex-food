@@ -1,7 +1,8 @@
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 
-from ..database import get_db, query_all, query_one
+from ..database import get_db, query_all
 from ..models import ORDER_STATUSES
+from ..services.orders import create_order
 from .auth import company_id, login_required
 
 bp = Blueprint("orders", __name__, url_prefix="/orders")
@@ -17,63 +18,13 @@ def _form_options(cid):
     }
 
 
-def _create_order(cid, form):
-    product = query_one(
-        "SELECT id, name, price FROM products WHERE id = ? AND company_id = ?",
-        (form.get("product_id"), cid),
-    )
-    if not product:
-        return False
-
-    quantity = max(int(form.get("quantity") or 1), 1)
-    total = round(float(product["price"]) * quantity, 2)
-    table_id = form.get("table_id") or None
-    db = get_db()
-    order_cursor = db.execute(
-        """
-        INSERT INTO orders
-        (company_id, customer_name, fulfillment_type, table_id, status, total)
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-        (
-            cid,
-            form.get("customer_name", "").strip() or "Cliente balcao",
-            form.get("fulfillment_type", "Mesa"),
-            table_id,
-            "Recebido",
-            total,
-        ),
-    )
-    order_id = order_cursor.lastrowid
-    db.execute(
-        """
-        INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, notes)
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-        (order_id, product["id"], product["name"], quantity, product["price"], form.get("notes", "").strip()),
-    )
-    if table_id:
-        db.execute(
-            """
-            UPDATE tables
-            SET status = 'Pedido em preparo',
-                customer_name = ?,
-                total = COALESCE(total, 0) + ?
-            WHERE id = ? AND company_id = ?
-            """,
-            (form.get("customer_name", "").strip(), total, table_id, cid),
-        )
-    db.commit()
-    return True
-
-
 @bp.route("/", methods=("GET", "POST"))
 @login_required
 def index():
     cid = company_id()
 
     if request.method == "POST":
-        if not _create_order(cid, request.form):
+        if not create_order(cid, request.form):
             flash("Selecione um produto valido.", "error")
             return redirect(url_for("orders.index"))
         flash("Pedido criado.", "success")
@@ -129,7 +80,7 @@ def index():
 def new():
     cid = company_id()
     if request.method == "POST":
-        if not _create_order(cid, request.form):
+        if not create_order(cid, request.form):
             flash("Selecione um produto valido.", "error")
             return redirect(url_for("orders.new"))
         flash("Pedido criado.", "success")

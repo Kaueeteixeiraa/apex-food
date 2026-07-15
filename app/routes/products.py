@@ -2,6 +2,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from ..database import execute, query_all, query_one
 from ..models import PRODUCT_CATEGORIES, products_with_demo_images
+from ..services.audit import log_audit
 from .auth import company_id, login_required
 
 bp = Blueprint("products", __name__, url_prefix="/products")
@@ -134,6 +135,7 @@ def edit(product_id):
         return redirect(url_for("products.index"))
     if request.method == "POST":
         _update_product(product_id, cid, request.form)
+        log_audit(cid, "product.update", "products", product_id, {"name": request.form.get("name", "")})
         flash("Produto atualizado.", "success")
         return redirect(url_for("products.index"))
     return render_template(
@@ -164,7 +166,9 @@ def toggle(product_id):
 @bp.post("/<int:product_id>/update")
 @login_required
 def update(product_id):
-    _update_product(product_id, company_id(), request.form)
+    cid = company_id()
+    _update_product(product_id, cid, request.form)
+    log_audit(cid, "product.update", "products", product_id, {"name": request.form.get("name", "")})
     flash("Produto atualizado.", "success")
     return redirect(url_for("products.index"))
 
@@ -172,6 +176,8 @@ def update(product_id):
 @bp.post("/<int:product_id>/delete")
 @login_required
 def delete(product_id):
-    execute("DELETE FROM products WHERE id = ? AND company_id = ?", (product_id, company_id()))
+    cid = company_id()
+    log_audit(cid, "product.delete", "products", product_id)
+    execute("DELETE FROM products WHERE id = ? AND company_id = ?", (product_id, cid))
     flash("Produto excluido.", "success")
     return redirect(url_for("products.index"))

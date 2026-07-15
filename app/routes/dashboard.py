@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template
 
 from ..database import query_all, query_one
+from ..models import products_with_demo_images
 from .auth import company_id, login_required
 
 bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
@@ -61,9 +62,13 @@ def index():
 
     top_products = query_all(
         """
-        SELECT order_items.product_name name, COALESCE(SUM(order_items.quantity), 0) sold
+        SELECT order_items.product_name name,
+               COALESCE(SUM(order_items.quantity), 0) sold,
+               MAX(products.category) category,
+               MAX(products.image_url) image_url
         FROM order_items
         JOIN orders ON orders.id = order_items.order_id
+        LEFT JOIN products ON products.company_id = orders.company_id AND products.name = order_items.product_name
         WHERE orders.company_id = ?
         GROUP BY order_items.product_name
         ORDER BY sold DESC
@@ -71,6 +76,7 @@ def index():
         """,
         (cid,),
     )
+    top_products = products_with_demo_images(top_products)
 
     cash_summary = query_one(
         """
@@ -117,7 +123,7 @@ def index():
         "SELECT COUNT(*) AS value FROM tables WHERE company_id = ? AND status = 'Reservada'",
         (cid,),
     )["value"]
-    delayed_orders = query_one(
+    delayed_count = query_one(
         """
         SELECT COUNT(*) AS value
         FROM orders
@@ -127,6 +133,20 @@ def index():
         """,
         (cid,),
     )["value"]
+    delayed_orders = query_all(
+        """
+        SELECT orders.id, orders.fulfillment_type, tables.name AS table_name,
+               CAST((julianday('now') - julianday(orders.created_at)) * 24 * 60 AS INTEGER) AS minutes_open
+        FROM orders
+        LEFT JOIN tables ON tables.id = orders.table_id
+        WHERE orders.company_id = ?
+          AND orders.status IN ('Recebido', 'Preparando')
+          AND datetime(orders.created_at) <= datetime('now', '-25 minutes')
+        ORDER BY orders.created_at ASC
+        LIMIT 4
+        """,
+        (cid,),
+    )
 
     dashboard_alerts = [
         {
@@ -139,7 +159,7 @@ def index():
             "kind": "warning",
             "icon": "T",
             "title": "Pedidos atrasados",
-            "description": f"{delayed_orders} pedido(s) precisam de atencao da cozinha.",
+            "description": f"{delayed_count} pedido(s) precisam de atencao da cozinha.",
         },
         {
             "kind": "info",
@@ -206,6 +226,8 @@ def index():
         "dashboard.html",
         summary=summary,
         low_stock=low_stock,
+        delayed_count=delayed_count,
+        delayed_orders=delayed_orders,
         top_products=top_products,
         cash_summary=cash_summary,
         recent_orders=recent_orders,

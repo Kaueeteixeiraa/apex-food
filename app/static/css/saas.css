@@ -1,0 +1,612 @@
+.auth-saas,
+.apex-admin-body,
+.public-page {
+    --surface-base: #17120f;
+    --surface-raised: #241b16;
+    --surface-soft: rgba(255, 247, 237, .06);
+    --border-default: rgba(255, 247, 237, .12);
+    --text-primary: #fff7ed;
+    --text-secondary: #d6c8bc;
+    --accent-primary: #f97316;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --radius-lg: 22px;
+    --radius-md: 14px;
+    --ease: .18s ease;
+}
+
+.nav-section {
+    margin: 10px 8px 2px;
+    color: var(--muted);
+    font-size: .66rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+html.sidebar-compact .nav-section {
+    display: none;
+}
+
+.impersonation-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(245, 158, 11, .35);
+    border-radius: 14px;
+    background: rgba(245, 158, 11, .12);
+    color: #fde68a;
+}
+
+.public-page,
+.apex-admin-body {
+    min-height: 100dvh;
+    background: #17120f;
+    color: #fff7ed;
+}
+
+.auth-main:has(.public-page),
+.auth-main:has(.auth-saas) {
+    display: block;
+    min-height: 100dvh;
+    padding: 0;
+}
+
+.public-shell {
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto;
+}
+
+.public-header,
+.public-nav,
+.public-actions,
+.public-hero,
+.public-grid,
+.public-footer,
+.admin-shell,
+.admin-top,
+.admin-grid,
+.admin-table-row,
+.admin-form-grid,
+.auth-saas {
+    display: grid;
+    gap: 16px;
+}
+
+.public-header {
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    padding: 18px 0;
+}
+
+.public-brand,
+.admin-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 900;
+}
+
+.public-nav,
+.public-actions {
+    grid-auto-flow: column;
+    align-items: center;
+}
+
+.public-nav a,
+.public-footer a {
+    color: #d6c8bc;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.public-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, .9fr);
+    align-items: center;
+    min-height: 62dvh;
+    padding: 46px 0 30px;
+}
+
+.public-hero h1,
+.auth-saas h1,
+.admin-title h1 {
+    margin: 0;
+    font-size: clamp(2.25rem, 5vw, 4.8rem);
+    line-height: .98;
+}
+
+.public-hero p,
+.auth-saas p {
+    color: #d6c8bc;
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.public-cta,
+.auth-saas .btn.primary,
+.admin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 14px;
+    background: #f97316;
+    color: #fff;
+    font-weight: 900;
+    text-decoration: none;
+    box-shadow: 0 18px 45px rgba(249, 115, 22, .24);
+}
+
+.public-secondary {
+    color: #fff7ed;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.public-mockup,
+.auth-visual,
+.admin-card,
+.subscription-card,
+.onboarding-card {
+    border: 1px solid rgba(255, 247, 237, .1);
+    border-radius: 22px;
+    background: linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.025));
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .22);
+}
+
+.public-mockup {
+    padding: 14px;
+    transform: translateY(0);
+    animation: softEnter .45s ease both;
+}
+
+.public-mockup img,
+.auth-visual img {
+    width: 100%;
+    min-height: 260px;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.public-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 28px 0;
+}
+
+.public-card {
+    min-height: 150px;
+    padding: 20px;
+    border: 1px solid rgba(255, 247, 237, .1);
+    border-radius: 18px;
+    background: rgba(255, 247, 237, .05);
+}
+
+.public-product {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.public-product img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.public-final {
+    margin: 38px 0;
+    padding: 34px;
+    text-align: center;
+}
+
+.public-footer {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 24px 0 34px;
+    color: #d6c8bc;
+}
+
+.auth-saas {
+    width: min(980px, calc(100% - 28px));
+    grid-template-columns: .95fr 1fr;
+    align-items: stretch;
+    margin: 28px auto;
+}
+
+.auth-saas:has(> .auth-form-panel:only-child) {
+    grid-template-columns: minmax(0, 560px);
+    justify-content: center;
+}
+
+.auth-panel,
+.auth-form-panel {
+    padding: 28px;
+    border-radius: 24px;
+}
+
+.auth-panel {
+    background: linear-gradient(160deg, #2a1810, #17120f);
+}
+
+.auth-form-panel {
+    background: #fffaf5;
+    color: #1f1712;
+}
+
+.auth-form-panel label,
+.admin-form-grid label {
+    display: grid;
+    gap: 7px;
+    color: inherit;
+    font-weight: 850;
+}
+
+.auth-form-panel input,
+.auth-form-panel select,
+.admin-form-grid input,
+.admin-form-grid select,
+.admin-form-grid textarea {
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid rgba(31, 23, 18, .14);
+    border-radius: 12px;
+    background: #fff;
+    color: #1f1712;
+}
+
+.password-field {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 8px;
+}
+
+.password-field label {
+    min-width: 0;
+}
+
+.auth-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #6b5d52;
+}
+
+.auth-benefits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.auth-benefits span {
+    padding: 7px 10px;
+    border: 1px solid var(--border-default);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    background: var(--surface-soft);
+    font-weight: 800;
+}
+
+.auth-row a,
+.auth-link a {
+    color: #ea580c;
+    font-weight: 900;
+}
+
+.apex-admin-body {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+}
+
+.admin-menu-button,
+.admin-overlay {
+    display: none;
+}
+
+.admin-sidebar {
+    min-height: 100dvh;
+    padding: 18px;
+    border-right: 1px solid rgba(255,255,255,.08);
+    background: #111827;
+}
+
+.admin-sidebar small {
+    display: block;
+    margin-top: 4px;
+    color: #9ca3af;
+}
+
+.admin-nav {
+    display: grid;
+    gap: 6px;
+    margin-top: 22px;
+}
+
+.admin-nav a {
+    padding: 11px 12px;
+    border-radius: 12px;
+    color: #d1d5db;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.admin-nav a.active,
+.admin-nav a:hover {
+    background: rgba(249, 115, 22, .14);
+    color: #fff;
+}
+
+.admin-main {
+    min-width: 0;
+    padding: 20px;
+    overflow: auto;
+}
+
+.admin-top {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.admin-grid {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.admin-card,
+.subscription-card,
+.onboarding-card {
+    padding: 18px;
+}
+
+.admin-card strong {
+    display: block;
+    margin-top: 8px;
+    font-size: 1.7rem;
+}
+
+.admin-table {
+    display: grid;
+    gap: 8px;
+}
+
+.admin-table-row {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    align-items: center;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    background: rgba(255,255,255,.04);
+}
+
+.admin-table-row strong small {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+.admin-actions,
+.admin-section-head,
+.admin-tabs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-actions form {
+    display: contents;
+}
+
+.inline-license-form {
+    display: grid;
+    grid-template-columns: minmax(72px, 90px) minmax(110px, 1fr) auto;
+    gap: 6px;
+}
+
+.inline-license-form input,
+.inline-license-form select,
+.admin-actions input {
+    min-height: 36px;
+    min-width: 0;
+    padding: 0 9px;
+    border: 1px solid var(--border-default);
+    border-radius: 10px;
+    background: rgba(255,255,255,.08);
+    color: var(--text-primary);
+}
+
+.empty-state {
+    text-align: center;
+}
+
+.admin-section-head {
+    justify-content: space-between;
+}
+
+.admin-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin: 12px 0;
+    padding: 8px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: rgba(17, 24, 39, .92);
+    backdrop-filter: blur(12px);
+}
+
+.admin-tabs a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 900;
+}
+
+.invite-box input,
+.readonly-grid p {
+    min-width: 0;
+}
+
+.invite-box input {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,.08);
+    color: var(--text-primary);
+}
+
+.admin-client-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: 16px;
+}
+
+.admin-client-form .admin-card:not(.admin-sticky-summary) {
+    grid-column: 1;
+}
+
+.admin-sticky-summary {
+    position: sticky;
+    top: 20px;
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-self: start;
+}
+
+.admin-form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    align-items: end;
+}
+
+.subscription-grid,
+.onboarding-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 16px;
+}
+
+.status-pill {
+    display: inline-flex;
+    width: fit-content;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: rgba(34,197,94,.14);
+    color: #86efac;
+    font-weight: 900;
+}
+
+.status-pill.blocked,
+.status-pill.expired,
+.status-pill.cancelled {
+    background: rgba(239,68,68,.14);
+    color: #fecaca;
+}
+
+@keyframes softEnter {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+    .public-header,
+    .public-hero,
+    .public-grid,
+    .public-product,
+    .public-footer,
+    .auth-saas,
+    .subscription-grid,
+    .onboarding-grid,
+    .admin-table-row {
+        grid-template-columns: 1fr;
+    }
+
+    .public-nav {
+        display: none;
+    }
+
+    .apex-admin-body {
+        display: block;
+    }
+
+    .admin-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 90;
+        width: min(84vw, 310px);
+        min-height: 100dvh;
+        transform: translateX(-105%);
+        transition: transform var(--ease);
+    }
+
+    body.admin-open .admin-sidebar {
+        transform: translateX(0);
+    }
+
+    .admin-menu-button {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 80;
+        display: inline-grid;
+        min-height: 40px;
+        padding: 0 14px;
+        place-items: center;
+        border: 0;
+        border-radius: var(--radius-md);
+        background: var(--accent-primary);
+        color: #fff;
+        font-weight: 900;
+    }
+
+    body.admin-open .admin-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 70;
+        border: 0;
+        background: rgba(0,0,0,.54);
+    }
+
+    .admin-main {
+        padding: 62px 10px 14px;
+    }
+
+    .auth-saas {
+        margin: 0 auto;
+        padding: 14px 0;
+    }
+
+    .auth-visual {
+        display: none;
+    }
+
+    .auth-panel {
+        padding: 20px;
+    }
+
+    .auth-panel h1 {
+        font-size: 1.8rem;
+    }
+
+    .admin-client-form {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-client-form .admin-card,
+    .admin-sticky-summary {
+        position: static;
+        grid-column: auto;
+        grid-row: auto;
+    }
+}

@@ -44,4 +44,4 @@ TABLE_STATUSES = [
 
 PAYMENT_METHODS = ["Pix", "Dinheiro", "Cartao Credito", "Cartao Debito"]
 
-PERMISSIONS = ["Administrador", "Caixa", "Cozinha", "Entregador"]
+PERMISSIONS = ["Administrador", "Gerente", "Caixa", "Garcom", "Cozinha", "Estoque", "Entregador"]

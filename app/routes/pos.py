@@ -4,6 +4,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 
 from ..database import get_db, query_all, query_one
 from ..models import PAYMENT_METHODS, products_with_demo_images
+from ..services.audit import log_audit
 from .auth import company_id, login_required
 
 bp = Blueprint("pos", __name__, url_prefix="/pos")
@@ -185,13 +186,15 @@ def index():
 def open_register():
     cid = company_id()
     db = get_db()
+    opening_amount = _money(request.form.get("opening_amount"))
     db.execute(
         """
         INSERT INTO cash_registers (company_id, status, opening_amount, opened_at)
         VALUES (?, 'Aberto', ?, datetime('now'))
         """,
-        (cid, _money(request.form.get("opening_amount"))),
+        (cid, opening_amount),
     )
+    log_audit(cid, "cash.open", "cash_registers", None, {"amount": opening_amount})
     db.commit()
     flash("Caixa aberto.", "success")
     return redirect(url_for("pos.index"))
@@ -222,6 +225,7 @@ def movement():
         "INSERT INTO cash_movements (company_id, register_id, type, amount, note) VALUES (?, ?, ?, ?, ?)",
         (cid, register["id"], movement_type, amount, request.form.get("note", "").strip()),
     )
+    log_audit(cid, f"cash.{movement_type.lower()}", "cash_registers", register["id"], {"amount": amount})
     db.commit()
     flash("Movimento de caixa registrado.", "success")
     return redirect(url_for("pos.index"))
@@ -257,6 +261,7 @@ def close_register():
         """,
         (closing_amount, expected_amount, difference_amount, g.user["name"], register["id"], cid),
     )
+    log_audit(cid, "cash.close", "cash_registers", register["id"], {"expected": expected_amount, "counted": closing_amount, "difference": difference_amount})
     db.commit()
     flash("Caixa fechado.", "success")
     return redirect(url_for("pos.index"))

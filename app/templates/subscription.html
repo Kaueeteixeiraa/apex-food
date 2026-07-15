@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Minha assinatura | Apex Food{% endblock %}
+{% block content %}
+{% set lic = license_context.license %}
+<section class="subscription-grid">
+    <div class="subscription-card">
+        <p class="eyebrow">Minha assinatura</p>
+        <h1>{{ lic.plan_name if lic else "Sem plano" }}</h1>
+        <span class="status-pill {{ lic.status if lic else 'blocked' }}">{{ lic.status if lic else "sem licenca" }}</span>
+        <p>{{ license_context.message }}</p>
+        {% if lic %}
+        <div class="admin-grid">
+            <div><small>Vencimento</small><strong>{{ lic.expires_at or "-" }}</strong></div>
+            <div><small>Dias restantes</small><strong>{{ license_context.days_remaining if license_context.days_remaining is not none else "-" }}</strong></div>
+            <div><small>Usu&aacute;rios</small><strong>{{ lic.max_users or "Ilimitado" }}</strong></div>
+            <div><small>Produtos</small><strong>{{ lic.max_products or "Ilimitado" }}</strong></div>
+        </div>
+        {% endif %}
+        <a class="btn primary" href="mailto:suporte@apexfood.local?subject=Renovar%20Apex%20Food">Renovar licen&ccedil;a</a>
+    </div>
+    <div class="subscription-card">
+        <h2>Hist&oacute;rico de pagamentos</h2>
+        <div class="admin-table">
+            {% for payment in payments %}
+            <div class="admin-table-row">
+                <strong>R$ {{ "%.2f"|format(payment.amount) }}</strong>
+                <span>{{ payment.payment_method or "Manual" }}</span>
+                <span class="status-pill {{ payment.status }}">{{ payment.status }}</span>
+                <small>{{ payment.created_at }}</small>
+            </div>
+            {% else %}
+            <p class="muted">Nenhum pagamento registrado ainda.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

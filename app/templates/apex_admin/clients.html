@@ -1,0 +1,25 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}Clientes | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top">
+    <div class="admin-title"><p class="eyebrow">Clientes</p><h1>Empresas</h1><p>Gerencie as empresas que utilizam o Apex Food.</p></div>
+    <a class="admin-btn" href="{{ url_for('apex_admin.new_client') }}">Novo cliente</a>
+</header>
+<form class="admin-form-grid" method="get">
+    <label>Buscar<input name="q" value="{{ q }}" placeholder="Empresa, responsavel, e-mail ou CNPJ"></label>
+    <label>Status<select name="status"><option value="all">Todos</option>{% for opt in ["active","trial","expiring","expired","blocked","cancelled"] %}<option value="{{ opt }}" {{ "selected" if status==opt }}>{{ opt }}</option>{% endfor %}</select></label>
+    <label>Plano<select name="plan"><option value="all">Todos</option>{% for item in plans %}<option value="{{ item.slug }}" {{ "selected" if plan==item.slug }}>{{ item.name }}</option>{% endfor %}</select></label>
+    <label>Vencimento<select name="due"><option>Todos</option><option>Vencendo</option><option>Vencidas</option></select></label>
+    <button class="admin-btn" type="submit">Filtrar</button>
+    <a class="btn neutral" href="{{ url_for('apex_admin.clients') }}">Limpar</a>
+</form>
+<section class="admin-data-card">
+    <div class="admin-table-head"><span>Empresa</span><span>Respons&aacute;vel</span><span>Plano</span><span>Licen&ccedil;a</span><span>Vencimento</span><span>&Uacute;ltimo acesso</span><span>Status</span><span>A&ccedil;&otilde;es</span></div>
+    {% for client in clients %}
+    <div class="admin-company-row">
+        <strong data-label="Empresa">{{ client.trade_name }}<small>{{ client.email }}</small></strong><span data-label="Respons&aacute;vel">{{ client.responsible_name or client.legal_name }}</span><span data-label="Plano">{{ client.plan_name or "-" }}</span><span data-label="Licen&ccedil;a">{{ client.license_status or "-" }}</span><span data-label="Vencimento">{{ client.expires_at or "-" }}</span><span data-label="&Uacute;ltimo acesso">{{ client.last_access_at or "-" }}</span><span data-label="Status"><i class="status-pill {{ client.license_status or client.status }}">{{ client.license_status or client.status }}</i></span><a class="kebab-link" href="{{ url_for('apex_admin.client_detail', company_id=client.id) }}">...</a>
+    </div>
+    {% else %}<div class="admin-card empty-state"><h2>Nenhuma empresa cadastrada.</h2><p>Cadastre o primeiro cliente para gerenciar licen&ccedil;as e acessos.</p><a class="admin-btn" href="{{ url_for('apex_admin.new_client') }}">Cadastrar cliente</a></div>{% endfor %}
+    <footer class="admin-pagination"><span>Mostrando {{ clients|length }} empresa(s)</span><span>1</span></footer>
+</section>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "apex_admin/base.html" %}
+{% block title %}Dashboard | Apex Admin{% endblock %}
+{% block content %}
+<header class="admin-top"><div class="admin-title"><h1>Dashboard</h1><p>Vis&atilde;o geral da plataforma.</p></div><div class="period-filter">{{ period_label }} <span class="nav-icon" data-nav-icon="calendar"></span></div></header>
+<section class="admin-grid admin-grid-four">
+    {% for item in [
+        ("Empresas ativas", stats.active_clients, "+%s este mes"|format(stats.new_clients), "good"),
+        ("Em periodo de teste", stats.trial_clients, "testes ativos", "warn"),
+        ("Licencas vencendo", stats.expiring, "proximos 7 dias", "warn"),
+        ("Licencas vencidas", stats.expired, "atencao necessaria", "bad")
+    ] %}
+    <article class="admin-card metric-card"><span>{{ item[0] }}</span><strong>{{ item[1] }}</strong><small class="{{ item[3] }}">{{ item[2] }}</small></article>
+    {% endfor %}
+</section>
+<section class="admin-grid admin-grid-three">
+    <article class="admin-card metric-card wide"><span>Pagamentos pendentes</span><strong>{{ stats.pending_payments }}</strong><small class="bad">{{ stats.overdue_payments }} vencidos</small></article>
+    <article class="admin-card metric-card wide"><span>Receita mensal registrada</span><strong>R$ {{ "%.2f"|format(stats.monthly_revenue) }}</strong><small class="good">pagamentos confirmados</small></article>
+    <article class="admin-card metric-card wide"><span>Novos clientes no m&ecirc;s</span><strong>{{ stats.new_clients }}</strong><small class="good">cadastros criados</small></article>
+</section>
+<section class="admin-dashboard-bottom">
+    <article class="admin-card attention-card">
+        <h2>Aten&ccedil;&atilde;o necess&aacute;ria</h2>
+        {% for label, value, icon in [("licencas vencem nos proximos 7 dias", stats.expiring, "key"), ("empresas em periodo de tolerancia", stats.grace, "warning"), ("pagamentos vencidos", stats.overdue_payments, "credit"), ("empresas bloqueadas", stats.blocked, "shield"), ("convites aguardando utilizacao", stats.pending_invites, "mail")] %}
+        <div class="attention-row"><span class="nav-icon" data-nav-icon="{{ icon }}"></span><p><strong>{{ value }}</strong> {{ label }}</p></div>
+        {% endfor %}
+    </article>
+    <article class="admin-card recent-card">
+        <h2>Clientes recentes</h2>
+        <div class="admin-table compact recent-table">
+            {% for item in recent_clients %}
+            <div class="admin-table-row">
+                <strong>{{ item.trade_name }}</strong><span>{{ item.responsible_name or "-" }}</span><span>{{ item.plan_name or "-" }}</span><span class="status-pill {{ item.license_status }}">{{ item.license_status }}</span><span>{{ item.expires_at or "-" }}</span><a class="btn neutral" href="{{ url_for('apex_admin.client_detail', company_id=item.id) }}">Abrir</a>
+            </div>
+            {% else %}<p class="muted">Nenhum cliente cadastrado.</p>{% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}

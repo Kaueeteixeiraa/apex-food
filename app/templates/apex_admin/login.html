@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Apex Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/saas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body class="public-page">
+    <main class="auth-saas">
+        <div class="auth-panel">
+            <a class="public-brand apex-logo" href="{{ url_for('index') }}"><svg class="apex-symbol" viewBox="0 0 48 42" aria-hidden="true"><path d="M24 2 46 40H34L24 22 14 40H2L24 2Z"/><path d="M24 15 31 28H17l7-13Z"/></svg><span class="apex-word"><strong><b>apex</b><em>food</em></strong><small>Apex Admin</small></span></a>
+            <div class="auth-identity-copy">
+                <h1>Gest&atilde;o comercial<br>da plataforma Apex Food.</h1>
+                <div class="auth-benefits">
+                    <span><i data-nav-icon="building" class="nav-icon"></i><strong>Empresas</strong><small>Clientes, planos e licen&ccedil;as.</small></span>
+                    <span><i data-nav-icon="credit" class="nav-icon"></i><strong>Pagamentos</strong><small>Cobran&ccedil;as e pend&ecirc;ncias.</small></span>
+                    <span><i data-nav-icon="shield" class="nav-icon"></i><strong>Administra&ccedil;&atilde;o</strong><small>Auditoria e controle de acesso.</small></span>
+                </div>
+            </div>
+        </div>
+        <div class="auth-form-panel">
+            {% include "_flash.html" %}
+            <h2>Entrar no Apex Admin</h2>
+            <form method="post" class="form-grid" data-login-form>
+                <label>E-mail<input name="email" type="email" required></label>
+                <div class="password-field"><label>Senha<input name="password" type="password" required></label><button class="btn neutral" type="button" data-toggle-password>Mostrar</button></div>
+                <button class="btn primary" type="submit" data-login-button>Entrar</button>
+            </form>
+            <p class="muted">Acesso exclusivo para administradores globais da plataforma.</p>
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

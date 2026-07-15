@@ -1,6 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from ..database import execute, query_all, query_one
+from ..services.audit import log_audit
 from .auth import company_id, login_required
 
 bp = Blueprint("inventory", __name__, url_prefix="/inventory")
@@ -79,6 +80,7 @@ def edit(item_id):
         return redirect(url_for("inventory.index"))
     if request.method == "POST":
         _update(item_id, cid, request.form)
+        log_audit(cid, "inventory.update", "inventory_items", item_id, {"quantity": request.form.get("quantity")})
         flash("Item atualizado.", "success")
         return redirect(url_for("inventory.index"))
     return render_template("inventory.html", mode="form", item=item, form_action=url_for("inventory.edit", item_id=item_id))
@@ -87,7 +89,9 @@ def edit(item_id):
 @bp.post("/<int:item_id>/update")
 @login_required
 def update(item_id):
-    _update(item_id, company_id(), request.form)
+    cid = company_id()
+    _update(item_id, cid, request.form)
+    log_audit(cid, "inventory.update", "inventory_items", item_id, {"quantity": request.form.get("quantity")})
     flash("Item atualizado.", "success")
     return redirect(url_for("inventory.index"))
 
@@ -95,6 +99,8 @@ def update(item_id):
 @bp.post("/<int:item_id>/delete")
 @login_required
 def delete(item_id):
-    execute("DELETE FROM inventory_items WHERE id=? AND company_id=?", (item_id, company_id()))
+    cid = company_id()
+    log_audit(cid, "inventory.delete", "inventory_items", item_id)
+    execute("DELETE FROM inventory_items WHERE id=? AND company_id=?", (item_id, cid))
     flash("Item excluido.", "success")
     return redirect(url_for("inventory.index"))

@@ -2,10 +2,11 @@ import csv
 from io import StringIO
 from datetime import datetime, timedelta
 
-from flask import Blueprint, Response, redirect, render_template, request, url_for
+from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
 
 from ..database import execute, query_all, query_one
 from ..models import ORDER_STATUSES, PRODUCT_CATEGORIES, products_with_demo_images
+from ..services.saas import license_context
 from .auth import company_id, login_required
 
 bp = Blueprint("pages", __name__)
@@ -333,6 +334,12 @@ def reports():
     )
 
 
+@bp.get("/finance")
+@login_required
+def finance():
+    return redirect(url_for("pages.reports"))
+
+
 @bp.get("/reports/export")
 @login_required
 def reports_export():
@@ -385,3 +392,50 @@ def settings():
         ("Operacao", "Mesas, cozinha, estoque e PDV."),
     ]
     return render_template("workspace.html", screen="settings", title="Configuracoes", company=company, groups=groups)
+
+
+@bp.get("/onboarding")
+@login_required
+def onboarding():
+    cid = company_id()
+    counts = {
+        "products": _value("SELECT COUNT(*) value FROM products WHERE company_id=?", (cid,)),
+        "categories": _value("SELECT COUNT(DISTINCT category) value FROM products WHERE company_id=?", (cid,)),
+        "employees": _value("SELECT COUNT(*) value FROM employees WHERE company_id=?", (cid,)),
+        "tables": _value("SELECT COUNT(*) value FROM tables WHERE company_id=?", (cid,)),
+    }
+    steps = [
+        ("Adicionar primeiros produtos", counts["products"] > 0, "products.index"),
+        ("Criar categorias", counts["categories"] > 1, "pages.categories"),
+        ("Configurar atendimento", True, "pages.settings"),
+        ("Cadastrar funcionarios", counts["employees"] > 1, "employees.index"),
+        ("Configurar mesas", counts["tables"] > 0, "floor.index"),
+    ]
+    done = sum(1 for _, ok, _ in steps if ok)
+    return render_template("onboarding.html", steps=steps, done=done)
+
+
+@bp.post("/onboarding/finish")
+@login_required
+def finish_onboarding():
+    execute("UPDATE companies SET onboarding_completed=1 WHERE id=?", (company_id(),))
+    flash("Onboarding concluido. Voce pode continuar configurando quando quiser.", "success")
+    return redirect(url_for("dashboard.index"))
+
+
+@bp.get("/subscription")
+@login_required
+def subscription():
+    cid = company_id()
+    context = license_context(cid)
+    payments = query_all(
+        """
+        SELECT *
+        FROM subscription_payments
+        WHERE company_id=?
+        ORDER BY created_at DESC
+        LIMIT 8
+        """,
+        (cid,),
+    )
+    return render_template("subscription.html", license_context=context, payments=payments)

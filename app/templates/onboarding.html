@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Onboarding | Apex Food{% endblock %}
+{% block content %}
+<section class="onboarding-grid">
+    <div class="onboarding-card">
+        <p class="eyebrow">Primeiro acesso</p>
+        <h1>Vamos preparar seu Apex Food.</h1>
+        <p>{{ done }} de {{ steps|length }} etapas conclu&iacute;das.</p>
+        <form method="post" action="{{ url_for('pages.finish_onboarding') }}">
+            <button class="btn primary" type="submit">Pular por enquanto</button>
+        </form>
+    </div>
+    <div class="onboarding-card admin-table">
+        {% for label, done_step, endpoint in steps %}
+        <div class="admin-table-row">
+            <strong>{{ label }}</strong>
+            <span class="status-pill {{ '' if done_step else 'blocked' }}">{{ "Concluida" if done_step else "Pendente" }}</span>
+            <a class="btn neutral" href="{{ url_for(endpoint) }}">Abrir</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

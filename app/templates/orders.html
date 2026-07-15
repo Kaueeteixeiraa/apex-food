@@ -32,42 +32,37 @@
         </article>
     </main>
     {% else %}
-    <main class="orders-clean-grid board-only {{ 'delivery-only' if is_delivery }}">
-        <section class="orders-board-clean">
-            {% for status in statuses %}
-            <article class="orders-lane status-lane-{{ status|lower|replace(' ', '-') }}">
-                <header>
-                    <h2>{{ status }}</h2>
-                    <strong>{{ orders_by_status.get(status, [])|length }}</strong>
-                </header>
-                <div class="orders-lane-list">
-                    {% for order in orders_by_status.get(status, []) %}
-                    <article class="order-clean-card">
-                        <div class="order-clean-top">
-                            <span>#{{ order.id }}</span>
-                            <strong>{{ order.customer_name or "Cliente" }}</strong>
-                        </div>
-                        <p>{{ order.items_summary or "Sem itens" }}</p>
-                        <div class="order-clean-meta">
-                            <span>{{ order.table_name or order.fulfillment_type }}</span>
-                            <span>{{ order.order_time or "--:--" }}</span>
-                            <span>{{ order.payment_method }}</span>
-                        </div>
-                        <div class="order-clean-total">
-                            <small>{{ order.status }}</small>
-                            <strong>R$ {{ "%.2f"|format(order.total) }}</strong>
-                        </div>
-                        <form method="post" action="{{ url_for('orders.update_status', order_id=order.id) }}">
-                            <select name="status">{% for option in statuses %}<option value="{{ option }}" {{ "selected" if option == order.status }}>{{ option }}</option>{% endfor %}</select>
-                            <button type="submit">Mover</button>
-                        </form>
-                    </article>
-                    {% else %}
-                    <div class="orders-empty">Sem pedidos.</div>
-                    {% endfor %}
-                </div>
-            </article>
-            {% endfor %}
+    <main class="orders-clean-grid board-only orders-reference {{ 'delivery-only' if is_delivery }}">
+        <section class="orders-ref-panel">
+            <nav class="orders-ref-tabs">
+                <a class="{{ 'active' if not selected_status }}" href="{{ url_for('orders.index') }}">Todos</a>
+                {% for status in statuses %}
+                <a class="{{ 'active' if selected_status == status }}" href="{{ url_for('orders.index', status=status) }}">{{ status }}</a>
+                {% endfor %}
+            </nav>
+            <div class="orders-ref-filters">
+                <label><span class="nav-icon" data-nav-icon="search"></span><input type="search" placeholder="Buscar pedido..." data-orders-search></label>
+                <select data-orders-type-filter><option value="">Todos os tipos</option><option value="Mesa">Mesa</option><option value="Balcao">Balc&atilde;o</option><option value="Entrega">Entrega</option></select>
+            </div>
+            <div class="orders-ref-list">
+                {% for order in orders %}
+                <article class="orders-ref-row" data-order-row data-type="{{ order.fulfillment_type }}" data-search="#{{ order.id }} {{ order.table_name or '' }} {{ order.fulfillment_type }} {{ order.customer_name or '' }} {{ order.items_summary or '' }} {{ order.status }}">
+                    <span class="orders-ref-icon"><span class="nav-icon" data-nav-icon="orders"></span></span>
+                    <strong>#{{ order.id }}</strong>
+                    <div><b>{{ order.table_name or order.fulfillment_type }}</b><small>{{ order.customer_name or "Venda r&aacute;pida" }}</small></div>
+                    <span>{{ order.items_summary.split(',')|length if order.items_summary else 0 }} itens</span>
+                    <span class="status status-{{ order.status|lower|replace(' ', '-') }}">{{ order.status }}</span>
+                    <span>{{ order.order_time or "--:--" }}</span>
+                    <strong>R$ {{ "%.2f"|format(order.total) }}</strong>
+                    <form method="post" action="{{ url_for('orders.update_status', order_id=order.id) }}">
+                        <select name="status" aria-label="Mover pedido">{% for option in statuses %}<option value="{{ option }}" {{ "selected" if option == order.status }}>{{ option }}</option>{% endfor %}</select>
+                        <button type="submit">...</button>
+                    </form>
+                </article>
+                {% else %}
+                <div class="orders-empty">Sem pedidos.</div>
+                {% endfor %}
+            </div>
         </section>
     </main>
     {% endif %}
